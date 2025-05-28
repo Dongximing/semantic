@@ -200,7 +200,7 @@ if __name__ == "__main__":
     model = AutoModelForCausalLM.from_pretrained(
         "Qwen/QwQ-32B-AWQ",
         torch_dtype=torch.float16,
-        device_map="auto"
+        device_map="0"
     )
     inference_model_pickle(task_name="math-500", model=model, tokenizer=tokenizer,start=0, end=250)
     print("done")
