@@ -197,7 +197,7 @@ def process_file_to_pickle(json_path, out_pkl_path):
             pickle.dump(generations, f)
 
 def inference_model_pickle(task_name: str = None, model=None, tokenizer=None,
-                          base_dir='/home/cs/staff/shaowei/hf/math-result_left',
+                          base_dir='/home/shaowei/hf/math-result_left',
                           start=0, end=10, num_generations=20):
     for number in range(start, end):
         dirname = f'data-500-temp0_{number}'
