@@ -113,14 +113,28 @@ with open("/home/shaowei/hf/math-result_left/data-500-temp0_10/generations_10_wi
                     g['real_answer_cluster_id'] = None
 
             all_stats.append(group_stats)
+            # ------- 可视化并保存 -------
+            n_valid = len(embeddings)
 
-            # 可视化并保存
-            if len(embeddings) >= 2:
+            if n_valid >= 2:
                 emb_arr = np.array(embeddings)
-                tsne_proj = TSNE(n_components=2, random_state=42).fit_transform(emb_arr)
+
+                if n_valid >= 5:
+                    # t-SNE：自动调小 perplexity
+                    perp = min(30, max(2, n_valid // 3))
+                    tsne_proj = TSNE(n_components=2, perplexity=perp, random_state=42).fit_transform(emb_arr)
+                    proj = tsne_proj
+                    viz_title = f"t-SNE (perplexity={perp})"
+                else:
+                    # n_valid 为 2–4 用 PCA
+                    from sklearn.decomposition import PCA
+
+                    proj = PCA(n_components=2, random_state=42).fit_transform(emb_arr)
+                    viz_title = "PCA"
+
                 plt.figure(figsize=(6, 5))
-                scatter = plt.scatter(tsne_proj[:, 0], tsne_proj[:, 1], c=labels, cmap='tab10', s=60, edgecolors='k')
-                plt.title(f"Group {group_idx} Embedding Cluster Visualization")
+                scatter = plt.scatter(proj[:, 0], proj[:, 1], c=labels, cmap='tab10', s=60, edgecolors='k')
+                plt.title(f"Group {group_idx} Embedding Cluster Visualization\n{viz_title}")
                 plt.xlabel('Component 1')
                 plt.ylabel('Component 2')
                 plt.colorbar(scatter, label='Cluster ID')
@@ -128,6 +142,8 @@ with open("/home/shaowei/hf/math-result_left/data-500-temp0_10/generations_10_wi
                 plt.savefig(f"group_{group_idx}_cluster_viz.png")
                 plt.close()
                 print(f"已保存 group_{group_idx}_cluster_viz.png")
+            else:
+                print("有效 embedding < 2，跳过可视化")
 
         # 保存聚类结果到 pickle
         with open("generations_with_cluster_id.pkl", "wb") as f:
