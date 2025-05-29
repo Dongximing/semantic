@@ -6,6 +6,17 @@ openai.api_key =os.environ["OPENAI_API_KEY"]
 from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import sys
+def checking(generations):
+    group_size = 20
+
+    all_same = True
+    for i in range(0, len(generations), group_size):
+        group = generations[i:i + group_size]
+        input_texts = [g['input_text'] for g in group]
+        if len(set(input_texts)) > 1:
+            print(f"第 {i // group_size} 组有不同 input_text!")
+            all_same = False
+    return  all_same
 def get_openai_embeddings(texts, model="text-embedding-3-small", batch_size=1):
     """
     texts: list of strings,
@@ -28,7 +39,8 @@ with open("/home/shaowei/hf/math-result_left/data-500-temp0_10/generations_10_wi
         trust_remote_code=True
     )
     generations = pickle.load(f)
-    print(len(generations))
+    print(checking(generations))
+    # print(len(generations))
 
     # for g in generations:
     #     pred = g.get('real_output')
