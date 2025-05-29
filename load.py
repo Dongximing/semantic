@@ -22,5 +22,5 @@ def get_openai_embeddings(texts, model="text-embedding-3-small", batch_size=20):
 
 with open("/home/shaowei/hf/math-result_left/data-500-temp0_10/generations_10.pkl", "rb") as f:
     generations = pickle.load(f)
-    print(generations[0])
+    print(generations[1])
 
