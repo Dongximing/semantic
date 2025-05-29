@@ -35,7 +35,8 @@ with open("/home/shaowei/hf/math-result_left/data-500-temp0_10/generations_10.pk
 
         pred = g.get('predicted_answer')
         if pred is None:
-            g['real_output'] = ""  # 或者 continue 跳过不加
+            print(b)
+            g['real_output'] = None  # 或者 continue 跳过不加
         else:
             g['real_output'] = pred[len(b):]
 
