@@ -35,11 +35,11 @@ with open("/home/shaowei/hf/math-result_left/data-500-temp0_10/generations_10_wi
             g['real_answer_embedding'] = None
 
         else:
-            g['real_answer_embedding'] = get_openai_embeddings(texts=[pred])
+            g['real_answer_embedding'] = get_openai_embeddings(texts=[pred])[0]
             print(g['real_answer_embedding'] )
 
 
-        sys.exit()
+
 #
 #         input = tokenizer.encode(g['input_text'])
 #         b = tokenizer.decode(input, skip_special_tokens=True)
@@ -51,11 +51,11 @@ with open("/home/shaowei/hf/math-result_left/data-500-temp0_10/generations_10_wi
 #         else:
 #             g['real_output'] = pred[len(b):]
 #
-# output_path = "/home/shaowei/hf/math-result_left/data-500-temp0_10/generations_10_with_real_output.pkl"
-# with open(output_path, "wb") as f:
-#     pickle.dump(generations, f)
-#
-# print(f"Saved updated generations to {output_path}")
+output_path = "/home/shaowei/hf/math-result_left/data-500-temp0_10/generations_10_with_real_output.pkl"
+with open(output_path, "wb") as f:
+    pickle.dump(generations, f)
+
+print(f"Saved updated generations to {output_path}")
 #
 #
 
