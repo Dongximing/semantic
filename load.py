@@ -31,6 +31,8 @@ with open("/home/shaowei/hf/math-result_left/data-500-temp0_10/generations_10.pk
     for g in generations:
         a = tokenizer.encode(g['input_text'])
         b = tokenizer.decode(a, skip_special_tokens=True)
+        print("=======================")
+        print(b)
         print("------------------------")
         print(g['predicted_answer'])
         sys.exit()
