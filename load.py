@@ -6,7 +6,7 @@ openai.api_key =os.environ["OPENAI_API_KEY"]
 from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import sys
-def get_openai_embeddings(texts, model="text-embedding-3-small", batch_size=20):
+def get_openai_embeddings(texts, model="text-embedding-3-small", batch_size=1):
     """
     texts: list of strings,
     model: "text-embedding-3-small"
@@ -28,8 +28,15 @@ with open("/home/shaowei/hf/math-result_left/data-500-temp0_10/generations_10_wi
         trust_remote_code=True
     )
     generations = pickle.load(f)
+
     for g in generations:
-        print(g)
+        pred = g.get('real_output')
+        if pred is None:
+            g['real_answer_embedding'] = get_openai_embeddings(texts=[pred])
+            print(g['real_answer_embedding'] )
+        else:
+            g['real_answer_embedding'] = None
+
         sys.exit()
 #
 #         input = tokenizer.encode(g['input_text'])
