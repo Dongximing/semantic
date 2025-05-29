@@ -1,17 +1,17 @@
+import openai
 import os
-import pickle
-import json
-import numpy as np
 from tqdm import tqdm
+from transformers import AutoModelForCausalLM, AutoTokenizer
+import os
+import numpy as np
+from sklearn.metrics.pairwise import cosine_distances
+from sklearn.metrics import silhouette_score
+import hdbscan
+import pickle
 from collections import Counter
 import pandas as pd
 import matplotlib.pyplot as plt
-from sklearn.metrics.pairwise import cosine_distances
-from sklearn.metrics import silhouette_score
 from sklearn.manifold import TSNE
-from transformers import AutoModelForCausalLM, AutoTokenizer
-import hdbscan
-import openai
 import logging
 
 # Logging configuration
