@@ -46,44 +46,38 @@ with open("/home/shaowei/hf/math-result_left/data-500-temp0_10/generations_10_wi
     if checking(generations):
         group_size = 20
 
-        for group_idx, group_start in enumerate(range(0, len(generations), group_size)):
-            group = generations[group_start:group_start + group_size]
-            valid_idxs = [i for i, g in enumerate(group) if g.get('real_answer_embedding') is not None]
-            embeddings = [group[i]['real_answer_embedding'] for i in valid_idxs]
+    for group_idx, group_start in enumerate(range(0, len(generations), group_size)):
+        group = generations[group_start:group_start + group_size]
+        valid_idxs = [i for i, g in enumerate(group) if g.get('real_answer_embedding') is not None]
+        none_count = group_size - len(valid_idxs)  # None 的数量
+        print(f"\n=== Group {group_idx} (from index {group_start}) ===")
+        print(f"本组 embedding 为 None 的有 {none_count} 个")
 
-            print(f"\n=== Group {group_idx} (from index {group_start}) ===")
+        embeddings = [group[i]['real_answer_embedding'] for i in valid_idxs]
 
-            if len(embeddings) >= 2:
-                emb_arr = np.array(embeddings)
-                clusterer = hdbscan.HDBSCAN(
-                    metric="euclidean",
-                    min_cluster_size=2,
-                    prediction_data=True
-                )
-                labels = clusterer.fit_predict(emb_arr)
-                # 统计 label 数量
-                label_counts = Counter(labels)
-                print("Cluster label counts:", dict(label_counts))
+        if len(embeddings) >= 1:
+            emb_arr = np.array(embeddings)
+            clusterer = hdbscan.HDBSCAN(
+                metric="cosine",
+                min_cluster_size=1,
+                prediction_data=True
+            )
+            labels = clusterer.fit_predict(emb_arr)
+            # 统计 label 数量
+            label_counts = Counter(labels)
+            print("Cluster label counts:", dict(label_counts))
+        else:
+            labels = []
+            print("本组没有有效 embedding，无法聚类。")
+            label_counts = {}
 
-                # 聚类质量（排除噪声点 -1）
-                mask = labels != -1
-                if mask.sum() > 1 and len(set(labels[mask])) > 1:
-                    sil = silhouette_score(emb_arr[mask], labels[mask], metric="euclidean")
-                    print(f"Silhouette score (不含噪声): {sil:.3f}")
-                else:
-                    print("Silhouette score: 无法评估（非噪声簇太少）")
+        # 回写 cluster_id
+        for idx, g in enumerate(group):
+            if g.get('real_answer_embedding') is not None:
+                idx_in_valid = valid_idxs.index(idx)
+                g['real_answer_cluster_id'] = int(labels[idx_in_valid]) if len(labels) > 0 else None
             else:
-                labels = []
-                print("有效 embedding 数量不足2，无法聚类。")
-                label_counts = {}
-
-            # 回写 cluster_id
-            for idx, g in enumerate(group):
-                if g.get('real_answer_embedding') is not None:
-                    idx_in_valid = valid_idxs.index(idx)
-                    g['real_answer_cluster_id'] = int(labels[idx_in_valid]) if len(labels) > 0 else None
-                else:
-                    g['real_answer_cluster_id'] = None
+                g['real_answer_cluster_id'] = None
 
     # print(len(generations))
 
