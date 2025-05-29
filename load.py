@@ -1,39 +1,54 @@
+import os
 import pickle
-import transformers
-import openai
-import os
-openai.api_key =os.environ["OPENAI_API_KEY"]
-from tqdm import tqdm
-from transformers import AutoModelForCausalLM, AutoTokenizer
-import os
+import json
 import numpy as np
-from sklearn.metrics.pairwise import cosine_distances
-from sklearn.metrics import silhouette_score
-import hdbscan
-import pickle
+from tqdm import tqdm
 from collections import Counter
 import pandas as pd
 import matplotlib.pyplot as plt
+from sklearn.metrics.pairwise import cosine_distances
+from sklearn.metrics import silhouette_score
 from sklearn.manifold import TSNE
-def checking(generations):
-    group_size = 20
+from transformers import AutoModelForCausalLM, AutoTokenizer
+import hdbscan
+import openai
+import logging
 
+# Logging configuration
+log_path = "cluster_labeling.log"
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(message)s',
+    handlers=[
+        logging.FileHandler(log_path, encoding='utf-8'),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
+
+openai.api_key = os.environ["OPENAI_API_KEY"]
+
+def checking(generations, group_size=20):
     all_same = True
     for i in range(0, len(generations), group_size):
         group = generations[i:i + group_size]
         input_texts = [g['input_text'] for g in group]
         if len(set(input_texts)) > 1:
-            print(f"第 {i // group_size} 组有不同 input_text!")
+            logger.warning(f"Group {i // group_size} contains different input_texts!")
             all_same = False
-    return  all_same
+    return all_same
 
+def get_openai_embeddings(texts, model="text-embedding-3-small", batch_size=1):
+    embeddings = []
+    for i in tqdm(range(0, len(texts), batch_size)):
+        batch = texts[i:i + batch_size]
+        response = openai.embeddings.create(input=batch, model=model)
+        batch_embeddings = [record.embedding for record in response.data]
+        embeddings.extend(batch_embeddings)
+    return np.array(embeddings)
 
-
-def labeling_data(generations, generations_path):
-    # 自动推断文件夹
-    output_dir = os.path.dirname(os.path.abspath(generations_path))
+def labeling_data(generations, output_dir):
     group_size = 20
-
     all_stats = []
 
     for group_idx, group_start in enumerate(range(0, len(generations), group_size)):
@@ -48,10 +63,10 @@ def labeling_data(generations, generations_path):
             'total': len(group),
         }
 
-        print(f"\n=== Group {group_idx} (from index {group_start}) ===")
-        print(f"本组 embedding 为 None 的有 {none_count} 个")
+        logger.info(f"\n=== Group {group_idx} (from index {group_start}) ===")
+        logger.info(f"Number of None embeddings in this group: {none_count}")
 
-        # 聚类
+        # Clustering
         if len(embeddings) >= 2:
             emb_arr = np.array(embeddings)
             dist_mat = cosine_distances(emb_arr)
@@ -62,32 +77,31 @@ def labeling_data(generations, generations_path):
             )
             labels = clusterer.fit_predict(dist_mat)
             label_counts = Counter(labels)
-            print("Cluster label counts:", dict(label_counts))
+            logger.info(f"Cluster label counts: {dict(label_counts)}")
             group_stats['label_counts'] = dict(label_counts)
 
-            # silhouette_score 评估
             mask = labels != -1
             if mask.sum() > 1 and len(set(labels[mask])) > 1:
                 sil = silhouette_score(dist_mat[mask][:, mask], labels[mask], metric="precomputed")
-                print(f"Silhouette score (不含噪声): {sil:.3f}")
+                logger.info(f"Silhouette score (without noise): {sil:.3f}")
                 group_stats['silhouette'] = sil
             else:
-                print("Silhouette score: 无法评估（非噪声簇太少）")
+                logger.info("Silhouette score: Not enough non-noise clusters to evaluate.")
                 group_stats['silhouette'] = None
         elif len(embeddings) == 1:
             labels = np.array([0])
             label_counts = Counter(labels)
-            print("仅有1个有效 embedding，label=0")
+            logger.info("Only 1 valid embedding, assigned to label=0.")
             group_stats['label_counts'] = dict(label_counts)
             group_stats['silhouette'] = None
         else:
             labels = []
             label_counts = {}
-            print("本组没有有效 embedding，无法聚类。")
+            logger.info("No valid embeddings in this group. Skipping clustering.")
             group_stats['label_counts'] = dict(label_counts)
             group_stats['silhouette'] = None
 
-        # 回写 cluster_id
+        # Write back cluster_id
         for idx, g in enumerate(group):
             if g.get('real_answer_embedding') is not None:
                 idx_in_valid = valid_idxs.index(idx)
@@ -96,19 +110,17 @@ def labeling_data(generations, generations_path):
                 g['real_answer_cluster_id'] = None
 
         all_stats.append(group_stats)
-        # ------- 可视化并保存 -------
-        n_valid = len(embeddings)
 
+        # Visualization and saving
+        n_valid = len(embeddings)
         if n_valid >= 2:
             emb_arr = np.array(embeddings)
-
             if n_valid >= 5:
                 perp = min(30, max(2, n_valid // 3))
                 proj = TSNE(n_components=2, perplexity=perp, random_state=42).fit_transform(emb_arr)
                 viz_title = f"t-SNE (perplexity={perp})"
             else:
                 from sklearn.decomposition import PCA
-
                 proj = PCA(n_components=2, random_state=42).fit_transform(emb_arr)
                 viz_title = "PCA"
 
@@ -117,7 +129,6 @@ def labeling_data(generations, generations_path):
             for x, y, lbl in zip(proj[:, 0], proj[:, 1], labels):
                 plt.text(x, y, str(lbl), fontsize=10, ha='center', va='center',
                          bbox=dict(facecolor='white', edgecolor='none', alpha=0.6, boxstyle='round,pad=0.15'))
-
             plt.title(f"Group {group_idx} Embedding Cluster Visualization\n{viz_title}")
             plt.xlabel('Component 1')
             plt.ylabel('Component 2')
@@ -126,74 +137,78 @@ def labeling_data(generations, generations_path):
             fig_path = os.path.join(output_dir, f"group_{group_idx}_cluster_viz.png")
             plt.savefig(fig_path)
             plt.close()
-            print(f"已保存 {fig_path}")
+            logger.info(f"Saved plot to {fig_path}")
         else:
-            print("有效 embedding < 2，跳过可视化")
+            logger.info("Fewer than 2 valid embeddings, skipping visualization.")
 
-    # 保存聚类结果到 pickle
+    # Save clustering results to pickle
     pickle_path = os.path.join(output_dir, "generations_with_cluster_id.pkl")
     with open(pickle_path, "wb") as f:
         pickle.dump(generations, f)
 
-    # 保存统计信息到 csv
-    import pandas as pd
+    # Save statistics to CSV
     df = pd.DataFrame(all_stats)
     csv_path = os.path.join(output_dir, "group_cluster_stats.csv")
     df.to_csv(csv_path, index=False)
-    print(f"\n分组统计信息已保存到 {csv_path}")
-    print(f"聚类ID已写回并保存为 {pickle_path}")
+    logger.info(f"\nGroup statistics saved to {csv_path}")
+    logger.info(f"Cluster IDs written back and saved to {pickle_path}")
 
-
-
-
-def get_openai_embeddings(texts, model="text-embedding-3-small", batch_size=1):
-    """
-    texts: list of strings,
-    model: "text-embedding-3-small"
-    return: np.array, shape = (N, D)
-    """
-    embeddings = []
-    for i in tqdm(range(0, len(texts), batch_size)):
-        batch = texts[i:i+batch_size]
-        response = openai.embeddings.create(input=batch, model=model)
-
-        batch_embeddings = [record.embedding for record in response.data]
-        embeddings.extend(batch_embeddings)
-    return np.array(embeddings)
-
- def process_file_to_pickle(json_path, out_pkl_path):
+def process_file_to_pickle(json_path, out_pkl_path):
     tokenizer = AutoTokenizer.from_pretrained(
         "Qwen/QwQ-32B-AWQ",
         trust_remote_code=True
     )
-    generations = pickle.load(json_path)
+    # Read json
+    with open(json_path, "r", encoding="utf-8") as f:
+        generations = json.load(f)
     if checking(generations):
+        texts_to_embed = []
         for g in generations:
-            input = tokenizer.encode(g['input_text'])
-            b = tokenizer.decode(input, skip_special_tokens=True)
+            input_ids = tokenizer.encode(g['input_text'])
+            b = tokenizer.decode(input_ids, skip_special_tokens=True)
             pred = g.get('predicted_answer')
             if pred is None:
                 g['real_output'] = None
                 g['real_answer_embedding'] = None
             else:
-                g['real_output'] = pred[len(b):].strip()
-                g['real_answer_embedding'] = get_openai_embeddings(pred[len(b):].strip(), model="text-embedding-3-small", batch_size=1)
+                real_output = pred[len(b):].strip()
+                g['real_output'] = real_output
+                texts_to_embed.append(real_output)
 
-        labeling_data(generations, generations_path)
+        # Batch embedding
+        if texts_to_embed:
+            embs = get_openai_embeddings(texts_to_embed, model="text-embedding-3-small", batch_size=1)
+        else:
+            embs = []
 
+        idx = 0
+        for g in generations:
+            if g.get('real_output') is not None:
+                g['real_answer_embedding'] = embs[idx]
+                idx += 1
+            else:
+                g['real_answer_embedding'] = None
 
-def inference_model_pickle(task_name: str, model, tokenizer, base_dir='/home/cs/staff/shaowei/hf/math-result_left',
-                               start=0, end=250, num_generations=20):
+        # Infer output directory
+        output_dir = os.path.dirname(os.path.abspath(out_pkl_path))
+        labeling_data(generations, output_dir)
 
-        for number in range(start, end):
-            dirname = f'data-500-temp0_{number}'
-            dir_path = os.path.join(base_dir, dirname)
-            json_path = os.path.join(dir_path, f'generations_{number}.json')
-            out_pkl_path = os.path.join(dir_path, f'label_semantic_{number}.pkl')
-            process_file_to_pickle(json_path, out_pkl_path)
+        # Save processed pickle
+        with open(out_pkl_path, "wb") as f:
+            pickle.dump(generations, f)
 
+def inference_model_pickle(task_name: str = None, model=None, tokenizer=None,
+                          base_dir='/home/cs/staff/shaowei/hf/math-result_left',
+                          start=0, end=10, num_generations=20):
+    for number in range(start, end):
+        dirname = f'data-500-temp0_{number}'
+        dir_path = os.path.join(base_dir, dirname)
+        json_path = os.path.join(dir_path, f'generations_{number}.json')
+        out_pkl_path = os.path.join(dir_path, f'label_semantic_{number}.pkl')
+        if not os.path.exists(json_path):
+            logger.warning(f"{json_path} does not exist, skipping.")
+            continue
+        process_file_to_pickle(json_path, out_pkl_path)
 
-
-
-
-
+if __name__ == "__main__":
+    inference_model_pickle()
