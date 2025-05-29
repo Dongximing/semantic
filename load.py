@@ -158,9 +158,8 @@ def process_file_to_pickle(json_path, out_pkl_path):
         "Qwen/QwQ-32B-AWQ",
         trust_remote_code=True
     )
-    # Read json
-    with open(json_path, "r", encoding="utf-8") as f:
-        generations = json.load(f)
+    with open(json_path, "rb") as f:
+        generations = pickle.load(f)
     if checking(generations):
         texts_to_embed = []
         for g in generations:
@@ -203,7 +202,7 @@ def inference_model_pickle(task_name: str = None, model=None, tokenizer=None,
     for number in range(start, end):
         dirname = f'data-500-temp0_{number}'
         dir_path = os.path.join(base_dir, dirname)
-        json_path = os.path.join(dir_path, f'generations_{number}.json')
+        json_path = os.path.join(dir_path, f'generations_{number}.pkl')
         out_pkl_path = os.path.join(dir_path, f'label_semantic_{number}.pkl')
         if not os.path.exists(json_path):
             logger.warning(f"{json_path} does not exist, skipping.")
