@@ -28,15 +28,16 @@ with open("/home/shaowei/hf/math-result_left/data-500-temp0_10/generations_10_wi
         trust_remote_code=True
     )
     generations = pickle.load(f)
+    print(len(generations))
 
-    for g in generations:
-        pred = g.get('real_output')
-        if pred is None:
-            g['real_answer_embedding'] = None
-
-        else:
-            g['real_answer_embedding'] = get_openai_embeddings(texts=[pred])[0]
-            print(g['real_answer_embedding'] )
+    # for g in generations:
+    #     pred = g.get('real_output')
+    #     if pred is None:
+    #         g['real_answer_embedding'] = None
+    #
+    #     else:
+    #         g['real_answer_embedding'] = get_openai_embeddings(texts=[pred])[0]
+    #         print(g['real_answer_embedding'])
 
 
 
