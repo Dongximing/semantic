@@ -29,6 +29,7 @@ with open("/home/shaowei/hf/math-result_left/data-500-temp0_10/generations_10.pk
     )
     generations = pickle.load(f)
     for g in generations:
+        print(g)
         input = tokenizer.encode(g['input_text'])
         b = tokenizer.decode(input, skip_special_tokens=True)
         real_output = g['predicted_answer'][len(b):]
