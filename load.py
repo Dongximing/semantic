@@ -29,15 +29,15 @@ with open("/home/shaowei/hf/math-result_left/data-500-temp0_10/generations_10.pk
     )
     generations = pickle.load(f)
     for g in generations:
-        a = tokenizer.encode(g['input_text'])
-        b = tokenizer.decode(a, skip_special_tokens=True)
-        print("=======================")
-        print(b)
-        print("------------------------")
-        print(g['predicted_answer'][len(b):])
-        print("========================")
-        print(tokenizer.decode(g['predicted_answer'][len(b):],skip_special_tokens=True))
+        input = tokenizer.encode(g['input_text'])
+        b = tokenizer.decode(input, skip_special_tokens=True)
+        real_output = g['predicted_answer'][len(b):]
+        g['real_output'] = real_output
+output_path = "/home/shaowei/hf/math-result_left/data-500-temp0_10/generations_10_with_real_output.pkl"
+with open(output_path, "wb") as f:
+    pickle.dump(generations, f)
 
-        sys.exit()
+print(f"Saved updated generations to {output_path}")
+
 
 
