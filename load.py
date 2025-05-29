@@ -29,11 +29,16 @@ with open("/home/shaowei/hf/math-result_left/data-500-temp0_10/generations_10.pk
     )
     generations = pickle.load(f)
     for g in generations:
-        print(g)
+
         input = tokenizer.encode(g['input_text'])
         b = tokenizer.decode(input, skip_special_tokens=True)
-        real_output = g['predicted_answer'][len(b):]
-        g['real_output'] = real_output
+
+        pred = g.get('predicted_answer')
+        if pred is None:
+            g['real_output'] = ""  # 或者 continue 跳过不加
+        else:
+            g['real_output'] = pred[len(b):]
+
 output_path = "/home/shaowei/hf/math-result_left/data-500-temp0_10/generations_10_with_real_output.pkl"
 with open(output_path, "wb") as f:
     pickle.dump(generations, f)
