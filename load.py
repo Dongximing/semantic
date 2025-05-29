@@ -59,7 +59,7 @@ with open("/home/shaowei/hf/math-result_left/data-500-temp0_10/generations_10_wi
             emb_arr = np.array(embeddings)
             clusterer = hdbscan.HDBSCAN(
                 metric="cosine",
-                min_cluster_size=1,
+                min_cluster_size=2,
                 prediction_data=True
             )
             labels = clusterer.fit_predict(emb_arr)
