@@ -120,13 +120,10 @@ with open("/home/shaowei/hf/math-result_left/data-500-temp0_10/generations_10_wi
                 emb_arr = np.array(embeddings)
 
                 if n_valid >= 5:
-                    # t-SNE：自动调小 perplexity
                     perp = min(30, max(2, n_valid // 3))
-                    tsne_proj = TSNE(n_components=2, perplexity=perp, random_state=42).fit_transform(emb_arr)
-                    proj = tsne_proj
+                    proj = TSNE(n_components=2, perplexity=perp, random_state=42).fit_transform(emb_arr)
                     viz_title = f"t-SNE (perplexity={perp})"
                 else:
-                    # n_valid 为 2–4 用 PCA
                     from sklearn.decomposition import PCA
 
                     proj = PCA(n_components=2, random_state=42).fit_transform(emb_arr)
@@ -134,6 +131,11 @@ with open("/home/shaowei/hf/math-result_left/data-500-temp0_10/generations_10_wi
 
                 plt.figure(figsize=(6, 5))
                 scatter = plt.scatter(proj[:, 0], proj[:, 1], c=labels, cmap='tab10', s=60, edgecolors='k')
+                # 在每个点上标注 cluster_id
+                for x, y, lbl in zip(proj[:, 0], proj[:, 1], labels):
+                    plt.text(x, y, str(lbl), fontsize=10, ha='center', va='center',
+                             bbox=dict(facecolor='white', edgecolor='none', alpha=0.6, boxstyle='round,pad=0.15'))
+
                 plt.title(f"Group {group_idx} Embedding Cluster Visualization\n{viz_title}")
                 plt.xlabel('Component 1')
                 plt.ylabel('Component 2')
