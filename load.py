@@ -32,10 +32,12 @@ with open("/home/shaowei/hf/math-result_left/data-500-temp0_10/generations_10_wi
     for g in generations:
         pred = g.get('real_output')
         if pred is None:
+            g['real_answer_embedding'] = None
+
+        else:
             g['real_answer_embedding'] = get_openai_embeddings(texts=[pred])
             print(g['real_answer_embedding'] )
-        else:
-            g['real_answer_embedding'] = None
+
 
         sys.exit()
 #
