@@ -22,29 +22,30 @@ def get_openai_embeddings(texts, model="text-embedding-3-small", batch_size=20):
         embeddings.extend(batch_embeddings)
     return np.array(embeddings)
 
-with open("/home/shaowei/hf/math-result_left/data-500-temp0_10/generations_10.pkl", "rb") as f:
+with open("/home/shaowei/hf/math-result_left/data-500-temp0_10/generations_10_with_real_output.pkl", "rb") as f:
     tokenizer = AutoTokenizer.from_pretrained(
         "Qwen/QwQ-32B-AWQ",
         trust_remote_code=True
     )
     generations = pickle.load(f)
     for g in generations:
-
-        input = tokenizer.encode(g['input_text'])
-        b = tokenizer.decode(input, skip_special_tokens=True)
-
-        pred = g.get('predicted_answer')
-        if pred is None:
-            print(b)
-            g['real_output'] = None  # 或者 continue 跳过不加
-        else:
-            g['real_output'] = pred[len(b):]
-
-output_path = "/home/shaowei/hf/math-result_left/data-500-temp0_10/generations_10_with_real_output.pkl"
-with open(output_path, "wb") as f:
-    pickle.dump(generations, f)
-
-print(f"Saved updated generations to {output_path}")
-
-
+        print(g[1])
+#
+#         input = tokenizer.encode(g['input_text'])
+#         b = tokenizer.decode(input, skip_special_tokens=True)
+#
+#         pred = g.get('predicted_answer')
+#         if pred is None:
+#             print(b)
+#             g['real_output'] = None  # 或者 continue 跳过不加
+#         else:
+#             g['real_output'] = pred[len(b):]
+#
+# output_path = "/home/shaowei/hf/math-result_left/data-500-temp0_10/generations_10_with_real_output.pkl"
+# with open(output_path, "wb") as f:
+#     pickle.dump(generations, f)
+#
+# print(f"Saved updated generations to {output_path}")
+#
+#
 
