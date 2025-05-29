@@ -5,11 +5,16 @@ import os
 openai.api_key =os.environ["OPENAI_API_KEY"]
 from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
-import sys
+
 import numpy as np
-import hdbscan
-from collections import Counter
+from sklearn.metrics.pairwise import cosine_distances
 from sklearn.metrics import silhouette_score
+import hdbscan
+import pickle
+from collections import Counter
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.manifold import TSNE
 def checking(generations):
     group_size = 20
 
@@ -46,38 +51,93 @@ with open("/home/shaowei/hf/math-result_left/data-500-temp0_10/generations_10_wi
     if checking(generations):
         group_size = 20
 
-    for group_idx, group_start in enumerate(range(0, len(generations), group_size)):
-        group = generations[group_start:group_start + group_size]
-        valid_idxs = [i for i, g in enumerate(group) if g.get('real_answer_embedding') is not None]
-        none_count = group_size - len(valid_idxs)  # None 的数量
-        print(f"\n=== Group {group_idx} (from index {group_start}) ===")
-        print(f"本组 embedding 为 None 的有 {none_count} 个")
+        all_stats = []
 
-        embeddings = [group[i]['real_answer_embedding'] for i in valid_idxs]
+        for group_idx, group_start in enumerate(range(0, len(generations), group_size)):
+            group = generations[group_start:group_start + group_size]
+            valid_idxs = [i for i, g in enumerate(group) if g.get('real_answer_embedding') is not None]
+            none_count = group_size - len(valid_idxs)
+            embeddings = [group[i]['real_answer_embedding'] for i in valid_idxs]
+            group_stats = {
+                'group_idx': group_idx,
+                'start': group_start,
+                'none_count': none_count,
+                'total': len(group),
+            }
 
-        if len(embeddings) >= 1:
-            emb_arr = np.array(embeddings)
-            clusterer = hdbscan.HDBSCAN(
-                metric="cosine",
-                min_cluster_size=2,
-                prediction_data=True
-            )
-            labels = clusterer.fit_predict(emb_arr)
-            # 统计 label 数量
-            label_counts = Counter(labels)
-            print("Cluster label counts:", dict(label_counts))
-        else:
-            labels = []
-            print("本组没有有效 embedding，无法聚类。")
-            label_counts = {}
+            print(f"\n=== Group {group_idx} (from index {group_start}) ===")
+            print(f"本组 embedding 为 None 的有 {none_count} 个")
 
-        # 回写 cluster_id
-        for idx, g in enumerate(group):
-            if g.get('real_answer_embedding') is not None:
-                idx_in_valid = valid_idxs.index(idx)
-                g['real_answer_cluster_id'] = int(labels[idx_in_valid]) if len(labels) > 0 else None
+            # 聚类
+            if len(embeddings) >= 2:
+                emb_arr = np.array(embeddings)
+                dist_mat = cosine_distances(emb_arr)
+                clusterer = hdbscan.HDBSCAN(
+                    metric="precomputed",
+                    min_cluster_size=2,
+                    prediction_data=True
+                )
+                labels = clusterer.fit_predict(dist_mat)
+                label_counts = Counter(labels)
+                print("Cluster label counts:", dict(label_counts))
+                group_stats['label_counts'] = dict(label_counts)
+
+                # silhouette_score 评估
+                mask = labels != -1
+                if mask.sum() > 1 and len(set(labels[mask])) > 1:
+                    sil = silhouette_score(dist_mat[mask][:, mask], labels[mask], metric="precomputed")
+                    print(f"Silhouette score (不含噪声): {sil:.3f}")
+                    group_stats['silhouette'] = sil
+                else:
+                    print("Silhouette score: 无法评估（非噪声簇太少）")
+                    group_stats['silhouette'] = None
+            elif len(embeddings) == 1:
+                labels = np.array([0])
+                label_counts = Counter(labels)
+                print("仅有1个有效 embedding，label=0")
+                group_stats['label_counts'] = dict(label_counts)
+                group_stats['silhouette'] = None
             else:
-                g['real_answer_cluster_id'] = None
+                labels = []
+                label_counts = {}
+                print("本组没有有效 embedding，无法聚类。")
+                group_stats['label_counts'] = dict(label_counts)
+                group_stats['silhouette'] = None
+
+            # 回写 cluster_id
+            for idx, g in enumerate(group):
+                if g.get('real_answer_embedding') is not None:
+                    idx_in_valid = valid_idxs.index(idx)
+                    g['real_answer_cluster_id'] = int(labels[idx_in_valid]) if len(labels) > 0 else None
+                else:
+                    g['real_answer_cluster_id'] = None
+
+            all_stats.append(group_stats)
+
+            # 可视化并保存
+            if len(embeddings) >= 2:
+                emb_arr = np.array(embeddings)
+                tsne_proj = TSNE(n_components=2, random_state=42).fit_transform(emb_arr)
+                plt.figure(figsize=(6, 5))
+                scatter = plt.scatter(tsne_proj[:, 0], tsne_proj[:, 1], c=labels, cmap='tab10', s=60, edgecolors='k')
+                plt.title(f"Group {group_idx} Embedding Cluster Visualization")
+                plt.xlabel('Component 1')
+                plt.ylabel('Component 2')
+                plt.colorbar(scatter, label='Cluster ID')
+                plt.tight_layout()
+                plt.savefig(f"group_{group_idx}_cluster_viz.png")
+                plt.close()
+                print(f"已保存 group_{group_idx}_cluster_viz.png")
+
+        # 保存聚类结果到 pickle
+        with open("generations_with_cluster_id.pkl", "wb") as f:
+            pickle.dump(generations, f)
+
+        # 保存统计信息到 csv
+        df = pd.DataFrame(all_stats)
+        df.to_csv("group_cluster_stats.csv", index=False)
+        print("\n分组统计信息已保存到 group_cluster_stats.csv")
+        print("聚类ID已写回并保存为 generations_with_cluster_id.pkl")
 
     # print(len(generations))
 
