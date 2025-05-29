@@ -162,7 +162,7 @@ def process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_genera
                     "generation_index": i,
                     "sample_index": index
                 })
-            # 日志每轮 append 到 log_file
+
             with open(log_file, "a", encoding="utf-8") as lf:
                 lf.write(json.dumps(log_entry, ensure_ascii=False) + "\n")
     
