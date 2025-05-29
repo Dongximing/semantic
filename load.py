@@ -34,7 +34,10 @@ with open("/home/shaowei/hf/math-result_left/data-500-temp0_10/generations_10.pk
         print("=======================")
         print(b)
         print("------------------------")
-        print(g['predicted_answer'])
+        print(g['predicted_answer'][len(b):])
+        print("========================")
+        print(tokenizer.decode(g['predicted_answer'][len(b):],skip_special_tokens=True))
+
         sys.exit()
 
 
