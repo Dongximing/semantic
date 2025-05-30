@@ -162,7 +162,7 @@ def process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_genera
                 })
                 all_generations.append({
                     "input_text": input_text,
-                    "real_answer": real_answer,
+                    "real_answer": None,
                     "predicted_answer": None,
                     "ppl": None,
                     "log_likelihoods": None,
