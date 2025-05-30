@@ -52,7 +52,9 @@ def predict(tokenizer, model, input_data, temperature, return_full=False, return
             do_sample=True,
             stopping_criteria=stopping_criteria,
         )
-
+    full_answer = tokenizer.decode(outputs.sequences[0],skip_special_tokens=True)
+    print(full_answer)
+    print('--------------------------')
     full_answer = tokenizer.decode(outputs.sequences[0][initial_length:], skip_special_tokens=True)
     print(full_answer)
     sys.exit()
