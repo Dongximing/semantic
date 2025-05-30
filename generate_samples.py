@@ -95,7 +95,7 @@ def predict(tokenizer, model, input_data, temperature, return_full=False, return
         last_hidden_state, sec_last_hidden_state, last_input_token_state,
         last_token_embedding, sec_last_token_embedding, last_tok_bef_gen_embedding
     )
-    print(answer)
+    print("answer",answer)
     return (answer, log_likelihoods, probs, ppl, hidden_states)
 
 
@@ -203,5 +203,5 @@ if __name__ == "__main__":
         torch_dtype=torch.float16,
         device_map={'': 'cuda:1'}
     )
-    inference_model_pickle(task_name="math-500", model=model, tokenizer=tokenizer,start=200, end=250)
+    inference_model_pickle(task_name="math-500", model=model, tokenizer=tokenizer,start=150, end=250)
     print("done")
