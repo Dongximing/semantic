@@ -173,8 +173,8 @@ def process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_genera
 
 
 
-def inference_model_pickle(task_name: str, model, tokenizer, base_dir='/home/cs/staff/shaowei/hf/math-result_left',
-                           start=0, end=250, num_generations=20):
+def inference_model_pickle(task_name: str, model, tokenizer, base_dir='/data/ximing/math-result_left',
+                           start=20, end=250, num_generations=20):
 
     for number in range(start, end):
         dirname = f'data-500-temp0_{number}'
