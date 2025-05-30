@@ -95,7 +95,7 @@ def predict(tokenizer, model, input_data, temperature, return_full=False, return
         last_hidden_state, sec_last_hidden_state, last_input_token_state,
         last_token_embedding, sec_last_token_embedding, last_tok_bef_gen_embedding
     )
-    print("answer",answer)
+
     return (answer, log_likelihoods, probs, ppl, hidden_states)
 
 
