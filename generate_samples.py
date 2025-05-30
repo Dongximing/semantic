@@ -14,7 +14,7 @@ STOP_TOKENS = [
 
 def predict(tokenizer, model, input_data, temperature, return_full=False, return_latent=False):
     max_new_tokens = 200
-    inputs = tokenizer(input_data, return_tensors="pt").to("cuda")
+    inputs = tokenizer(input_data, return_tensors="pt").to("cuda:2")
     initial_length = len(inputs['input_ids'][0])
     stopping_criteria = None
     if STOP_TOKENS is not None:
