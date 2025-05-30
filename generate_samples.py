@@ -13,7 +13,7 @@ STOP_TOKENS = [
 ]
 
 def predict(tokenizer, model, input_data, temperature, return_full=False, return_latent=False):
-    max_new_tokens = 200
+    max_new_tokens = 150
     inputs = tokenizer(input_data, return_tensors="pt").to("cuda:0")
     initial_length = len(inputs['input_ids'][0])
     stopping_criteria = None
@@ -74,8 +74,6 @@ def predict(tokenizer, model, input_data, temperature, return_full=False, return
     last_tok_bef_gen_embedding = torch.stack([layer[:, -1, :] for layer in last_tok_bef_gen_input]).cpu()
     output_last_hidden_list = torch.stack([layer[-1][:, -1, :] for layer in hidden]).cpu()
 
-    print(output_last_hidden_list.size())
-    sys.exit()
 
     last_output = hidden[-1]
     last_output = last_output[-1]
@@ -99,7 +97,7 @@ def predict(tokenizer, model, input_data, temperature, return_full=False, return
 
     hidden_states = (
         last_hidden_state, sec_last_hidden_state, last_input_token_state,
-        last_token_embedding, sec_last_token_embedding, last_tok_bef_gen_embedding
+        last_token_embedding, sec_last_token_embedding, last_tok_bef_gen_embedding,output_last_hidden_list
     )
 
     return (real_answer,answer, log_likelihoods, probs, ppl, hidden_states)
@@ -117,7 +115,7 @@ def process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_genera
     
     for index, element in enumerate(data):
         input_text = element['text']
-        for i in range(num_generations):
+        for i in range(num_generations+1):
             log_entry = {
                 "time": datetime.datetime.now().isoformat(),
                 "sample_index": index,
@@ -125,11 +123,19 @@ def process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_genera
                 "input_text_preview": input_text[:80] + ("..." if len(input_text) > 80 else ""),
             }
             try:
-                (
-                    real_answer,predicted_answer, log_likelihoods, probs, ppl,
-                    (last_hidden_state, sec_last_hidden_state, last_input_token_state,
-                     embedding, emb_last_before_gen, emb_before_eos)
-                ) = predict(tokenizer, model, input_text, temperature=0.7, return_full=False, return_latent=True)
+                if i == 0:
+                    (
+                        real_answer, predicted_answer, log_likelihoods, probs, ppl,
+                        (last_hidden_state, sec_last_hidden_state, last_input_token_state,
+                         embedding, emb_last_before_gen, emb_before_eos, output_last_hidden_list)
+                    ) = predict(tokenizer, model, input_text, temperature=0.1, return_full=False, return_latent=True)
+                else:
+                    (
+                        real_answer,predicted_answer, log_likelihoods, probs, ppl,
+                        (last_hidden_state, sec_last_hidden_state, last_input_token_state,
+                         embedding, emb_last_before_gen, emb_before_eos, output_last_hidden_list)
+                    ) = predict(tokenizer, model, input_text, temperature=0.7, return_full=False, return_latent=True)
+
 
                 log_entry.update({
                     "status": "success",
@@ -137,23 +143,43 @@ def process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_genera
                     "ppl": float(ppl) if ppl is not None else None,
                     "log_likelihoods_len": len(log_likelihoods) if log_likelihoods is not None else 0,
                 })
+                if i == 0:
+                    all_generations.append({
+                        "most_input_text": input_text,
+                        'most_real_answer': real_answer,
+                        "most_predicted_answer": predicted_answer,
+                        "most_last_hidden_state": last_hidden_state.cpu(),
+                        "most_sec_last_hidden_state": sec_last_hidden_state.cpu(),
+                        "most_last_input_token_state": last_input_token_state.cpu(),
+                        "most_output_last_hidden_list": output_last_hidden_list.cpu(),
+                        "most_ppl": ppl,
+                        "most_log_likelihoods": log_likelihoods,
+                        "most_probs": probs,
+                        "most_embedding": embedding.cpu(),
+                        "most_emb_last_before_gen": emb_last_before_gen.cpu(),
+                        "most_emb_before_eos": emb_before_eos,
+                        "most_generation_index": -1,
+                        "most_sample_index": index
+                    })
+                else:
 
-                all_generations.append({
-                    "input_text": input_text,
-                    'real_answer':real_answer,
-                    "predicted_answer": predicted_answer,
-                    "last_hidden_state": last_hidden_state.cpu(),
-                    "sec_last_hidden_state": sec_last_hidden_state.cpu(),
-                    "last_input_token_state": last_input_token_state.cpu(),
-                    "ppl": ppl,
-                    "log_likelihoods": log_likelihoods,
-                    "probs": probs,
-                    "embedding": embedding.cpu(),
-                    "emb_last_before_gen": emb_last_before_gen.cpu(),
-                    "emb_before_eos": emb_before_eos,
-                    "generation_index": i,
-                    "sample_index": index
-                })
+                    all_generations.append({
+                        "input_text": input_text,
+                        'real_answer':real_answer,
+                        "predicted_answer": predicted_answer,
+                        "last_hidden_state": last_hidden_state.cpu(),
+                        "sec_last_hidden_state": sec_last_hidden_state.cpu(),
+                        "last_input_token_state": last_input_token_state.cpu(),
+                        "output_last_hidden_list": output_last_hidden_list.cpu(),
+                        "ppl": ppl,
+                        "log_likelihoods": log_likelihoods,
+                        "probs": probs,
+                        "embedding": embedding.cpu(),
+                        "emb_last_before_gen": emb_last_before_gen.cpu(),
+                        "emb_before_eos": emb_before_eos,
+                        "generation_index": i-1,
+                        "sample_index": index
+                    })
             except Exception as e:
                 log_entry.update({
                     "status": "error",
@@ -164,6 +190,7 @@ def process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_genera
                     "input_text": input_text,
                     "real_answer": None,
                     "predicted_answer": None,
+                    "output_last_hidden_list":None,
                     "ppl": None,
                     "log_likelihoods": None,
                     "embedding": None,
@@ -192,7 +219,7 @@ def inference_model_pickle(task_name: str, model, tokenizer, base_dir='/data/xim
         dirname = f'data-500-temp0_{number}'
         dir_path = os.path.join(base_dir, dirname)
         json_path = os.path.join(dir_path, f'seg_by_stop_{number}.json')
-        out_pkl_path = os.path.join(dir_path, f'generations_{number}.pkl')
+        out_pkl_path = os.path.join(dir_path, f'new_generations_{number}.pkl')
 
         if not os.path.isfile(json_path):
             print(f"[Warning] {json_path} does not exist! Skipping...")
@@ -212,7 +239,7 @@ if __name__ == "__main__":
     model = AutoModelForCausalLM.from_pretrained(
         "Qwen/QwQ-32B-AWQ",
         torch_dtype=torch.float16,
-        device_map={'': 'cuda:0'}
+        device_map="cuda:0"
     )
-    inference_model_pickle(task_name="math-500", model=model, tokenizer=tokenizer,start=0, end=500)
+    inference_model_pickle(task_name="math-500", model=model, tokenizer=tokenizer,start=0, end=50)
     print("done")
