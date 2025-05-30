@@ -201,7 +201,7 @@ if __name__ == "__main__":
     model = AutoModelForCausalLM.from_pretrained(
         "Qwen/QwQ-32B-AWQ",
         torch_dtype=torch.float16,
-        device_map={'': 'cuda:1'}
+        device_map={'': 'cuda:2'}
     )
     inference_model_pickle(task_name="math-500", model=model, tokenizer=tokenizer,start=150, end=250)
     print("done")
