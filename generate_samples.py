@@ -14,7 +14,7 @@ STOP_TOKENS = [
 
 def predict(tokenizer, model, input_data, temperature, return_full=False, return_latent=False):
     max_new_tokens = 200
-    inputs = tokenizer(input_data, return_tensors="pt").to("cuda:1")
+    inputs = tokenizer(input_data, return_tensors="pt").to("cuda:0")
     initial_length = len(inputs['input_ids'][0])
     stopping_criteria = None
     if STOP_TOKENS is not None:
@@ -203,7 +203,7 @@ if __name__ == "__main__":
     model = AutoModelForCausalLM.from_pretrained(
         "Qwen/QwQ-32B-AWQ",
         torch_dtype=torch.float16,
-        device_map={'': 'cuda:1'}
+        device_map={'': 'cuda:0'}
     )
-    inference_model_pickle(task_name="math-500", model=model, tokenizer=tokenizer,start=150, end=250)
+    inference_model_pickle(task_name="math-500", model=model, tokenizer=tokenizer,start=20, end=150)
     print("done")
