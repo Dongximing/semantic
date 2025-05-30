@@ -72,7 +72,7 @@ def predict(tokenizer, model, input_data, temperature, return_full=False, return
     sec_last_token_embedding = torch.stack([layer[:, -1, :] for layer in sec_last_input]).cpu()
     last_tok_bef_gen_input = hidden[0]
     last_tok_bef_gen_embedding = torch.stack([layer[:, -1, :] for layer in last_tok_bef_gen_input]).cpu()
-    output_last_hidden_list = torch.stack([layer[:, -1, :] for layer in hidden]).cpu()
+    output_last_hidden_list = torch.stack([layer[-1][:, -1, :] for layer in hidden]).cpu()
 
     print(output_last_hidden_list.size())
     sys.exit()
