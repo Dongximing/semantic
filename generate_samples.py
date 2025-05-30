@@ -53,11 +53,9 @@ def predict(tokenizer, model, input_data, temperature, return_full=False, return
             stopping_criteria=stopping_criteria,
         )
     full_answer = tokenizer.decode(outputs.sequences[0],skip_special_tokens=True)
-    print(full_answer)
-    print('--------------------------')
-    full_answer = tokenizer.decode(outputs.sequences[0][initial_length:], skip_special_tokens=True)
-    print(full_answer)
-    sys.exit()
+    real_answer = tokenizer.decode(outputs.sequences[0][initial_length:], skip_special_tokens=True)
+    print(len(outputs.sequences[0]) - initial_length)
+
     answer = full_answer
     if full_answer.startswith(input_data):
         answer = full_answer[len(input_data):]
@@ -74,6 +72,10 @@ def predict(tokenizer, model, input_data, temperature, return_full=False, return
     sec_last_token_embedding = torch.stack([layer[:, -1, :] for layer in sec_last_input]).cpu()
     last_tok_bef_gen_input = hidden[0]
     last_tok_bef_gen_embedding = torch.stack([layer[:, -1, :] for layer in last_tok_bef_gen_input]).cpu()
+    output_last_hidden_list = torch.stack([layer[:, -1, :] for layer in hidden]).cpu()
+
+    print(output_last_hidden_list.size())
+    sys.exit()
 
     last_output = hidden[-1]
     last_output = last_output[-1]
@@ -100,7 +102,7 @@ def predict(tokenizer, model, input_data, temperature, return_full=False, return
         last_token_embedding, sec_last_token_embedding, last_tok_bef_gen_embedding
     )
 
-    return (answer, log_likelihoods, probs, ppl, hidden_states)
+    return (real_answer,answer, log_likelihoods, probs, ppl, hidden_states)
 
 
 
@@ -124,7 +126,7 @@ def process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_genera
             }
             try:
                 (
-                    predicted_answer, log_likelihoods, probs, ppl,
+                    real_answer,predicted_answer, log_likelihoods, probs, ppl,
                     (last_hidden_state, sec_last_hidden_state, last_input_token_state,
                      embedding, emb_last_before_gen, emb_before_eos)
                 ) = predict(tokenizer, model, input_text, temperature=0.7, return_full=False, return_latent=True)
@@ -138,6 +140,7 @@ def process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_genera
 
                 all_generations.append({
                     "input_text": input_text,
+                    'real_answer':real_answer,
                     "predicted_answer": predicted_answer,
                     "last_hidden_state": last_hidden_state.cpu(),
                     "sec_last_hidden_state": sec_last_hidden_state.cpu(),
@@ -159,6 +162,7 @@ def process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_genera
                 })
                 all_generations.append({
                     "input_text": input_text,
+                    "real_answer": real_answer,
                     "predicted_answer": None,
                     "ppl": None,
                     "log_likelihoods": None,
