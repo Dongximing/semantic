@@ -11,10 +11,10 @@ STOP_TOKENS = [
     ' \n\n', '.\n\n', ':\n\n', '\n\n', ' Wait', 'Alternatively', 'Wait', ' But',
     ')\n\n', '?\n\n', ']\n\n', ').\n\n'
 ]
-
+NUMBER = 1
 def predict(tokenizer, model, input_data, temperature, return_full=False, return_latent=False):
     max_new_tokens = 150
-    inputs = tokenizer(input_data, return_tensors="pt").to("cuda:0")
+    inputs = tokenizer(input_data, return_tensors="pt").to(f"cuda:{NUMBER}")
     initial_length = len(inputs['input_ids'][0])
     stopping_criteria = None
     if STOP_TOKENS is not None:
@@ -238,7 +238,7 @@ if __name__ == "__main__":
     model = AutoModelForCausalLM.from_pretrained(
         "Qwen/QwQ-32B-AWQ",
         torch_dtype=torch.float16,
-        device_map="cuda:0"
+        device_map=f"cuda:{NUMBER}"
     )
     inference_model_pickle(task_name="math-500", model=model, tokenizer=tokenizer,start=50, end=100)
     print("done")
