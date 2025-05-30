@@ -54,7 +54,6 @@ def predict(tokenizer, model, input_data, temperature, return_full=False, return
         )
     full_answer = tokenizer.decode(outputs.sequences[0],skip_special_tokens=True)
     real_answer = tokenizer.decode(outputs.sequences[0][initial_length:], skip_special_tokens=True)
-    print(len(outputs.sequences[0]) - initial_length)
 
     answer = full_answer
     if full_answer.startswith(input_data):
