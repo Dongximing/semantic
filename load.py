@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 from sklearn.manifold import TSNE
 import logging
 from openai import OpenAI
-
+CLIENT = OpenAI(api_key=os.environ['OPENAI_API_KEY'])
 from tenacity import (retry, stop_after_attempt,  # for exponential backoff
                       wait_random_exponential)
 # Logging configuration
@@ -54,34 +54,49 @@ def get_openai_embeddings(texts, model="text-embedding-3-small", batch_size=1):
         batch_embeddings = [record.embedding for record in response.data]
         embeddings.extend(batch_embeddings)
     return np.array(embeddings)
-def get_openai_output(texts,model="gpt-3.5-turbo", batch_size=1):
+def equivalence_prompt(text1, text2, prefix):
 
-    CLIENT = OpenAI(api_key=os.environ['OPENAI_API_KEY'])
+    prompt = f"""We are evaluating generation to the prefix \"{prefix}\"\n"""
 
+    prompt += "Here are two possible generation:\n"
+    prompt += f"Possible Generation 1: {text1}\nPossible Generation 2: {text2}\n"
+    prompt += "Does Possible Generation 1 semantically entail Possible Generation 2? Only respond with entailment, contradiction, or neutral."""
+
+    return prompt
+
+def get_openai_output(text1,text2,prefix):
+    prompt = equivalence_prompt(text1, text2, prefix)
     @retry(wait=wait_random_exponential(min=1, max=10))
-    def predict(prompt, temperature=1.0, model=model):
-        """Predict with GPT-4 model."""
 
+    def predict(prompt):
+        """Predict with GPT-4 model."""
         if isinstance(prompt, str):
             messages = [
-                {"role": "user", "content": texts},
+                {"role": "user", "content": prompt},
             ]
         else:
-            messages = texts
+            messages = prompt
 
-        if model == 'gpt-4':
-            model = 'gpt-4-turbo'  # or 'gpt-4o'
-        elif model == 'gpt-3.5':
-            model = 'gpt-3.5-turbo'
+
 
         output = CLIENT.chat.completions.create(
-            model=model,
+            model="gpt-3.5-turbo",
             messages=messages,
-            max_tokens=200,
+            max_tokens=2,
             temperature=0.1,
         )
         response = output.choices[0].message.content
-        return response
+        binary_response = response.lower()
+        if 'entailment' in binary_response:
+            return 2
+        elif 'neutral' in binary_response:
+            return 1
+        elif 'contradiction' in binary_response:
+            return 0
+        else:
+            logging.warning('MANUAL NEUTRAL!')
+            return 1
+        return binary_response
 
 def labeling_data(generations, output_dir):
     group_size = 20
@@ -106,12 +121,12 @@ def labeling_data(generations, output_dir):
         if len(embeddings) >= 2:
             emb_arr = np.array(embeddings)
             dist_mat = cosine_distances(emb_arr)
-            clusterer = hdbscan.HDBSCAN(
+            cluster= hdbscan.HDBSCAN(
                 metric="precomputed",
                 min_cluster_size=2,
                 prediction_data=True
             )
-            labels = clusterer.fit_predict(dist_mat)
+            labels = cluster.fit_predict(dist_mat)
             label_counts = Counter(labels)
             logger.info(f"Cluster label counts: {dict(label_counts)}")
             group_stats['label_counts'] = dict(label_counts)
@@ -188,16 +203,60 @@ def labeling_data(generations, output_dir):
     df.to_csv(csv_path, index=False)
     logger.info(f"\nGroup statistics saved to {csv_path}")
     logger.info(f"Cluster IDs written back and saved to {pickle_path}")
-def labeling_data_based_on_answer():
-    pass
+def get_semantic_ids(strings_list, model, strict_entailment=False):
+    """Group list of predictions into semantic meaning."""
+
+    def are_equivalent(text1, text2):
+
+        implication_1 = get_openai_output(text1, text2)
+        implication_2 = get_openai_output(text2, text1)  # pylint: disable=arguments-out-of-order
+        assert (implication_1 in [0, 1, 2]) and (implication_2 in [0, 1, 2])
+
+        if strict_entailment:
+            semantically_equivalent = (implication_1 == 2) and (implication_2 == 2)
+
+        else:
+            implications = [implication_1, implication_2]
+            # Check if none of the implications are 0 (contradiction) and not both of them are neutral.
+            semantically_equivalent = (0 not in implications) and ([1, 1] != implications)
+
+        return semantically_equivalent
+
+    # Initialise all ids with -1.
+    semantic_set_ids = [-1] * len(strings_list)
+    # Keep track of current id.
+    next_id = 0
+    for i, string1 in enumerate(strings_list):
+        # Check if string1 already has an id assigned.
+        if semantic_set_ids[i] == -1:
+            # If string1 has not been assigned an id, assign it next_id.
+            semantic_set_ids[i] = next_id
+            for j in range(i+1, len(strings_list)):
+                # Search through all remaining strings. If they are equivalent to string1, assign them the same id.
+                if are_equivalent(string1, strings_list[j]):
+                    semantic_set_ids[j] = next_id
+            next_id += 1
+
+    assert -1 not in semantic_set_ids
+
+    return semantic_set_ids
 def process_file_to_pickle(json_path, out_pkl_path):
     tokenizer = AutoTokenizer.from_pretrained(
         "Qwen/QwQ-32B-AWQ",
         trust_remote_code=True
     )
+    group_size = 21
     with open(json_path, "rb") as f:
         generations = pickle.load(f)
-    # if checking(generations):
+    if checking(generations):
+        for i in range(0, len(generations), group_size):
+            group = generations[i:i + group_size]
+            answer_lists = [group[0]['most_real_answer']] + [g['predicted_answer'] for g in group[1:]]
+            cluster_list = get_semantic_ids(answer_lists,"gpt-3.5-turbo")
+            print(cluster_list)
+
+
+
     # #     texts_to_embed = []
     #     print("answer:\n")
         # for g in generations:
@@ -207,46 +266,9 @@ def process_file_to_pickle(json_path, out_pkl_path):
             print(f"most_real_answer:\n{g['most_real_answer']}")
         elif 'real_answer' in g:
             print(f"real_answer:\n{g['real_answer']}")
-        else:
-            print(f"{idx}: No input_text field found!")
-
-    print(len(generations))
-            # sys.exit()
-            # print('\n')
-    print('-----------------------')
-    sys.exit()
-            # b = tokenizer.decode(input_ids, skip_special_tokens=True)
-            # pred = g.get('predicted_answer')
-            # if pred is None:
-            #     g['real_output'] = None
-            #     g['real_answer_embedding'] = None
-            # else:
-            #     real_output = pred[len(b):].strip()
-            #     g['real_output'] = real_output
-            #     texts_to_embed.append(real_output)
 
 
-        # Batch embedding
-        # if texts_to_embed:
-        #     embs = get_openai_embeddings(texts_to_embed, model="text-embedding-3-small", batch_size=1)
-        # else:
-        #     embs = []
 
-        # idx = 0
-        # for g in generations:
-        #     if g.get('real_output') is not None:
-        #         g['real_answer_embedding'] = embs[idx]
-        #         idx += 1
-        #     else:
-        #         g['real_answer_embedding'] = None
-        #
-        # # Infer output directory
-        # output_dir = os.path.dirname(os.path.abspath(out_pkl_path))
-        # labeling_data(generations, output_dir)
-        #
-        # # Save processed pickle
-        # with open(out_pkl_path, "wb") as f:
-        #     pickle.dump(generations, f)
 
 def inference_model_pickle(task_name: str = None, model=None, tokenizer=None,
                           base_dir='/data/ximing/math-result_left/',
