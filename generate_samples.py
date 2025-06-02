@@ -11,7 +11,7 @@ STOP_TOKENS = [
     ' \n\n', '.\n\n', ':\n\n', '\n\n', ' Wait', 'Alternatively', 'Wait', ' But',
     ')\n\n', '?\n\n', ']\n\n', ').\n\n'
 ]
-NUMBER = 0
+NUMBER = 1
 def predict(tokenizer, model, input_data, temperature, return_full=False, return_latent=False):
     max_new_tokens = 150
     inputs = tokenizer(input_data, return_tensors="pt").to(f"cuda:{NUMBER}")
@@ -105,12 +105,12 @@ def predict(tokenizer, model, input_data, temperature, return_full=False, return
 
 def process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_generations):
     with open(json_path, 'r', encoding='utf-8') as f:
-        data = json.load(f)
+        alldata = json.load(f)
     all_generations = []
   
     log_file = out_pkl_path.replace('.pkl', '.log')
-    n = int(len(data) * 0.4)
-    data = data[17:]
+    n = int(len(alldata) * 0.6)
+    data = alldata[:n]
     print(len(data))
 
     for index, element in enumerate(data):
@@ -257,5 +257,5 @@ if __name__ == "__main__":
         torch_dtype=torch.float16,
         device_map=f"cuda:{NUMBER}"
     )
-    inference_model_pickle(task_name="math-500", model=model, tokenizer=tokenizer,start=0, end=50)
+    inference_model_pickle(task_name="math-500", model=model, tokenizer=tokenizer,start=50, end=100)
     print("done")
