@@ -67,18 +67,9 @@ def equivalence_prompt(text1, text2, prefix):
 
 def get_openai_output(text1,text2,prefix):
     prompt = equivalence_prompt(text1, text2, prefix)
-    @retry(wait=wait_random_exponential(min=1, max=10))
-
-
-    if isinstance(prompt, str):
-        messages = [
+    messages = [
             {"role": "user", "content": prompt},
         ]
-    else:
-        messages = prompt
-
-
-
     output = CLIENT.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=messages,
