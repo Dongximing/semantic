@@ -224,21 +224,21 @@ def process_file_to_pickle(json_path, out_pkl_path):
         # else:
         #     embs = []
 
-        idx = 0
-        for g in generations:
-            if g.get('real_output') is not None:
-                g['real_answer_embedding'] = embs[idx]
-                idx += 1
-            else:
-                g['real_answer_embedding'] = None
-
-        # Infer output directory
-        output_dir = os.path.dirname(os.path.abspath(out_pkl_path))
-        labeling_data(generations, output_dir)
-
-        # Save processed pickle
-        with open(out_pkl_path, "wb") as f:
-            pickle.dump(generations, f)
+        # idx = 0
+        # for g in generations:
+        #     if g.get('real_output') is not None:
+        #         g['real_answer_embedding'] = embs[idx]
+        #         idx += 1
+        #     else:
+        #         g['real_answer_embedding'] = None
+        #
+        # # Infer output directory
+        # output_dir = os.path.dirname(os.path.abspath(out_pkl_path))
+        # labeling_data(generations, output_dir)
+        #
+        # # Save processed pickle
+        # with open(out_pkl_path, "wb") as f:
+        #     pickle.dump(generations, f)
 
 def inference_model_pickle(task_name: str = None, model=None, tokenizer=None,
                           base_dir='/data/ximing/math-result_left/',
