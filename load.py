@@ -200,7 +200,7 @@ def process_file_to_pickle(json_path, out_pkl_path):
         print("answer:\n")
         # for g in generations:
             # input_ids = tokenizer.encode(g['predicted_answer'])
-        print(g[:2])
+        print(generations[:2])
             # sys.exit()
             # print('\n')
         print('-----------------------')
