@@ -205,8 +205,8 @@ def process_file_to_pickle(json_path, out_pkl_path):
     for idx, g in enumerate(generations):
         if 'most_sample_index' in g:
             print(f" most_sample_index {g['most_sample_index']}")
-        elif 'sample_index' in g:
-            print(f"sample_index{g['generation_index']}")
+        elif 'generation_index' in g:
+            print(f"generation_index {g['generation_index']}")
         else:
             print(f"{idx}: No input_text field found!")
 

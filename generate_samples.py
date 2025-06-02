@@ -202,7 +202,6 @@ def process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_genera
                         "most_sample_index": index
                     })
                 else:
-
                     all_generations.append({
                         "input_text": input_text,
                         "real_answer": None,
