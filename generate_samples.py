@@ -258,5 +258,5 @@ if __name__ == "__main__":
         torch_dtype=torch.float16,
         device_map=f"cuda:{NUMBER}"
     )
-    inference_model_pickle(task_name="math-500", model=model, tokenizer=tokenizer,start=50, end=100)
+    inference_model_pickle(task_name="math-500", model=model, tokenizer=tokenizer,start=0, end=1)
     print("done")
