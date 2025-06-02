@@ -109,7 +109,7 @@ def process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_genera
     all_generations = []
   
     log_file = out_pkl_path.replace('.pkl', '.log')
-    n = int(len(data) * 0.6)
+    n = int(len(data) * 0.4)
     data = data[:n]
     print(len(data))
 
@@ -188,18 +188,18 @@ def process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_genera
                 })
                 if i == 0:
                     all_generations.append({
-                        "input_text": input_text,
-                        "real_answer": None,
-                        "predicted_answer": None,
-                        "output_last_hidden_list": None,
-                        "ppl": None,
-                        "log_likelihoods": None,
-                        "embedding": None,
-                        "last_hidden_state": None,
-                        "sec_last_hidden_state": None,
-                        "last_input_token_state": None,
-                        "generation_index": i - 1,
-                        "sample_index": index
+                        "most_input_text": input_text,
+                        "most_real_answer": None,
+                        "most_predicted_answer": None,
+                        "most_output_last_hidden_list": None,
+                        "most_ppl": None,
+                        "most_log_likelihoods": None,
+                        "most_embedding": None,
+                        "most_last_hidden_state": None,
+                        "most_sec_last_hidden_state": None,
+                        "most_last_input_token_state": None,
+                        "most_generation_index": i - 1,
+                        "most_sample_index": index
                     })
                 else:
 
