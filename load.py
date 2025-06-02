@@ -33,15 +33,16 @@ logger = logging.getLogger(__name__)
 
 openai.api_key = os.environ["OPENAI_API_KEY"]
 
-def checking(generations, group_size=20):
-    all_same = True
-    for i in range(0, len(generations), group_size):
-        group = generations[i:i + group_size]
-        input_texts = [g['input_text'] for g in group]
-        if len(set(input_texts)) > 1:
-            logger.warning(f"Group {i // group_size} contains different input_texts!")
-            all_same = False
-    return all_same
+# def checking(generations, group_size=21):
+#     all_same = True
+#     for i in range(0, len(generations), group_size):
+#         group = generations[i:i + group_size]
+#         input_texts = [g['input_text'] for g in group]
+#
+#         if len(set(input_texts)) > 1:
+#             logger.warning(f"Group {i // group_size} contains different input_texts!")
+#             all_same = False
+#     return all_same
 
 def get_openai_embeddings(texts, model="text-embedding-3-small", batch_size=1):
     embeddings = []
@@ -194,12 +195,12 @@ def process_file_to_pickle(json_path, out_pkl_path):
     )
     with open(json_path, "rb") as f:
         generations = pickle.load(f)
-    if checking(generations):
-        texts_to_embed = []
+    # if checking(generations):
+    #     texts_to_embed = []
         print("answer:\n")
         for g in generations:
             # input_ids = tokenizer.encode(g['predicted_answer'])
-            print(g['predicted_answer'])
+            print(g)
             print('\n')
         print('-----------------------')
         sys.exit()
