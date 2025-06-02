@@ -206,7 +206,7 @@ def process_file_to_pickle(json_path, out_pkl_path):
         if 'most_sample_index' in g:
             print(f" most_sample_index {g['most_sample_index']}")
         elif 'sample_index' in g:
-            print(f"sample_index{g['sample_index']}")
+            print(f"sample_index{g['generation_index']}")
         else:
             print(f"{idx}: No input_text field found!")
 
