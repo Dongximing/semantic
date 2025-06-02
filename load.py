@@ -69,6 +69,9 @@ def equivalence_prompt(text1, text2, prefix):
 
 def get_openai_output(text1,text2,prefix):
     prompt = equivalence_prompt(text1, text2, prefix)
+    print("------------------------------")
+    print(prompt)
+    print("\n\n\n\n")
     messages = [
             {"role": "user", "content": prompt},
         ]
@@ -254,6 +257,7 @@ def process_file_to_pickle(json_path, out_pkl_path):
 
             cluster_list = get_semantic_ids(strings_list=answer_lists, model="gpt-3.5-turbo", prefix=group[0]['most_input_text'])
             print(cluster_list)
+        sys.exit()
 
 
 
