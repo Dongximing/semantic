@@ -69,10 +69,7 @@ def equivalence_prompt(text1, text2, prefix):
 
 def get_openai_output(text1,text2,prefix):
     prompt = equivalence_prompt(text1, text2, prefix)
-    print('prompt')
 
-    print(prompt)
-    print('=============================')
     messages = [
             {"role": "user", "content": prompt},
         ]
