@@ -110,7 +110,7 @@ def process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_genera
   
     log_file = out_pkl_path.replace('.pkl', '.log')
     n = int(len(data) * 0.4)
-    data = data[10:11]
+    data = data[17:]
     print(len(data))
 
     for index, element in enumerate(data):
@@ -235,7 +235,7 @@ def inference_model_pickle(task_name: str, model, tokenizer, base_dir='/data/xim
         dirname = f'data-500-temp0_{number}'
         dir_path = os.path.join(base_dir, dirname)
         json_path = os.path.join(dir_path, f'seg_by_stop_{number}.json')
-        out_pkl_path = os.path.join(dir_path, f'test_{number}.pkl')
+        out_pkl_path = os.path.join(dir_path, f'test1_{number}.pkl')
 
         if not os.path.isfile(json_path):
             print(f"[Warning] {json_path} does not exist! Skipping...")
