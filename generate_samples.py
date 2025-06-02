@@ -112,8 +112,7 @@ def process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_genera
     n = int(len(data) * 0.6)
     data = data[:n]
     print(len(data))
-    sys.exit()
-    
+
     for index, element in enumerate(data):
         input_text = element['text']
         for i in range(num_generations+1):
@@ -187,20 +186,37 @@ def process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_genera
                     "error_msg": str(e),
                     "traceback": traceback.format_exc()
                 })
-                all_generations.append({
-                    "input_text": input_text,
-                    "real_answer": None,
-                    "predicted_answer": None,
-                    "output_last_hidden_list":None,
-                    "ppl": None,
-                    "log_likelihoods": None,
-                    "embedding": None,
-                    "last_hidden_state": None,
-                    "sec_last_hidden_state": None,
-                    "last_input_token_state": None,
-                    "generation_index": i,
-                    "sample_index": index
-                })
+                if i == 0:
+                    all_generations.append({
+                        "input_text": input_text,
+                        "real_answer": None,
+                        "predicted_answer": None,
+                        "output_last_hidden_list": None,
+                        "ppl": None,
+                        "log_likelihoods": None,
+                        "embedding": None,
+                        "last_hidden_state": None,
+                        "sec_last_hidden_state": None,
+                        "last_input_token_state": None,
+                        "generation_index": i - 1,
+                        "sample_index": index
+                    })
+                else:
+
+                    all_generations.append({
+                        "input_text": input_text,
+                        "real_answer": None,
+                        "predicted_answer": None,
+                        "output_last_hidden_list":None,
+                        "ppl": None,
+                        "log_likelihoods": None,
+                        "embedding": None,
+                        "last_hidden_state": None,
+                        "sec_last_hidden_state": None,
+                        "last_input_token_state": None,
+                        "generation_index": i-1,
+                        "sample_index": index
+                    })
 
             with open(log_file, "a", encoding="utf-8") as lf:
                 lf.write(json.dumps(log_entry, ensure_ascii=False) + "\n")
@@ -220,7 +236,7 @@ def inference_model_pickle(task_name: str, model, tokenizer, base_dir='/data/xim
         dirname = f'data-500-temp0_{number}'
         dir_path = os.path.join(base_dir, dirname)
         json_path = os.path.join(dir_path, f'seg_by_stop_{number}.json')
-        out_pkl_path = os.path.join(dir_path, f'new_generations_{number}.pkl')
+        out_pkl_path = os.path.join(dir_path, f'test_{number}.pkl')
 
         if not os.path.isfile(json_path):
             print(f"[Warning] {json_path} does not exist! Skipping...")
