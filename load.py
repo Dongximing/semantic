@@ -202,7 +202,13 @@ def process_file_to_pickle(json_path, out_pkl_path):
     #     print("answer:\n")
         # for g in generations:
             # input_ids = tokenizer.encode(g['predicted_answer'])
-    for g in generations:
+    for idx, g in enumerate(generations):
+        if 'most_input_text' in g:
+            print(f"{idx}: most_input_text = {g['most_input_text']}")
+        elif 'input_text' in g:
+            print(f"{idx}: input_text = {g['input_text']}")
+        else:
+            print(f"{idx}: No input_text field found!")
 
     print(len(generations))
             # sys.exit()
