@@ -235,7 +235,7 @@ def inference_model_pickle(task_name: str, model, tokenizer, base_dir='/data/xim
         dirname = f'data-500-temp0_{number}'
         dir_path = os.path.join(base_dir, dirname)
         json_path = os.path.join(dir_path, f'seg_by_stop_{number}.json')
-        out_pkl_path = os.path.join(dir_path, f'test1_{number}.pkl')
+        out_pkl_path = os.path.join(dir_path, f'new_generations_{number}.pkl')
 
         if not os.path.isfile(json_path):
             print(f"[Warning] {json_path} does not exist! Skipping...")
@@ -257,5 +257,5 @@ if __name__ == "__main__":
         torch_dtype=torch.float16,
         device_map=f"cuda:{NUMBER}"
     )
-    inference_model_pickle(task_name="math-500", model=model, tokenizer=tokenizer,start=0, end=1)
+    inference_model_pickle(task_name="math-500", model=model, tokenizer=tokenizer,start=0, end=100)
     print("done")
