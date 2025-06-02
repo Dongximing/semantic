@@ -1,3 +1,5 @@
+import sys
+
 import openai
 import os
 from tqdm import tqdm
@@ -13,7 +15,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.manifold import TSNE
 import logging
+from openai import OpenAI
 
+from tenacity import (retry, stop_after_attempt,  # for exponential backoff
+                      wait_random_exponential)
 # Logging configuration
 log_path = "cluster_labeling.log"
 logging.basicConfig(
@@ -46,6 +51,34 @@ def get_openai_embeddings(texts, model="text-embedding-3-small", batch_size=1):
         batch_embeddings = [record.embedding for record in response.data]
         embeddings.extend(batch_embeddings)
     return np.array(embeddings)
+def get_openai_output(texts,model="gpt-3.5-turbo", batch_size=1):
+
+    CLIENT = OpenAI(api_key=os.environ['OPENAI_API_KEY'])
+
+    @retry(wait=wait_random_exponential(min=1, max=10))
+    def predict(prompt, temperature=1.0, model=model):
+        """Predict with GPT-4 model."""
+
+        if isinstance(prompt, str):
+            messages = [
+                {"role": "user", "content": texts},
+            ]
+        else:
+            messages = texts
+
+        if model == 'gpt-4':
+            model = 'gpt-4-turbo'  # or 'gpt-4o'
+        elif model == 'gpt-3.5':
+            model = 'gpt-3.5-turbo'
+
+        output = CLIENT.chat.completions.create(
+            model=model,
+            messages=messages,
+            max_tokens=200,
+            temperature=0.1,
+        )
+        response = output.choices[0].message.content
+        return response
 
 def labeling_data(generations, output_dir):
     group_size = 20
@@ -152,7 +185,8 @@ def labeling_data(generations, output_dir):
     df.to_csv(csv_path, index=False)
     logger.info(f"\nGroup statistics saved to {csv_path}")
     logger.info(f"Cluster IDs written back and saved to {pickle_path}")
-
+def labeling_data_based_on_answer():
+    pass
 def process_file_to_pickle(json_path, out_pkl_path):
     tokenizer = AutoTokenizer.from_pretrained(
         "Qwen/QwQ-32B-AWQ",
@@ -162,23 +196,29 @@ def process_file_to_pickle(json_path, out_pkl_path):
         generations = pickle.load(f)
     if checking(generations):
         texts_to_embed = []
+        print("answer:\n")
         for g in generations:
-            input_ids = tokenizer.encode(g['input_text'])
-            b = tokenizer.decode(input_ids, skip_special_tokens=True)
-            pred = g.get('predicted_answer')
-            if pred is None:
-                g['real_output'] = None
-                g['real_answer_embedding'] = None
-            else:
-                real_output = pred[len(b):].strip()
-                g['real_output'] = real_output
-                texts_to_embed.append(real_output)
+            # input_ids = tokenizer.encode(g['predicted_answer'])
+            print(g['predicted_answer'])
+            print('\n')
+        print('-----------------------')
+        sys.exit()
+            # b = tokenizer.decode(input_ids, skip_special_tokens=True)
+            # pred = g.get('predicted_answer')
+            # if pred is None:
+            #     g['real_output'] = None
+            #     g['real_answer_embedding'] = None
+            # else:
+            #     real_output = pred[len(b):].strip()
+            #     g['real_output'] = real_output
+            #     texts_to_embed.append(real_output)
+
 
         # Batch embedding
-        if texts_to_embed:
-            embs = get_openai_embeddings(texts_to_embed, model="text-embedding-3-small", batch_size=1)
-        else:
-            embs = []
+        # if texts_to_embed:
+        #     embs = get_openai_embeddings(texts_to_embed, model="text-embedding-3-small", batch_size=1)
+        # else:
+        #     embs = []
 
         idx = 0
         for g in generations:
@@ -197,13 +237,13 @@ def process_file_to_pickle(json_path, out_pkl_path):
             pickle.dump(generations, f)
 
 def inference_model_pickle(task_name: str = None, model=None, tokenizer=None,
-                          base_dir='/home/cs/staff/shaowei/hf/math-result_left',
-                          start=250, end=270, num_generations=20):
+                          base_dir='/data/ximing/math-result_left/',
+                          start=0, end=4, num_generations=20):
 
     for number in range(start, end):
         dirname = f'data-500-temp0_{number}'
         dir_path = os.path.join(base_dir, dirname)
-        json_path = os.path.join(dir_path, f'generations_{number}.pkl')
+        json_path = os.path.join(dir_path, f'new_generations_{number}.pkl')
         out_pkl_path = os.path.join(dir_path, f'label_semantic_{number}.pkl')
         if not os.path.exists(json_path):
             logger.warning(f"{json_path} does not exist, skipping.")
