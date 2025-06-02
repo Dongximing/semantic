@@ -204,7 +204,7 @@ def labeling_data(generations, output_dir):
     df.to_csv(csv_path, index=False)
     logger.info(f"\nGroup statistics saved to {csv_path}")
     logger.info(f"Cluster IDs written back and saved to {pickle_path}")
-def get_semantic_ids(strings_list, model, strict_entailment=False,prefix):
+def get_semantic_ids(strings_list, model,prefix, strict_entailment=False):
     """Group list of predictions into semantic meaning."""
 
     def are_equivalent(text1, text2,prefix):
@@ -253,7 +253,7 @@ def process_file_to_pickle(json_path, out_pkl_path):
         for i in range(0, len(generations), group_size):
             group = generations[i:i + group_size]
             answer_lists = [group[0]['most_real_answer']] + [g['predicted_answer'] for g in group[1:]]
-            cluster_list = get_semantic_ids(answer_lists,"gpt-3.5-turbo",prefix = group[0]['most_input_text'])
+            cluster_list = get_semantic_ids(strings_list=answer_lists, model="gpt-3.5-turbo", prefix=group[0]['most_input_text'])
             print(cluster_list)
 
 
