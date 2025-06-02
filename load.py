@@ -211,6 +211,7 @@ def get_semantic_ids(strings_list, model,prefix, strict_entailment=True):
         implication_2 = get_openai_output(text2, text1,prefix=prefix)  # pylint: disable=arguments-out-of-order
 
         print("implication_1",implication_1)
+        print("implication_2", implication_2)
 
         assert (implication_1 in [0, 1, 2]) and (implication_2 in [0, 1, 2])
 
