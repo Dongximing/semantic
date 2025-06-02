@@ -33,16 +33,18 @@ logger = logging.getLogger(__name__)
 
 openai.api_key = os.environ["OPENAI_API_KEY"]
 
-# def checking(generations, group_size=21):
-#     all_same = True
-#     for i in range(0, len(generations), group_size):
-#         group = generations[i:i + group_size]
-#         input_texts = [g['input_text'] for g in group]
-#
-#         if len(set(input_texts)) > 1:
-#             logger.warning(f"Group {i // group_size} contains different input_texts!")
-#             all_same = False
-#     return all_same
+def checking(generations, group_size=21):
+    all_same = True
+    for i in range(0, len(generations), group_size):
+        group = generations[i:i + group_size]
+
+        input_texts = [group[0]['most_input_text']] + [g['input_text'] for g in group[1:]]
+
+
+        if len(set(input_texts)) > 1:
+            logger.warning(f"Group {i // group_size} contains different input_texts!")
+            all_same = False
+    return all_same
 
 def get_openai_embeddings(texts, model="text-embedding-3-small", batch_size=1):
     embeddings = []
