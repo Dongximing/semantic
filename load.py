@@ -201,6 +201,7 @@ def process_file_to_pickle(json_path, out_pkl_path):
         for g in generations:
             # input_ids = tokenizer.encode(g['predicted_answer'])
             print(g)
+            sys.exit()
             print('\n')
         print('-----------------------')
         sys.exit()
