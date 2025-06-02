@@ -203,10 +203,10 @@ def process_file_to_pickle(json_path, out_pkl_path):
         # for g in generations:
             # input_ids = tokenizer.encode(g['predicted_answer'])
     for idx, g in enumerate(generations):
-        if 'most_input_text' in g:
-            print(f"{idx}: most_input_text = {g['most_input_text']}")
-        elif 'input_text' in g:
-            print(f"{idx}: input_text = {g['input_text']}")
+        if 'most_sample_index' in g:
+            print(f" most_sample_index {g['most_sample_index']}")
+        elif 'sample_index' in g:
+            print(f"sample_index{g['sample_index']}")
         else:
             print(f"{idx}: No input_text field found!")
 
