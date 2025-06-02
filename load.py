@@ -197,7 +197,7 @@ def process_file_to_pickle(json_path, out_pkl_path):
     )
     with open(json_path, "rb") as f:
         generations = pickle.load(f)
-    # if checking(generations):
+    if checking(generations):
     #     texts_to_embed = []
         print("answer:\n")
         # for g in generations:
