@@ -198,11 +198,11 @@ def process_file_to_pickle(json_path, out_pkl_path):
     # if checking(generations):
     #     texts_to_embed = []
         print("answer:\n")
-        for g in generations:
+        # for g in generations:
             # input_ids = tokenizer.encode(g['predicted_answer'])
-            print(g)
-            sys.exit()
-            print('\n')
+        print(g[:2])
+            # sys.exit()
+            # print('\n')
         print('-----------------------')
         sys.exit()
             # b = tokenizer.decode(input_ids, skip_special_tokens=True)
