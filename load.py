@@ -253,39 +253,41 @@ def process_file_to_pickle(json_path, out_pkl_path):
     with open(json_path, "rb") as f:
         generations = pickle.load(f)
     if checking(generations):
-        for idx, g in enumerate(generations):
-            if 'generation_index' in g:
-                print(f"{idx}: generation_index = {g['generation_index']}")
-            elif 'most_generation_index' in g:
-                print(f"{idx}: most_generation_index = {g['most_generation_index']}")
+        for i in range(0, len(generations), group_size):
+            # if 'generation_index' in g:
+            #     print(f"{idx}: generation_index = {g['generation_index']}")
+            # elif 'most_generation_index' in g:
+            #     print(f"{idx}: most_generation_index = {g['most_generation_index']}")
+            # else:
+            #     print(f"{idx}: No input_text field found!")
+
+
+            group = generations[i:i + group_size]
+            answer_lists = [group[0].get('most_real_answer')] + [g.get('real_answer') for g in group[1:]]
+
+
+            valid_indices = [idx for idx, ans in enumerate(answer_lists) if ans is not None]
+            valid_answers = [ans for ans in answer_lists if ans is not None]
+
+            if valid_answers:
+                cluster_ids = get_semantic_ids(strings_list=valid_answers, model="gpt-3.5-turbo",
+                                               prefix=group[0]['most_input_text'])
             else:
-                print(f"{idx}: No input_text field found!")
+                cluster_ids = []
+            print("cluster_ids",cluster_ids)
+            cluster_gpt = []
+            cid = 0
+            for idx, ans in enumerate(answer_lists):
+                if ans is None:
+                    cluster_gpt.append(None)
+                else:
+                    cluster_gpt.append(cluster_ids[cid])
+                    cid += 1
 
 
-            # group = generations[i:i + group_size]
-            # answer_lists = [group[0].get('most_real_answer')] + [g.get('real_answer') for g in group[1:]]
-            # print()
-
-        #     valid_indices = [idx for idx, ans in enumerate(answer_lists) if ans is not None]
-        #     valid_answers = [ans for ans in answer_lists if ans is not None]
-        #
-        #     if valid_answers:
-        #         cluster_ids = get_semantic_ids(strings_list=valid_answers, model="gpt-3.5-turbo",
-        #                                        prefix=group[0]['most_input_text'])
-        #     else:
-        #         cluster_ids = []
-        #     cluster_gpt = []
-        #     cid = 0
-        #     for idx, ans in enumerate(answer_lists):
-        #         if ans is None:
-        #             cluster_gpt.append(None)
-        #         else:
-        #             cluster_gpt.append(cluster_ids[cid])
-        #             cid += 1
-        #
-        #
-        #     for local_idx, g in enumerate(group):
-        #         g['cluster-gpt'] = cluster_gpt[local_idx]
+            for local_idx, g in enumerate(group):
+                g['cluster-gpt'] = cluster_gpt[local_idx]
+            sys.exit()
         # with open(out_pkl_path, "wb") as f:
         #     pickle.dump(all_generations, f)
 
@@ -295,7 +297,7 @@ def process_file_to_pickle(json_path, out_pkl_path):
 
 def inference_model_pickle(task_name: str = None, model=None, tokenizer=None,
                           base_dir='/data/ximing/math-result_left/',
-                          start=0, end=4, num_generations=20):
+                          start=0, end=1, num_generations=20):
 
     for number in range(start, end):
         dirname = f'data-500-temp0_{number}'
