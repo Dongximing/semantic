@@ -110,7 +110,7 @@ def process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_genera
   
     log_file = out_pkl_path.replace('.pkl', '.log')
     n = int(len(data) * 0.4)
-    data = data[:n]
+    data = data[10:11]
     print(len(data))
 
     for index, element in enumerate(data):
@@ -198,7 +198,7 @@ def process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_genera
                         "most_last_hidden_state": None,
                         "most_sec_last_hidden_state": None,
                         "most_last_input_token_state": None,
-                        "most_generation_index": i - 1,
+                        "most_generation_index": -1,
                         "most_sample_index": index
                     })
                 else:
