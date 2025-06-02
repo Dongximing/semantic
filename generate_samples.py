@@ -112,6 +112,7 @@ def process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_genera
     n = int(len(data) * 0.6)
     data = data[:n]
     print(len(data))
+    sys.exit()
     
     for index, element in enumerate(data):
         input_text = element['text']
