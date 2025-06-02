@@ -69,9 +69,9 @@ def equivalence_prompt(text1, text2, prefix):
 
 def get_openai_output(text1,text2,prefix):
     prompt = equivalence_prompt(text1, text2, prefix)
-    print('------------------')
-    print(prompt)
-    print('------------------')
+    # print('------------------')
+    # print(prompt)
+    # print('------------------')
     messages = [
             {"role": "user", "content": prompt},
         ]
@@ -211,8 +211,8 @@ def get_semantic_ids(strings_list, model,prefix, strict_entailment=True):
         implication_1 = get_openai_output(text1, text2,prefix=prefix)
         implication_2 = get_openai_output(text2, text1,prefix=prefix)  # pylint: disable=arguments-out-of-order
 
-        print("implication_1",implication_1)
-        print("implication_2", implication_2)
+        # print("implication_1",implication_1)
+        # print("implication_2", implication_2)
 
         assert (implication_1 in [0, 1, 2]) and (implication_2 in [0, 1, 2])
 
@@ -260,6 +260,7 @@ def process_file_to_pickle(json_path, out_pkl_path):
                 print(f"{idx}: input_text = {g['input_text']}")
             else:
                 print(f"{idx}: No input_text field found!")
+
 
             # group = generations[i:i + group_size]
             # answer_lists = [group[0].get('most_real_answer')] + [g.get('real_answer') for g in group[1:]]
