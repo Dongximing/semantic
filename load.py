@@ -254,10 +254,10 @@ def process_file_to_pickle(json_path, out_pkl_path):
         generations = pickle.load(f)
     if checking(generations):
         for idx, g in enumerate(generations):
-            if 'most_input_text' in g:
-                print(f"{idx}: most_input_text = {g['most_input_text']}")
-            elif 'input_text' in g:
-                print(f"{idx}: input_text = {g['input_text']}")
+            if 'generation_index' in g:
+                print(f"{idx}: generation_index = {g['generation_index']}")
+            elif 'most_generation_index' in g:
+                print(f"{idx}: most_generation_index = {g['most_generation_index']}")
             else:
                 print(f"{idx}: No input_text field found!")
 
