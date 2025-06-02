@@ -256,8 +256,7 @@ def process_file_to_pickle(json_path, out_pkl_path):
         for i in range(0, len(generations), group_size):
             group = generations[i:i + group_size]
             answer_lists = [group[0]['most_real_answer']] + [g['real_answer'] for g in group[1:]]
-            print(answer_lists[19])
-            print(answer_lists[20])
+
 
             cluster_list = get_semantic_ids(strings_list=answer_lists, model="gpt-3.5-turbo", prefix=group[0]['most_input_text'])
             print(cluster_list)
