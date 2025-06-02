@@ -11,7 +11,7 @@ STOP_TOKENS = [
     ' \n\n', '.\n\n', ':\n\n', '\n\n', ' Wait', 'Alternatively', 'Wait', ' But',
     ')\n\n', '?\n\n', ']\n\n', ').\n\n'
 ]
-NUMBER = 1
+NUMBER = 0
 def predict(tokenizer, model, input_data, temperature, return_full=False, return_latent=False):
     max_new_tokens = 150
     inputs = tokenizer(input_data, return_tensors="pt").to(f"cuda:{NUMBER}")
@@ -257,5 +257,5 @@ if __name__ == "__main__":
         torch_dtype=torch.float16,
         device_map=f"cuda:{NUMBER}"
     )
-    inference_model_pickle(task_name="math-500", model=model, tokenizer=tokenizer,start=0, end=100)
+    inference_model_pickle(task_name="math-500", model=model, tokenizer=tokenizer,start=0, end=50)
     print("done")
