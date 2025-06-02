@@ -78,7 +78,7 @@ def get_openai_output(text1,text2,prefix):
         ]
 
     output = CLIENT.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4o-mini-2024-07-18",
         messages=messages,
         max_tokens=4,
         temperature=0.1,
