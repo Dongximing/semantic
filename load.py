@@ -197,16 +197,16 @@ def process_file_to_pickle(json_path, out_pkl_path):
     )
     with open(json_path, "rb") as f:
         generations = pickle.load(f)
-    if checking(generations):
-    #     texts_to_embed = []
-        print("answer:\n")
+    # if checking(generations):
+    # #     texts_to_embed = []
+    #     print("answer:\n")
         # for g in generations:
             # input_ids = tokenizer.encode(g['predicted_answer'])
-        print(generations[:22])
+    print(generations[:22])
             # sys.exit()
             # print('\n')
-        print('-----------------------')
-        sys.exit()
+    print('-----------------------')
+    sys.exit()
             # b = tokenizer.decode(input_ids, skip_special_tokens=True)
             # pred = g.get('predicted_answer')
             # if pred is None:
