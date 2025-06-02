@@ -69,35 +69,34 @@ def get_openai_output(text1,text2,prefix):
     prompt = equivalence_prompt(text1, text2, prefix)
     @retry(wait=wait_random_exponential(min=1, max=10))
 
-    def predict(prompt):
-        """Predict with GPT-4 model."""
-        if isinstance(prompt, str):
-            messages = [
-                {"role": "user", "content": prompt},
-            ]
-        else:
-            messages = prompt
+
+    if isinstance(prompt, str):
+        messages = [
+            {"role": "user", "content": prompt},
+        ]
+    else:
+        messages = prompt
 
 
 
-        output = CLIENT.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=messages,
-            max_tokens=2,
-            temperature=0.1,
-        )
-        response = output.choices[0].message.content
-        binary_response = response.lower()
-        if 'entailment' in binary_response:
-            return 2
-        elif 'neutral' in binary_response:
-            return 1
-        elif 'contradiction' in binary_response:
-            return 0
-        else:
-            logging.warning('MANUAL NEUTRAL!')
-            return 1
-        return binary_response
+    output = CLIENT.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=messages,
+        max_tokens=2,
+        temperature=0.1,
+    )
+    response = output.choices[0].message.content
+    binary_response = response.lower()
+    if 'entailment' in binary_response:
+        return 2
+    elif 'neutral' in binary_response:
+        return 1
+    elif 'contradiction' in binary_response:
+        return 0
+    else:
+        logging.warning('MANUAL NEUTRAL!')
+        return 1
+    return binary_response
 
 def labeling_data(generations, output_dir):
     group_size = 20
