@@ -255,8 +255,8 @@ def inference_model_pickle(task_name: str = None, model=None, tokenizer=None,
     for number in range(start, end):
         dirname = f'data-500-temp0_{number}'
         dir_path = os.path.join(base_dir, dirname)
-        json_path = os.path.join(dir_path, f'new_generations_{number}.pkl')
-        out_pkl_path = os.path.join(dir_path, f'test_{number}.pkl')
+        json_path = os.path.join(dir_path, f'test_{number}.pkl')
+        out_pkl_path = os.path.join(dir_path, f'ww{number}.pkl')
         if not os.path.exists(json_path):
             logger.warning(f"{json_path} does not exist, skipping.")
             continue
