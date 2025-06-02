@@ -1,4 +1,5 @@
 import sys
+from sys import prefix
 
 import openai
 import os
@@ -203,13 +204,13 @@ def labeling_data(generations, output_dir):
     df.to_csv(csv_path, index=False)
     logger.info(f"\nGroup statistics saved to {csv_path}")
     logger.info(f"Cluster IDs written back and saved to {pickle_path}")
-def get_semantic_ids(strings_list, model, strict_entailment=False):
+def get_semantic_ids(strings_list, model, strict_entailment=False,prefix):
     """Group list of predictions into semantic meaning."""
 
-    def are_equivalent(text1, text2):
+    def are_equivalent(text1, text2,prefix):
 
-        implication_1 = get_openai_output(text1, text2)
-        implication_2 = get_openai_output(text2, text1)  # pylint: disable=arguments-out-of-order
+        implication_1 = get_openai_output(text1, text2,prefix=prefix)
+        implication_2 = get_openai_output(text2, text1,prefix=prefix)  # pylint: disable=arguments-out-of-order
         assert (implication_1 in [0, 1, 2]) and (implication_2 in [0, 1, 2])
 
         if strict_entailment:
@@ -233,7 +234,7 @@ def get_semantic_ids(strings_list, model, strict_entailment=False):
             semantic_set_ids[i] = next_id
             for j in range(i+1, len(strings_list)):
                 # Search through all remaining strings. If they are equivalent to string1, assign them the same id.
-                if are_equivalent(string1, strings_list[j]):
+                if are_equivalent(string1, strings_list[j],prefix):
                     semantic_set_ids[j] = next_id
             next_id += 1
 
@@ -252,7 +253,7 @@ def process_file_to_pickle(json_path, out_pkl_path):
         for i in range(0, len(generations), group_size):
             group = generations[i:i + group_size]
             answer_lists = [group[0]['most_real_answer']] + [g['predicted_answer'] for g in group[1:]]
-            cluster_list = get_semantic_ids(answer_lists,"gpt-3.5-turbo")
+            cluster_list = get_semantic_ids(answer_lists,"gpt-3.5-turbo",prefix = group[0]['most_input_text'])
             print(cluster_list)
 
 
