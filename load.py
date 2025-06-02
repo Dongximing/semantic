@@ -265,9 +265,10 @@ def process_file_to_pickle(json_path, out_pkl_path):
             group = generations[i:i + group_size]
             answer_lists = [group[0].get('most_real_answer')] + [g.get('real_answer') for g in group[1:]]
 
-            print("answer_lists",len(answer_lists))
+
             valid_indices = [idx for idx, ans in enumerate(answer_lists) if ans is not None]
             valid_answers = [ans for ans in answer_lists if ans is not None]
+            print("answer_lists", len(valid_answers))
 
             if valid_answers:
                 cluster_ids = get_semantic_ids(strings_list=valid_answers, model="gpt-3.5-turbo",
