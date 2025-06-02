@@ -3,6 +3,8 @@ from sys import prefix
 
 import openai
 import os
+
+from numpy.f2py.crackfortran import true_intent_list
 from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import os
@@ -70,6 +72,7 @@ def get_openai_output(text1,text2,prefix):
     messages = [
             {"role": "user", "content": prompt},
         ]
+
     output = CLIENT.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=messages,
@@ -195,7 +198,7 @@ def labeling_data(generations, output_dir):
     df.to_csv(csv_path, index=False)
     logger.info(f"\nGroup statistics saved to {csv_path}")
     logger.info(f"Cluster IDs written back and saved to {pickle_path}")
-def get_semantic_ids(strings_list, model,prefix, strict_entailment=False):
+def get_semantic_ids(strings_list, model,prefix, strict_entailment=True):
     """Group list of predictions into semantic meaning."""
 
     def are_equivalent(text1, text2,prefix):
