@@ -19,8 +19,8 @@ def inference_model(task_name: str, model, tokenizer):
         dataset = load_dataset("AI-MO/aimo-validation-aime")
         dataset = dataset['train']
         new_dataset = dataset.select(range(60)) # 2022 2023
-        prompts = new_dataset['problem'][2:]
-        answers = new_dataset['answer'][2:]
+        prompts = new_dataset['problem'][:]
+        answers = new_dataset['answer'][:]
         start_number = 0
         result_base_dir = "./aime"
 
@@ -39,7 +39,7 @@ def inference_model(task_name: str, model, tokenizer):
             log_file = os.path.join(batch_dir_path, "log.txt")
 
         if os.path.exists(file_name):
-            print(f"Sample {number} already exists, skip.")
+            print(f"Sample {index} already exists, skip.")
             continue
 
         os.makedirs(batch_dir_path, exist_ok=True)
