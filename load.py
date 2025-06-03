@@ -252,22 +252,13 @@ def process_file_to_pickle(json_path, out_pkl_path):
     group_size = 21
     with open(json_path, "rb") as f:
         generations = pickle.load(f)
+    all_generations = []
     if checking(generations):
         for i in range(0, len(generations), group_size):
-            # if 'generation_index' in g:
-            #     print(f"{idx}: generation_index = {g['generation_index']}")
-            # elif 'most_generation_index' in g:
-            #     print(f"{idx}: most_generation_index = {g['most_generation_index']}")
-            # else:
-            #     print(f"{idx}: No input_text field found!")
 
 
             group = generations[i:i + group_size]
             answer_lists = [group[0].get('most_real_answer')] + [g.get('real_answer') for g in group[1:]]
-
-            print(answer_lists)
-
-
             valid_indices = [idx for idx, ans in enumerate(answer_lists) if ans is not None]
             valid_answers = [ans for ans in answer_lists if ans is not None]
 
@@ -288,10 +279,11 @@ def process_file_to_pickle(json_path, out_pkl_path):
 
 
             for local_idx, g in enumerate(group):
-                g['cluster-gpt'] = cluster_gpt[local_idx]
+                g['clustering-gpt-prompt'] = cluster_gpt[local_idx]
+            all_generations.extend(group)
 
-        # with open(out_pkl_path, "wb") as f:
-        #     pickle.dump(all_generations, f)
+        with open(out_pkl_path, "wb") as f:
+            pickle.dump(all_generations, f)
 
 
 

@@ -5,6 +5,8 @@ import argparse
 import pandas as pd
 import os
 import datetime
+from datasets import load_dataset
+
 
 def inference_model(task_name: str, model, tokenizer):
     if task_name == 'math-500':
@@ -12,17 +14,29 @@ def inference_model(task_name: str, model, tokenizer):
         prompts = df['problem'][1:2].tolist()
         answers = df['answer'][1:2].tolist()
         start_number = 1
-
-    result_base_dir = "./math-result_left"
+        result_base_dir = "./math-result_left"
+    elif task_name == 'aime':
+        dataset = load_dataset("AI-MO/aimo-validation-aime")
+        new_dataset = dataset.select(range(60)) # 2022 2023
+        prompts = new_dataset['problem'][:].tolist()
+        answers = new_dataset['answer'][:].tolist()
+        start_number = 0
+        result_base_dir = "./aime"
 
     for index, prompt in enumerate(prompts):
-        number = start_number + index
-        batch_dir_name = f"data-500-temp0_{number}"
-        batch_dir_path = os.path.join(result_base_dir, batch_dir_name)
-        file_name = os.path.join(batch_dir_path, f"data-500_{number}.json")
-        log_file = os.path.join(batch_dir_path, "log.txt")
 
-        # ============ 断点续跑的关键检查 =============
+        if  task_name == 'math-500':
+            number = start_number + index
+            batch_dir_name = f"data-500-temp0_{number}"
+            batch_dir_path = os.path.join(result_base_dir, batch_dir_name)
+            file_name = os.path.join(batch_dir_path, f"data-500_{number}.json")
+            log_file = os.path.join(batch_dir_path, "log.txt")
+        elif task_name == 'aime':
+            batch_dir_name = f"data-500-temp0_{index}"
+            batch_dir_path = os.path.join(result_base_dir, batch_dir_name)
+            file_name = os.path.join(batch_dir_path, f"data-60_{index}.json")
+            log_file = os.path.join(batch_dir_path, "log.txt")
+
         if os.path.exists(file_name):
             print(f"Sample {number} already exists, skip.")
             continue
@@ -48,7 +62,7 @@ def inference_model(task_name: str, model, tokenizer):
             with torch.inference_mode():
                 outputs = model.generate(
                     **model_inputs,
-                    max_new_tokens=2048,     
+                    max_new_tokens=8096,
                     do_sample=False,
                     return_dict_in_generate=True
                 )
@@ -102,7 +116,7 @@ def main():
     parser.add_argument(
         "--task",
         type=str,
-        default="math-500",
+        default="aime",
     )
     args = parser.parse_args()
     model = AutoModelForCausalLM.from_pretrained(
