@@ -18,7 +18,7 @@ def inference_model(task_name: str, model, tokenizer):
     elif task_name == 'aime':
         dataset = load_dataset("AI-MO/aimo-validation-aime")
         dataset = dataset['train']
-        new_dataset = dataset.select(range(60)) # 2022 2023
+        new_dataset = dataset.select(range(30)) # 2022 2023
         prompts = new_dataset['problem'][:]
         answers = new_dataset['answer'][:]
         start_number = 0
