@@ -19,8 +19,8 @@ def inference_model(task_name: str, model, tokenizer):
         dataset = load_dataset("AI-MO/aimo-validation-aime")
         dataset = dataset['train']
         new_dataset = dataset.select(range(60)) # 2022 2023
-        prompts = new_dataset['problem'][:].tolist()
-        answers = new_dataset['answer'][:].tolist()
+        prompts = new_dataset['problem'][:]
+        answers = new_dataset['answer'][:]
         start_number = 0
         result_base_dir = "./aime"
 
