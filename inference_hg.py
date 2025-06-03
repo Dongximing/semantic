@@ -111,7 +111,7 @@ def main():
     parser.add_argument(
         "--main-model-path",
         type=str,
-        default="/home/ximing/QwQ-32B-AWQ/",
+        default="Qwen/QwQ-32B-AWQ",
     )
     parser.add_argument(
         "--task",
