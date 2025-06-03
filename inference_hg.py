@@ -101,7 +101,7 @@ def inference_model(task_name: str, model, tokenizer):
             })
             error_log = os.path.join(result_base_dir, "error.log")
             with open(error_log, 'a') as f:
-                f.write(f"[{datetime.datetime.now()}] Sample {number} error: {str(e)}\n")
+                f.write(f"[{datetime.datetime.now()}] Sample {index} error: {str(e)}\n")
 
         # 日志，无论成功/失败都写一条
         with open(log_file, 'a') as f:
