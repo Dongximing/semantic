@@ -19,8 +19,8 @@ def inference_model(task_name: str, model, tokenizer):
         dataset = load_dataset("AI-MO/aimo-validation-aime")
         dataset = dataset['train']
         new_dataset = dataset.select(range(60)) # 2022 2023
-        prompts = new_dataset['problem'][:]
-        answers = new_dataset['answer'][:]
+        prompts = new_dataset['problem'][2:]
+        answers = new_dataset['answer'][2:]
         start_number = 0
         result_base_dir = "./aime"
 
@@ -63,7 +63,7 @@ def inference_model(task_name: str, model, tokenizer):
             with torch.inference_mode():
                 outputs = model.generate(
                     **model_inputs,
-                    max_new_tokens=8096,
+                    max_new_tokens=4096,
                     do_sample=False,
                     return_dict_in_generate=True
                 )
