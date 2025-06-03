@@ -18,7 +18,7 @@ def inference_model(task_name: str, model, tokenizer):
     elif task_name == 'aime':
         dataset = load_dataset("AI-MO/aimo-validation-aime")
         dataset = dataset['train']
-        new_dataset = dataset.select(range(30)) # 2022 2023
+        new_dataset = dataset.select(range(30,60)) # 2022 2023
         prompts = new_dataset['problem'][:]
         answers = new_dataset['answer'][:]
         start_number = 0
@@ -103,7 +103,7 @@ def inference_model(task_name: str, model, tokenizer):
             with open(error_log, 'a') as f:
                 f.write(f"[{datetime.datetime.now()}] Sample {index} error: {str(e)}\n")
 
-        # 日志，无论成功/失败都写一条
+
         with open(log_file, 'a') as f:
             f.write(json.dumps(log_dict, ensure_ascii=False) + "\n")
 

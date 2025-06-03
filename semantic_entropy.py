@@ -8,6 +8,30 @@ import torch
 import torch.nn.functional as F
 
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
+def logsumexp_by_id(semantic_ids, log_likelihoods, agg='sum'):
+    """Sum probabilities with the same semantic id.
+
+    Log-Sum-Exp because input and output probabilities in log space.
+    """
+    unique_ids = sorted(list(set(semantic_ids)))
+    assert unique_ids == list(range(len(unique_ids)))
+    log_likelihood_per_semantic_id = []
+
+    for uid in unique_ids:
+        id_indices = [pos for pos, x in enumerate(semantic_ids) if x == uid]
+        id_log_likelihoods = [log_likelihoods[i] for i in id_indices]
+        if agg == 'sum':
+            logsumexp_value = np.log(np.sum(np.exp(id_log_likelihoods))) - 5.0
+        elif agg == 'sum_normalized':
+            log_lik_norm = id_log_likelihoods - np.log(np.sum(np.exp(log_likelihoods)))
+            logsumexp_value = np.log(np.sum(np.exp(log_lik_norm)))
+        elif agg == 'mean':
+            logsumexp_value = np.log(np.mean(np.exp(id_log_likelihoods)))
+        else:
+            raise ValueError
+        log_likelihood_per_semantic_id.append(logsumexp_value)
+
+    return log_likelihood_per_semantic_id
 
 def predictive_entropy(log_probs):
     """Compute MC estimate of entropy.

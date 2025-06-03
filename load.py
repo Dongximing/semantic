@@ -19,7 +19,9 @@ import matplotlib.pyplot as plt
 from sklearn.manifold import TSNE
 import logging
 from openai import OpenAI
+from semantic_entropy import cluster_assignment_entropy, predictive_entropy
 CLIENT = OpenAI(api_key=os.environ['OPENAI_API_KEY'])
+
 from tenacity import (retry, stop_after_attempt,  # for exponential backoff
                       wait_random_exponential)
 # Logging configuration
@@ -258,8 +260,7 @@ def process_file_to_pickle(json_path, out_pkl_path):
 
 
             group = generations[i:i + group_size]
-            answer_lists = [group[0].get('most_real_answer')] + [g.get('real_answer') for g in group[1:]]
-            valid_indices = [idx for idx, ans in enumerate(answer_lists) if ans is not None]
+            answer_lists = [g.get('real_answer') for g in group[1:]]
             valid_answers = [ans for ans in answer_lists if ans is not None]
 
             if valid_answers:
@@ -276,10 +277,13 @@ def process_file_to_pickle(json_path, out_pkl_path):
                 else:
                     cluster_gpt.append(cluster_ids[cid])
                     cid += 1
+            group[0]['cluster_assignment_entropy'] = cluster_assignment_entropy([c for c in cluster_gpt if c is not None])
 
 
-            for local_idx, g in enumerate(group):
+
+            for local_idx, g in enumerate(group[1:]):
                 g['clustering-gpt-prompt'] = cluster_gpt[local_idx]
+
             all_generations.extend(group)
 
         with open(out_pkl_path, "wb") as f:
