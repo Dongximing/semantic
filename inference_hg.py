@@ -50,7 +50,7 @@ def inference_model(task_name: str, model, tokenizer):
             "answer": answers[index] if index < len(answers) else None
         }
         try:
-            print(f"---------inference----sample----{number}-------------------\n")
+            print(f"---------inference----sample----{index}-------------------\n")
             messages = [
                 {"role": "user", "content": prompt}
             ]
