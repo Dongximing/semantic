@@ -28,7 +28,7 @@ def inference_model(base_dir, task, tokenizer):
                 token_ids = data.get("large_model_output_ids", [])
                 all_token_ids.extend(token_ids)
     counter = Counter(all_token_ids)
-    most_common_200 = counter.most_common(400)
+    most_common_200 = counter.most_common(600)
     for tid, freq in most_common_200:
         try:
             token_text = tokenizer.decode([tid])
