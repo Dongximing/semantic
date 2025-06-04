@@ -66,7 +66,7 @@ def equivalence_prompt(text1, text2, prefix):
 
     return prompt
 def get_deberta_output(text1,text2,model,tokenizer):
-    inputs = tokenizer(text1, text2, return_tensors="pt").to("cuda:2")
+    inputs = tokenizer(text1, text2, return_tensors="pt").to("cuda:3")
     outputs = model(**inputs)
     logits = outputs.logits
     # Deberta-mnli returns `neutral` and `entailment` classes at indices 1 and 2.
@@ -269,7 +269,7 @@ def process_file_to_pickle(json_path, out_pkl_path):
     )
     tokenizer = AutoTokenizer.from_pretrained("microsoft/deberta-v2-xlarge-mnli")
     model = AutoModelForSequenceClassification.from_pretrained(
-        "microsoft/deberta-v2-xlarge-mnli").to("cuda:2")
+        "microsoft/deberta-v2-xlarge-mnli").to("cuda:3")
 
     group_size = 21
     with open(json_path, "rb") as f:
