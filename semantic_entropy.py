@@ -62,7 +62,7 @@ def cluster_assignment_entropy(semantic_ids):
     n_generations = len(semantic_ids)
     counts = np.bincount(semantic_ids)
     probabilities = counts/n_generations
-    print('probabilities.sum(),', probabilities.sum())
+    print('probabilities.sum(),', semantic_ids)
     assert np.isclose(probabilities.sum(), 1)
     entropy = - (probabilities * np.log(probabilities)).sum()
 
