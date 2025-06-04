@@ -91,7 +91,7 @@ def get_openai_output(text1,text2,prefix):
         temperature=0.1,
     )
     response = output.choices[0].message.content
-    print("response",response)
+    # print("response",response)
     binary_response = response.lower()
     if 'entailment' in binary_response:
         return 2
@@ -283,14 +283,14 @@ def process_file_to_pickle(json_path, out_pkl_path):
             answer_lists = [g.get('real_answer') for g in group[1:]]
 
             valid_answers = [ans for ans in answer_lists if ans is not None]
-            print(answer_lists)
+            # print(answer_lists)
             if valid_answers:
 
                 cluster_ids = get_semantic_ids(strings_list=valid_answers, model=model,tokenizer=tokenizer,
                                                prefix=group[0]['most_input_text'],method='deberta')
             else:
                 cluster_ids = []
-            print("cluster_ids",cluster_ids)
+            # print("cluster_ids",cluster_ids)
             cluster_gpt = []
             cid = 0
             for idx, ans in enumerate(answer_lists):
