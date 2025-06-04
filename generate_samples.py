@@ -109,7 +109,7 @@ def process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_genera
     all_generations = []
   
     log_file = out_pkl_path.replace('.pkl', '.log')
-    n = int(len(alldata) * 0.8)
+    n = int(len(alldata))
     data = alldata[:n]
     print(len(data))
 
@@ -232,10 +232,17 @@ def inference_model_pickle(task_name: str, model, tokenizer, base_dir='/data/xim
                            start=20, end=250, num_generations=20):
 
     for number in range(start, end):
-        dirname = f'data-500-temp0_{number}'
-        dir_path = os.path.join(base_dir, dirname)
-        json_path = os.path.join(dir_path, f'seg_by_stop_{number}.json')
-        out_pkl_path = os.path.join(dir_path, f'new_generations_{number}.pkl')
+        if task_name == 'math-500':
+            dirname = f'data-500-temp0_{number}'
+            dir_path = os.path.join(base_dir, dirname)
+            json_path = os.path.join(dir_path, f'seg_by_stop_{number}.json')
+            out_pkl_path = os.path.join(dir_path, f'new_generations_{number}.pkl')
+        elif task_name == 'aime':
+            dirname = f'data-500-temp0_{number}'
+            dir_path = os.path.join(base_dir, dirname)
+            json_path = os.path.join(dir_path, f'seg_by_stop_{number}.json')
+            out_pkl_path = os.path.join(dir_path, f'new_generations_{number}.pkl')
+
 
         if not os.path.isfile(json_path):
             print(f"[Warning] {json_path} does not exist! Skipping...")
@@ -257,5 +264,5 @@ if __name__ == "__main__":
         torch_dtype=torch.float16,
         device_map=f"cuda:{NUMBER}"
     )
-    inference_model_pickle(task_name="math-500", model=model, tokenizer=tokenizer,start=0, end=50)
+    inference_model_pickle(task_name="math-500", model=model, tokenizer=tokenizer,start=0, end=100)
     print("done")

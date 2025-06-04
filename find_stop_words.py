@@ -6,12 +6,8 @@ import pandas as pd
 import os
 import datetime
 from collections import Counter
-def inference_model(task_name: str, model, tokenizer):
-    base_dir = '/home/ximing/specreason/hf/math-result_left'
-    tokenizer = AutoTokenizer.from_pretrained(
-    "/home/ximing/QwQ-32B-AWQ/",
-    trust_remote_code=True
-)   
+def inference_model(base_dir, tokenizer):
+
     all_token_ids = []
     for dirname in os.listdir(base_dir):
         if dirname.startswith('data-500-temp0_'):
@@ -51,21 +47,19 @@ def main():
     parser.add_argument(
         "--main-model-path",
         type=str,
-        default="/home/ximing/QwQ-32B-AWQ/",
+        default="Qwen/QwQ-32B-AWQ",
     )
+    # Qwen/QwQ-32B-AWQ
+    #/home/ximing/QwQ-32B-AWQ/
     parser.add_argument(
         "--task",
         type=str,
-        default="math-500",
+        default="aime",
     )
     args = parser.parse_args()
-    model = AutoModelForCausalLM.from_pretrained(
-        args.main_model_path,
-        torch_dtype=torch.float16,
-        device_map="auto"
-    )
-    tokenizer = AutoTokenizer.from_pretrained(args.main_model_path)
-    inference_model(task_name=args.task, model=model, tokenizer=tokenizer)
+    tokenizer = AutoTokenizer.from_pretrained(args.main_model_path,trust_remote_code=True)
+    #/home/cs/staff/shaowei/semantic/aime
+    inference_model(base_dir = '/home/cs/staff/shaowei/semantic/aime',tokenizer=tokenizer)
 
 if __name__ == "__main__":
     main()
