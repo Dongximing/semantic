@@ -304,7 +304,7 @@ def process_file_to_pickle(json_path, out_pkl_path):
                 else:
                     cluster_gpt.append(cluster_ids[cid])
                     cid += 1
-            group[0]['cluster_assignment_entropy'] = cluster_assignment_entropy([c for c in cluster_gpt if c is not None])
+            group[0]['cluster_assignment_entropy_deberta'] = cluster_assignment_entropy([c for c in cluster_gpt if c is not None])
 
 
 
