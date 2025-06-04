@@ -82,9 +82,7 @@ def get_deberta_output(text1,text2,model,tokenizer):
 
 def get_openai_output(text1,text2,prefix):
     prompt = equivalence_prompt(text1, text2, prefix)
-    # print('------------------')
-    # print(prompt)
-    # print('------------------')
+
     messages = [
             {"role": "user", "content": prompt},
         ]
@@ -309,7 +307,7 @@ def process_file_to_pickle(json_path, out_pkl_path):
 
 
             for local_idx, g in enumerate(group[1:]):
-                g['clustering-gpt-prompt'] = cluster_gpt[local_idx]
+                g['clustering-gpt-prompty_deberta'] = cluster_gpt[local_idx]
 
             all_generations.extend(group)
 
