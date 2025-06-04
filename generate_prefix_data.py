@@ -68,7 +68,7 @@ def inference_model(task_name: str, model, tokenizer):
 
 if __name__ == "__main__":
     tokenizer = AutoTokenizer.from_pretrained(
-        "QwQ-32B-AWQ",
+        "Qwen/QwQ-32B-AWQ",
         trust_remote_code=True
     )
     inference_model("aime", None, tokenizer)
