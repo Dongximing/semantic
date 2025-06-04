@@ -1,10 +1,4 @@
-import sys
-from sys import prefix
-
 import openai
-import os
-
-from numpy.f2py.crackfortran import true_intent_list
 from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import os
@@ -19,7 +13,10 @@ import matplotlib.pyplot as plt
 from sklearn.manifold import TSNE
 import logging
 from openai import OpenAI
+import torch
+import torch.nn.functional as F
 from semantic_entropy import cluster_assignment_entropy, predictive_entropy
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
 CLIENT = OpenAI(api_key=os.environ['OPENAI_API_KEY'])
 
 from tenacity import (retry, stop_after_attempt,  # for exponential backoff
@@ -68,6 +65,20 @@ def equivalence_prompt(text1, text2, prefix):
     prompt += "Does Possible Generation 1 semantically entail Possible Generation 2? Only respond with entailment, contradiction, or neutral."""
 
     return prompt
+def get_deberta_output(text1,text2,model,tokenizer):
+    inputs = tokenizer(text1, text2, return_tensors="pt").to("cuda:3")
+    outputs = model(**inputs)
+    logits = outputs.logits
+    # Deberta-mnli returns `neutral` and `entailment` classes at indices 1 and 2.
+    largest_index = torch.argmax(F.softmax(logits, dim=1))  # pylint: disable=no-member
+    prediction = largest_index.cpu().item()
+    if os.environ.get('DEBERTA_FULL_LOG', False):
+        logging.info('Deberta Input: %s -> %s', text1, text2)
+        logging.info('Deberta Prediction: %s', prediction)
+
+    return prediction
+
+
 
 def get_openai_output(text1,text2,prefix):
     prompt = equivalence_prompt(text1, text2, prefix)
@@ -203,15 +214,25 @@ def labeling_data(generations, output_dir):
     df.to_csv(csv_path, index=False)
     logger.info(f"\nGroup statistics saved to {csv_path}")
     logger.info(f"Cluster IDs written back and saved to {pickle_path}")
-def get_semantic_ids(strings_list, model,prefix, strict_entailment=True):
+def get_semantic_ids(strings_list, model,prefix, strict_entailment=True, tokenizer=None, method = 'deberta'):
     """Group list of predictions into semantic meaning."""
 
     def are_equivalent(text1, text2, prefix):
 
 
+        if method == 'embedding':
+            implication_1 = get_openai_output(text1, text2, prefix=prefix)
+            implication_2 = get_openai_output(text2, text1, prefix=prefix)
+        elif method == 'openai':
+            implication_1 = get_openai_output(text1, text2, prefix=prefix)
+            implication_2 = get_openai_output(text2, text1, prefix=prefix)
+        elif method == 'deberta':
+            implication_1 = get_deberta_output(text1, text2,model,tokenizer)
+            implication_2 = get_deberta_output(text1, text2,model,tokenizer)
 
-        implication_1 = get_openai_output(text1, text2,prefix=prefix)
-        implication_2 = get_openai_output(text2, text1,prefix=prefix)  # pylint: disable=arguments-out-of-order
+
+
+            # pylint: disable=arguments-out-of-order
 
         # print("implication_1",implication_1)
         # print("implication_2", implication_2)
@@ -251,6 +272,10 @@ def process_file_to_pickle(json_path, out_pkl_path):
         "Qwen/QwQ-32B-AWQ",
         trust_remote_code=True
     )
+    tokenizer = AutoTokenizer.from_pretrained("microsoft/deberta-v2-xlarge-mnli")
+    model = AutoModelForSequenceClassification.from_pretrained(
+        "microsoft/deberta-v2-xlarge-mnli").to("cuda:3")
+
     group_size = 21
     with open(json_path, "rb") as f:
         generations = pickle.load(f)
@@ -264,8 +289,9 @@ def process_file_to_pickle(json_path, out_pkl_path):
             valid_answers = [ans for ans in answer_lists if ans is not None]
 
             if valid_answers:
-                cluster_ids = get_semantic_ids(strings_list=valid_answers, model="gpt-3.5-turbo",
-                                               prefix=group[0]['most_input_text'])
+
+                cluster_ids = get_semantic_ids(strings_list=valid_answers, model=model,tokenizer=tokenizer,
+                                               prefix=group[0]['most_input_text'],method='deberta')
             else:
                 cluster_ids = []
             print("cluster_ids",cluster_ids)
