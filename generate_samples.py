@@ -20,6 +20,7 @@ def predict(tokenizer, model, input_data, temperature, return_full=False, return
     max_new_tokens = 150
     inputs = tokenizer(input_data, return_tensors="pt").to(f"cuda:{NUMBER}")
     initial_length = len(inputs['input_ids'][0])
+    STOP = None
     stopping_criteria = None
     if STOP_TOKENS is not None:
         from transformers import StoppingCriteria, StoppingCriteriaList
@@ -29,19 +30,22 @@ def predict(tokenizer, model, input_data, temperature, return_full=False, return
                 self.stops = stops
                 self.initial_length = initial_length
                 self.tokenizer = tokenizer
+                self.triggered_stop = None
             def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor):
                 generation = self.tokenizer.decode(input_ids[0][self.initial_length:], skip_special_tokens=False)
                 for stop in self.stops:
                     if stop in generation:
-                        print(f"[StoppingCriteria] Matched stop: {repr(stop)}")
+                        self.triggered_stop = stop
                         return True
                 return False
-        stopping_criteria = StoppingCriteriaList([
-            StoppingCriteriaSub(
+
+        stopping_criteria_obj = StoppingCriteriaSub(
                 stops=AIME_STOP_TOKENS,
                 initial_length=initial_length,
                 tokenizer=tokenizer
             )
+        stopping_criteria = StoppingCriteriaList([
+            stopping_criteria_obj
         ])
 
     with torch.no_grad():
@@ -58,7 +62,7 @@ def predict(tokenizer, model, input_data, temperature, return_full=False, return
         )
     full_answer = tokenizer.decode(outputs.sequences[0],skip_special_tokens=True)
     real_answer = tokenizer.decode(outputs.sequences[0][initial_length:], skip_special_tokens=True)
-
+    triggered_stop = stopping_criteria_obj.triggered_stop
     answer = full_answer
     if full_answer.startswith(input_data):
         answer = full_answer[len(input_data):]
@@ -103,7 +107,7 @@ def predict(tokenizer, model, input_data, temperature, return_full=False, return
         last_token_embedding, sec_last_token_embedding, last_tok_bef_gen_embedding,output_last_hidden_list
     )
 
-    return (real_answer,answer, log_likelihoods, probs, ppl, hidden_states)
+    return (real_answer,answer, log_likelihoods, probs, ppl, triggered_stop ,hidden_states)
 
 
 
@@ -129,13 +133,13 @@ def process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_genera
             try:
                 if i == 0:
                     (
-                        real_answer, predicted_answer, log_likelihoods, probs, ppl,
+                        real_answer, predicted_answer, log_likelihoods, probs, ppl,triggered_stop,
                         (last_hidden_state, sec_last_hidden_state, last_input_token_state,
                          embedding, emb_last_before_gen, emb_before_eos, output_last_hidden_list)
                     ) = predict(tokenizer, model, input_text, temperature=0.1, return_full=False, return_latent=True)
                 else:
                     (
-                        real_answer,predicted_answer, log_likelihoods, probs, ppl,
+                        real_answer,predicted_answer, log_likelihoods, probs, ppl,triggered_stop,
                         (last_hidden_state, sec_last_hidden_state, last_input_token_state,
                          embedding, emb_last_before_gen, emb_before_eos, output_last_hidden_list)
                     ) = predict(tokenizer, model, input_text, temperature=0.7, return_full=False, return_latent=True)
@@ -163,7 +167,8 @@ def process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_genera
                         "most_emb_last_before_gen": emb_last_before_gen.cpu(),
                         "most_emb_before_eos": emb_before_eos,
                         "most_generation_index": -1,
-                        "most_sample_index": index
+                        "most_sample_index": index,
+                        'triggered_stop':triggered_stop
                     })
                 else:
 
@@ -182,7 +187,8 @@ def process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_genera
                         "emb_last_before_gen": emb_last_before_gen.cpu(),
                         "emb_before_eos": emb_before_eos,
                         "generation_index": i-1,
-                        "sample_index": index
+                        "sample_index": index,
+                        'triggered_stop': triggered_stop
                     })
             except Exception as e:
                 log_entry.update({
@@ -203,7 +209,8 @@ def process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_genera
                         "most_sec_last_hidden_state": None,
                         "most_last_input_token_state": None,
                         "most_generation_index": -1,
-                        "most_sample_index": index
+                        "most_sample_index": index,
+                        'triggered_stop': None
                     })
                 else:
                     all_generations.append({
@@ -218,7 +225,8 @@ def process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_genera
                         "sec_last_hidden_state": None,
                         "last_input_token_state": None,
                         "generation_index": i-1,
-                        "sample_index": index
+                        "sample_index": index,
+                        'triggered_stop': None
                     })
 
             with open(log_file, "a", encoding="utf-8") as lf:
