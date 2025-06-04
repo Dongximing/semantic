@@ -11,6 +11,10 @@ STOP_TOKENS = [
     ' \n\n', '.\n\n', ':\n\n', '\n\n', ' Wait', 'Alternatively', 'Wait', ' But',
     ')\n\n', '?\n\n', ']\n\n', ').\n\n'
 ]
+AIME_STOP_TOKENS = [
+    ' \n\n', '.\n\n', ':\n\n', '\n\n', ' Wait', 'Alternatively', 'Wait', ' But',
+    ')\n\n', '?\n\n', ']\n\n', ').\n\n', ' Alternatively','Hmm',' Hmm'
+]
 NUMBER = 0
 def predict(tokenizer, model, input_data, temperature, return_full=False, return_latent=False):
     max_new_tokens = 150
@@ -34,7 +38,7 @@ def predict(tokenizer, model, input_data, temperature, return_full=False, return
                 return False
         stopping_criteria = StoppingCriteriaList([
             StoppingCriteriaSub(
-                stops=STOP_TOKENS,
+                stops=AIME_STOP_TOKENS,
                 initial_length=initial_length,
                 tokenizer=tokenizer
             )
@@ -228,7 +232,7 @@ def process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_genera
 
 # wail /home/cs/staff/shaowei/hf/math-result_left
 #quail /data/ximing/math-result_left
-def inference_model_pickle(task_name: str, model, tokenizer, base_dir='/data/ximing/math-result_left',
+def inference_model_pickle(task_name: str, model, tokenizer, base_dir,
                            start=20, end=250, num_generations=20):
 
     for number in range(start, end):
@@ -264,5 +268,6 @@ if __name__ == "__main__":
         torch_dtype=torch.float16,
         device_map=f"cuda:{NUMBER}"
     )
-    inference_model_pickle(task_name="math-500", model=model, tokenizer=tokenizer,start=0, end=100)
+    base_dir= '/home/cs/staff/shaowei/semantic/aime'
+    inference_model_pickle(task_name="aime", model=model,base_dir=base_dir, tokenizer=tokenizer,start=0, end=60)
     print("done")
