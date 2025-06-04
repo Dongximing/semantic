@@ -6,15 +6,18 @@ import pandas as pd
 import os
 import datetime
 from collections import Counter
-def inference_model(base_dir, tokenizer):
+def inference_model(base_dir, task, tokenizer):
 
     all_token_ids = []
     for dirname in os.listdir(base_dir):
         if dirname.startswith('data-500-temp0_'):
             number = dirname.split('_')[-1]
             dir_path = os.path.join(base_dir, dirname)
-            json_path = os.path.join(dir_path, f'data-500_{number}.json')
-            
+            if task == 'aime':
+                json_path = os.path.join(dir_path, f'data-60_{number}.json')
+            elif task == 'math-500':
+                json_path = os.path.join(dir_path, f'data-500_{number}.json')
+
             if not os.path.exists(json_path):
                 print(f"{json_path} is not existing! skip!")
                 continue
@@ -59,7 +62,7 @@ def main():
     args = parser.parse_args()
     tokenizer = AutoTokenizer.from_pretrained(args.main_model_path,trust_remote_code=True)
     #/home/cs/staff/shaowei/semantic/aime
-    inference_model(base_dir = '/home/cs/staff/shaowei/semantic/aime',tokenizer=tokenizer)
+    inference_model(base_dir = '/home/cs/staff/shaowei/semantic/aime',task = args.task,tokenizer=tokenizer)
 
 if __name__ == "__main__":
     main()
