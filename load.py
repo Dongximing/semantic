@@ -1,20 +1,19 @@
 import openai
-from tqdm import tqdm
-from transformers import AutoModelForCausalLM, AutoTokenizer
-import os
-import numpy as np
-from sklearn.metrics.pairwise import cosine_distances
-from sklearn.metrics import silhouette_score
-import hdbscan
-import pickle
-from collections import Counter
-import pandas as pd
-import matplotlib.pyplot as plt
-from sklearn.manifold import TSNE
 import logging
-from openai import OpenAI
 import torch
 import torch.nn.functional as F
+import os
+import hdbscan
+import pickle
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.metrics.pairwise import cosine_distances
+from sklearn.metrics import silhouette_score
+from collections import Counter
+from sklearn.manifold import TSNE
+from openai import OpenAI
+from tqdm import tqdm
 from semantic_entropy import cluster_assignment_entropy, predictive_entropy
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 CLIENT = OpenAI(api_key=os.environ['OPENAI_API_KEY'])
@@ -319,7 +318,7 @@ def inference_model_pickle(task_name: str = None, model=None, tokenizer=None,
                           base_dir='/data/ximing/math-result_left/',
                           start=0, end=100, num_generations=20):
 
-    for number in range(start, end):
+    for number in tqdm(range(start, end)):
         dirname = f'data-500-temp0_{number}'
         dir_path = os.path.join(base_dir, dirname)
         json_path = os.path.join(dir_path, f'new_generations_{number}.pkl')
