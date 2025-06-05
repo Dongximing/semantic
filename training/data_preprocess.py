@@ -97,7 +97,7 @@ def main():
     parser.add_argument(
         "--task",
         type=str,
-        default="aime",
+        default="math-500",
     )
     args = parser.parse_args()
 
