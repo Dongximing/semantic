@@ -40,7 +40,7 @@ def predict(tokenizer, model, input_data, temperature, return_full=False, return
                 return False
 
         stopping_criteria_obj = StoppingCriteriaSub(
-                stops=AIME_STOP_TOKENS,
+                stops=STOP_TOKENS,
                 initial_length=initial_length,
                 tokenizer=tokenizer
             )
@@ -277,6 +277,6 @@ if __name__ == "__main__":
         torch_dtype=torch.float16,
         device_map=f"cuda:{NUMBER}"
     )
-    base_dir= '/home/cs/staff/shaowei/semantic/aime'
-    inference_model_pickle(task_name="aime", model=model,base_dir=base_dir, tokenizer=tokenizer,start=0, end=60)
+    base_dir= '/data/ximing/math-result_left'
+    inference_model_pickle(task_name="math-500", model=model,base_dir=base_dir, tokenizer=tokenizer,start=48, end=49)
     print("done")
