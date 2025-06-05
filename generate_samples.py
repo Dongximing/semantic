@@ -22,7 +22,7 @@ def predict(tokenizer, model, input_data, temperature, return_full=False, return
     initial_length = len(inputs['input_ids'][0])
     STOP = None
     stopping_criteria = None
-    if STOP_TOKENS is not None:
+    if AIME_STOP_TOKENS  is not None:
         from transformers import StoppingCriteria, StoppingCriteriaList
         class StoppingCriteriaSub(StoppingCriteria):
             def __init__(self, stops, tokenizer, initial_length=None):
@@ -40,7 +40,7 @@ def predict(tokenizer, model, input_data, temperature, return_full=False, return
                 return False
 
         stopping_criteria_obj = StoppingCriteriaSub(
-                stops=STOP_TOKENS,
+                stops=AIME_STOP_TOKENS,
                 initial_length=initial_length,
                 tokenizer=tokenizer
             )
@@ -117,7 +117,7 @@ def process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_genera
     all_generations = []
   
     log_file = out_pkl_path.replace('.pkl', '.log')
-    n = int(len(alldata))
+    n = int(len(alldata))*0.9
     data = alldata[:n]
     print(len(data))
 
@@ -244,7 +244,7 @@ def process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_genera
 def inference_model_pickle(task_name: str, model, tokenizer, base_dir,
                            start=20, end=250, num_generations=20):
 
-    for number in range(start, end):
+    for number in tqdm(range(start, end)):
         if task_name == 'math-500':
             dirname = f'data-500-temp0_{number}'
             dir_path = os.path.join(base_dir, dirname)
@@ -277,6 +277,6 @@ if __name__ == "__main__":
         torch_dtype=torch.float16,
         device_map=f"cuda:{NUMBER}"
     )
-    base_dir= '/data/ximing/math-result_left'
-    inference_model_pickle(task_name="math-500", model=model,base_dir=base_dir, tokenizer=tokenizer,start=48, end=49)
+    base_dir= '/data/ximing/aime'
+    inference_model_pickle(task_name="aime", model=model,base_dir=base_dir, tokenizer=tokenizer,start=10, end=35)
     print("done")
