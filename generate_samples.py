@@ -118,7 +118,7 @@ def process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_genera
     all_generations = []
   
     log_file = out_pkl_path.replace('.pkl', '.log')
-    n = int(len(alldata)*0.9)
+    n = int(len(alldata)*0.5)
     data = alldata[:n]
     print(len(data))
 
@@ -280,6 +280,6 @@ if __name__ == "__main__":
     )
     #/home/cs/staff/shaowei/semantic/aime
     #/data/ximing/aime
-    base_dir= '/home/cs/staff/shaowei/semantic/aime'
-    inference_model_pickle(task_name="aime", model=model,base_dir=base_dir, tokenizer=tokenizer,start=5, end=10)
+    base_dir= '/data/ximing/aime'
+    inference_model_pickle(task_name="aime", model=model,base_dir=base_dir, tokenizer=tokenizer,start=10, end=35)
     print("done")
