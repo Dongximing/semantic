@@ -245,20 +245,18 @@ def inference_model_pickle(task_name: str, model, tokenizer, base_dir,
                            start=20, end=250, num_generations=20):
 
     for number in tqdm(range(start, end)):
-        if task_name == 'math-500':
-            dirname = f'data-500-temp0_{number}'
-            dir_path = os.path.join(base_dir, dirname)
-            json_path = os.path.join(dir_path, f'seg_by_stop_{number}.json')
-            out_pkl_path = os.path.join(dir_path, f'new_generations_{number}.pkl')
-        elif task_name == 'aime':
-            dirname = f'data-500-temp0_{number}'
-            dir_path = os.path.join(base_dir, dirname)
-            json_path = os.path.join(dir_path, f'seg_by_stop_{number}.json')
-            out_pkl_path = os.path.join(dir_path, f'new_generations_{number}.pkl')
+
+        dirname = f'data-500-temp0_{number}'
+        dir_path = os.path.join(base_dir, dirname)
+        json_path = os.path.join(dir_path, f'seg_by_stop_{number}.json')
+        out_pkl_path = os.path.join(dir_path, f'new_generations_{number}.pkl')
 
 
         if not os.path.isfile(json_path):
             print(f"[Warning] {json_path} does not exist! Skipping...")
+            continue
+        if  os.path.isfile(out_pkl_path):
+            print(f"[Warning] {out_pkl_path} exist! Skipping...")
             continue
 
         print(f"[Info] Processing file: {json_path}")
