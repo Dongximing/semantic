@@ -64,8 +64,8 @@ def process_file_to_pickle(pkl_path, out_pkl_path, tokenizer):
 
 
 def data_preprocess(base_dir, task_name,tokenizer):
-    end = 0
-    start = 100
+    end = 100
+    start = 0
     for number in tqdm(range(start, end)):
         if task_name == 'math-500':
             dirname = f'data-500-temp0_{number}'
