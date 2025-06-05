@@ -321,6 +321,7 @@ def inference_model_pickle(task_name: str = None, model=None, tokenizer=None,
                           base_dir='/data/ximing/math-result_left/',
                           start=49, end=100, num_generations=20):
 
+
     for number in tqdm(range(start, end)):
         dirname = f'data-500-temp0_{number}'
         dir_path = os.path.join(base_dir, dirname)
