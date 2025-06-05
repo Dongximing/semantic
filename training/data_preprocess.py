@@ -47,6 +47,7 @@ def process_file_to_pickle(pkl_path, out_pkl_path, tokenizer):
         generations = pickle.load(f)
     if checking(generations):
         for i in range(0, len(generations), number):
+            print(i)
             g = generations[i]
             if g['most_likely_answer']['answer'] is None:
                 logger.warning(f"Group {i} most_likely_answer i None! Skipping...")
