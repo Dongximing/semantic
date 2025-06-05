@@ -42,7 +42,7 @@ def checking(generations, group_size=21):
 def process_file_to_pickle(pkl_path, out_pkl_path, tokenizer):
     number = 21
     val_data = []
-
+    print('good')
     with open(pkl_path, 'rb') as f:
         generations = pickle.load(f)
     if checking(generations):
