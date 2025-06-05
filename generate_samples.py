@@ -5,6 +5,7 @@ import os
 import pickle
 import numpy as np
 import traceback
+from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import sys 
 STOP_TOKENS = [
