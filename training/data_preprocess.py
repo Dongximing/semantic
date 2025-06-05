@@ -70,12 +70,12 @@ def data_preprocess(base_dir, task_name,tokenizer):
         if task_name == 'math-500':
             dirname = f'data-500-temp0_{number}'
             dir_path = os.path.join(base_dir, dirname)
-            pkl_path = os.path.join(dir_path, f'new_generations_{number}.pkl')
+            pkl_path = os.path.join(dir_path, f'new_generations_with_entropy{number}.pkl')
             out_pkl_path = os.path.join(dir_path, f'valid_preprocess_{number}.pkl')
         elif task_name == 'aime':
             dirname = f'data-500-temp0_{number}'
             dir_path = os.path.join(base_dir, dirname)
-            pkl_path = os.path.join(dir_path, f'new_generations_{number}.pkl')
+            pkl_path = os.path.join(dir_path, f'new_generations_with_entropy{number}.pkl')
             out_pkl_path = os.path.join(dir_path, f'valid_preprocess_{number}.pkl')
         if not os.path.isfile(pkl_path):
             print(f"[Warning] {pkl_path} does not exist! Skipping...")
@@ -87,7 +87,7 @@ def main():
     parser.add_argument(
         "--data_path",
         type=str,
-        default="/data/ximing/math-500",
+        default="/data/ximing/math-result_left",
     )
     parser.add_argument(
         "--main_model_path",
