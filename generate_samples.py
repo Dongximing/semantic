@@ -16,7 +16,7 @@ AIME_STOP_TOKENS = [
     ' \n\n', '.\n\n', ':\n\n', '\n\n', ' Wait', 'Alternatively', 'Wait', ' But',
     ')\n\n', '?\n\n', ']\n\n', ').\n\n', ' Alternatively','Hmm',' Hmm'
 ]
-NUMBER = 0
+NUMBER = 1
 def predict(tokenizer, model, input_data, temperature, return_full=False, return_latent=False):
     max_new_tokens = 150
     inputs = tokenizer(input_data, return_tensors="pt").to(f"cuda:{NUMBER}")
@@ -279,5 +279,5 @@ if __name__ == "__main__":
         device_map=f"cuda:{NUMBER}"
     )
     base_dir= '/data/ximing/aime'
-    inference_model_pickle(task_name="aime", model=model,base_dir=base_dir, tokenizer=tokenizer,start=10, end=35)
+    inference_model_pickle(task_name="aime", model=model,base_dir=base_dir, tokenizer=tokenizer,start=35, end=60)
     print("done")
