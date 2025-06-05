@@ -118,7 +118,7 @@ def process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_genera
     all_generations = []
   
     log_file = out_pkl_path.replace('.pkl', '.log')
-    n = int(len(alldata))*0.9
+    n = int(len(alldata)*0.9)
     data = alldata[:n]
     print(len(data))
 
