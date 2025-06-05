@@ -152,7 +152,6 @@ def process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_genera
                     "ppl": float(ppl) if ppl is not None else None,
                     "log_likelihoods_len": len(log_likelihoods) if log_likelihoods is not None else 0,
                 })
-                print('triggered_stop',triggered_stop)
                 if i == 0:
                     all_generations.append({
                         "most_input_text": input_text,
