@@ -42,12 +42,10 @@ def checking(generations, group_size=21):
 def process_file_to_pickle(pkl_path, out_pkl_path, tokenizer):
     number = 21
     val_data = []
-    print('good')
     with open(pkl_path, 'rb') as f:
         generations = pickle.load(f)
     if checking(generations):
         for i in range(0, len(generations), number):
-            print(i)
             g = generations[i]
             if g['most_input_text']is None:
                 logger.warning(f"Group {i} most_likely_answer i None! Skipping...")
@@ -57,6 +55,7 @@ def process_file_to_pickle(pkl_path, out_pkl_path, tokenizer):
     with open(out_pkl_path, "wb") as f:
         pickle.dump(val_data, f)
     print(f"Processed {len(val_data)} items (saved to {out_pkl_path}).")
+    return len(val_data)
 
 
 
@@ -67,6 +66,7 @@ def process_file_to_pickle(pkl_path, out_pkl_path, tokenizer):
 def data_preprocess(base_dir, task_name,tokenizer):
     end = 100
     start = 0
+    total_valid_data = 0
     for number in tqdm(range(start, end)):
         if task_name == 'math-500':
             dirname = f'data-500-temp0_{number}'
@@ -81,7 +81,9 @@ def data_preprocess(base_dir, task_name,tokenizer):
         if not os.path.isfile(pkl_path):
             print(f"[Warning] {pkl_path} does not exist! Skipping...")
             continue
-        process_file_to_pickle(pkl_path, out_pkl_path, tokenizer)
+        number = process_file_to_pickle(pkl_path, out_pkl_path, tokenizer)
+        total_valid_data += number
+    print('total_valid_data:',total_valid_data)
 
 def main():
     parser = argparse.ArgumentParser()
