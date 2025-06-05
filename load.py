@@ -319,7 +319,7 @@ def process_file_to_pickle(json_path, out_pkl_path):
 
 def inference_model_pickle(task_name: str = None, model=None, tokenizer=None,
                           base_dir='/data/ximing/math-result_left/',
-                          start=0, end=100, num_generations=20):
+                          start=49, end=100, num_generations=20):
 
     for number in tqdm(range(start, end)):
         dirname = f'data-500-temp0_{number}'
