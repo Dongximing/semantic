@@ -60,9 +60,6 @@ def process_file_to_pickle(pkl_path, out_pkl_path, tokenizer):
 
 
 
-
-
-
 def data_preprocess(base_dir, task_name,tokenizer):
     end = 100
     start = 0
