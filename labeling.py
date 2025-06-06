@@ -314,6 +314,7 @@ def process_file_to_pickle(json_path, out_pkl_path):
                 if label is not None:
                     labels.append(label)
             label_counts = Counter(labels)
+            print(label_counts)
             total = len(labels)
             for g in group[1:]:
                 label = g['clustering-gpt-prompty_deberta']
