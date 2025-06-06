@@ -310,12 +310,14 @@ def process_file_to_pickle(json_path, out_pkl_path):
             labels = []
             for local_idx, g in enumerate(group[1:]):
                 label = g['clustering-gpt-prompty_deberta']
+
                 if label is not None:
                     labels.append(label)
             label_counts = Counter(labels)
             total = len(labels)
             for g in group[1:]:
                 label = g['clustering-gpt-prompty_deberta']
+                print(label)
                 if label is not None:
                     g['probability_of_deberta'] = label_counts[label] / total
                 else:
