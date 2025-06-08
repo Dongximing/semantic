@@ -265,7 +265,7 @@ def process_file_to_pickle(json_path, out_pkl_path):
     #     "Qwen/QwQ-32B-AWQ",
     #     trust_remote_code=True
     # )
-    tokenizer = AutoTokenizer.from_pretrained("microsoft/deberta-v2-xlarge-mnli",use_fast=False)
+    tokenizer = AutoTokenizer.from_pretrained("microsoft/deberta-v2-xlarge-mnli")
     model = AutoModelForSequenceClassification.from_pretrained(
         "microsoft/deberta-v2-xlarge-mnli").to("cuda:0")
 
