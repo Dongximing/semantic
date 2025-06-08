@@ -3,7 +3,6 @@ import logging
 import torch
 import torch.nn.functional as F
 import os
-import hdbscan
 import pickle
 import numpy as np
 import pandas as pd
