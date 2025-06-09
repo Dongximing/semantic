@@ -42,3 +42,18 @@ def load_dataset(path, n_sample=2000):
                                for record in generations.values()]).squeeze(-2).transpose(0, 1).to(torch.float32)
 
     return (tbg_dataset[:, :n_sample, :], slt_dataset[:, :n_sample, :], entropy[:n_sample], accuracies[:n_sample])
+def create_Xs_and_ys(datasets, scores, val_test_splits=[0.2, 0.1], random_state=42):
+    """
+
+    """
+    X = np.array([d[0] for d in datasets])
+    y = np.array(scores)
+    valid_size, test_size = val_test_splits
+
+    X_train_val, X_test, y_train_val, y_test = train_test_split(
+        X, y, test_size=test_size, random_state=random_state
+    )
+    X_train, X_val, y_train, y_val = train_test_split(
+        X_train_val, y_train_val, test_size=valid_size, random_state=random_state
+    )
+    return X_train, X_val, X_test, y_train, y_val, y_test
