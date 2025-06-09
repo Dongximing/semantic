@@ -158,7 +158,7 @@ def create_Xs_and_ys(datasets, scores, val_test_splits=[0.2, 0.1], random_state=
 def main():
     # 数据准备
     start = 0
-    end = 100
+    end = 1
     X, Y = [], []
     base_dir = "/data/ximing/math-result_left"
     for number in tqdm(range(start, end)):
