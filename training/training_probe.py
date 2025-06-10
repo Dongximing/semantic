@@ -181,6 +181,7 @@ def main(dataset,method,data_dir):
         dir_path = os.path.join(base_dir, dirname)
         pkl_path = os.path.join(dir_path, f'new_generations_with_entropy_and_prob{number}.pkl')
         if not os.path.exists(pkl_path):
+            print(f"File {pkl_path} does not exist!")
             continue
 
 
