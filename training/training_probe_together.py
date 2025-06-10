@@ -215,7 +215,7 @@ def main(method):
     model = SemanticEntropyModel(INPUT_DIM, HIDDEN_DIM)
     history = train_probe_regression(
         model, train_loader, val_loader, epochs=50, lr=1e-3,
-        device='cuda:2', early_stop_rounds=7, save_pred_path=f'{method}_aime_math_val_pred_results.npz',method=method
+        device='cuda', early_stop_rounds=7, save_pred_path=f'{method}_aime_math_val_pred_results.npz',method=method
     )
 
 
