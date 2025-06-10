@@ -80,7 +80,7 @@ def getting_training_examples(pkl_path,method):
 
 def train_probe_regression(
     model, train_loader, val_loader, epochs=50, lr=1e-3,
-    device='cuda', early_stop_rounds=5, save_pred_path=None,method=""
+    device='cuda', early_stop_rounds=5, save_pred_path=None,method="", dataset_name = ""
 ):
     model.to(device)
     loss_fn = nn.MSELoss()
@@ -133,7 +133,7 @@ def train_probe_regression(
             best_epoch = epoch
             early_stop_counter = 0
             best_preds = preds.copy()
-            torch.save(model.state_dict(), f'{dataset}_{method}_best_probe_mse.pt')
+            torch.save(model.state_dict(), f'{dataset_name}_{method}_best_probe_mse.pt')
         else:
             early_stop_counter += 1
             if early_stop_counter >= early_stop_rounds:
@@ -190,7 +190,7 @@ def main(dataset,method):
             continue
 
 
-        x, y, z = getting_training_examples(pkl_path,method)
+        x, y, z = getting_training_examples(pkl_path,method,)
         X.extend(x)
         Y.extend(y)
 
@@ -208,10 +208,10 @@ def main(dataset,method):
     model = SemanticEntropyModel(INPUT_DIM, HIDDEN_DIM)
     history = train_probe_regression(
         model, train_loader, val_loader, epochs=50, lr=1e-3,
-        device='cuda', early_stop_rounds=7, save_pred_path=f'{dataset}_{method}_val_pred_results.npz',method=method
+        device='cuda', early_stop_rounds=7, save_pred_path=f'{dataset}_{method}_val_pred_results.npz',method=method,dataset_name = dataset
     )
 
-    # 加载最优模型并在测试集评估
+
     model.load_state_dict(torch.load(f'{dataset}_{method}_best_probe_mse.pt'))
     model.eval()
     all_preds, all_targets = [], []
