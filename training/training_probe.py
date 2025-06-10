@@ -60,7 +60,7 @@ def getting_training_examples(pkl_path):
                 elif method == "output_last_hidden_list":
                     ## average pooling last hidden states of all tokens in the sequence, [len ,1 ,D] -> [1,D]
                     output_last_hidden_list = g['output_last_hidden_list'] # [len ,1 ,D]
-                    output_last_hidden_list = output_last_hidden_list.sequeeze(1) # [len ,D]
+                    output_last_hidden_list = output_last_hidden_list.squeeze(1) # [len ,D]
                     output_last_hidden_list = output_last_hidden_list.mean(dim=0, keepdim=True) #[1,D]
                     print('output_last_hidden_list',output_last_hidden_list.size())
                     break
