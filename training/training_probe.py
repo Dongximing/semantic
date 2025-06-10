@@ -175,17 +175,14 @@ def create_Xs_and_ys(datasets, scores, val_test_splits=[0.2, 0.1], random_state=
 
 
 
-def main(dataset,method):
+def main(dataset,method,data_dir):
 
     start = 0
-    end = 100
+    end = 60
     X, Y = [], []
-    base_dir = "/data/ximing/math-result_left"
+    base_dir = data_dir
     for number in tqdm(range(start, end)):
-        if dataset == 'math-500':
-            dirname = f'data-500-temp0_{number}'
-        else:
-            pass
+        dirname = f'data-500-temp0_{number}'
         dir_path = os.path.join(base_dir, dirname)
         pkl_path = os.path.join(dir_path, f'new_generations_with_entropy_and_prob{number}.pkl')
         if not os.path.exists(pkl_path):
@@ -244,13 +241,14 @@ def main(dataset,method):
     plt.title(f'{dataset}_{method}_Validation Loss Curve')
     plt.savefig(f'{dataset}_{method}_validation_loss_curve.png',dpi=200,bbox_inches='tight')
     plt.show()
-
+#/data/ximing/aime
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     # "last_hidden_state", "last_second_token", "last_input_token", "output_last_hidden_list"
     parser.add_argument("--dataset", type=str, required=True, help="dataset")
     parser.add_argument("--method", type=str, required=True, help="method for X")
+    parser.add_argument("--data_dir", type=str, required=True, help="method for X")
     args = parser.parse_args()
-    main(args.dataset,args.method)
+    main(args.dataset,args.method,args.data_dir)
 
 

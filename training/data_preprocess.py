@@ -61,7 +61,7 @@ def process_file_to_pickle(pkl_path, out_pkl_path, tokenizer):
 
 
 def data_preprocess(base_dir, task_name,tokenizer):
-    end = 100
+    end = 60
     start = 0
     total_valid_data = 0
     for number in tqdm(range(start, end)):
@@ -87,7 +87,7 @@ def main():
     parser.add_argument(
         "--data_path",
         type=str,
-        default="/data/ximing/math-result_left",
+        default="/data/ximing/aime",
     )
     parser.add_argument(
         "--main_model_path",
@@ -97,7 +97,7 @@ def main():
     parser.add_argument(
         "--task",
         type=str,
-        default="math-500",
+        default="aime",
     )
     args = parser.parse_args()
 
