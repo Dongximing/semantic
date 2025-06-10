@@ -193,7 +193,7 @@ def main(dataset,method):
         x, y, z = getting_training_examples(pkl_path,method,)
         X.extend(x)
         Y.extend(y)
-
+    print("X",len(X))
     X_train, X_val, X_test, y_train, y_val, y_test = create_Xs_and_ys(X, Y)
     train_set = ProbeDataset(X_train, y_train)
     val_set = ProbeDataset(X_val, y_val)
