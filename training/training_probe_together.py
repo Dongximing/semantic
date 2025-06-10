@@ -193,7 +193,7 @@ def main(method):
     for number in tqdm(range(start, end)):
         dirname = f'data-500-temp0_{number}'
         dir_path = os.path.join(base_dir, dirname)
-        pkl_path = os.path.join(dir_path, f'new_generations_with_entropy_prob{number}.pkl')
+        pkl_path = os.path.join(dir_path, f'new_generations_with_entropy_and_prob{number}.pkl')
         if not os.path.exists(pkl_path):
             print(f"File {pkl_path} does not exist!")
             continue
