@@ -2,17 +2,10 @@ import json
 import os
 import pickle
 import argparse
-import numpy as np
-import pandas as pd
-import scipy
-import torch
+
 import logging
 from tqdm import tqdm
 from matplotlib import pyplot as plt
-from sklearn import metrics
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import log_loss, roc_auc_score, mean_squared_error
-from sklearn.model_selection import train_test_split
 from transformers import AutoTokenizer
 log_path = "filtering.log"
 logging.basicConfig(
