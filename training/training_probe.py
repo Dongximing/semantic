@@ -15,6 +15,7 @@ import warnings
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from tqdm import tqdm
+import argparse
 INPUT_DIM = 5120
 HIDDEN_DIM = 256
 
@@ -38,8 +39,8 @@ class SemanticEntropyModel(nn.Module):
         return out.squeeze(-1)
 
 
-def getting_training_examples(pkl_path):
-    method = "output_last_hidden_list"
+def getting_training_examples(pkl_path,method):
+    method = method
     x, y, z = [], [], []
     group_size = 21
     if os.path.getsize(pkl_path) > 0:
@@ -62,9 +63,7 @@ def getting_training_examples(pkl_path):
                     output_last_hidden_list = g['output_last_hidden_list'] # [len ,1 ,D]
                     output_last_hidden_list = output_last_hidden_list.squeeze(1) # [len ,D]
                     output_last_hidden_list = output_last_hidden_list.mean(dim=0, keepdim=True) #[1,D]
-                    print('output_last_hidden_list',output_last_hidden_list.size())
-                    break
-                    x.append(g['output_last_hidden_list'])
+                    x.append(output_last_hidden_list)
 
                 elif method == "":
                     #x.append(g[''])
@@ -81,7 +80,7 @@ def getting_training_examples(pkl_path):
 
 def train_probe_regression(
     model, train_loader, val_loader, epochs=50, lr=1e-3,
-    device='cuda', early_stop_rounds=5, save_pred_path=None
+    device='cuda', early_stop_rounds=5, save_pred_path=None,method=""
 ):
     model.to(device)
     loss_fn = nn.MSELoss()
@@ -134,7 +133,7 @@ def train_probe_regression(
             best_epoch = epoch
             early_stop_counter = 0
             best_preds = preds.copy()
-            torch.save(model.state_dict(), 'best_probe_mse.pt')
+            torch.save(model.state_dict(), f'{dataset}_{method}_best_probe_mse.pt')
         else:
             early_stop_counter += 1
             if early_stop_counter >= early_stop_rounds:
@@ -174,19 +173,24 @@ def create_Xs_and_ys(datasets, scores, val_test_splits=[0.2, 0.1], random_state=
 
 
 
-def main():
-    # 数据准备
+def main(dataset,method):
+
     start = 0
     end = 1
     X, Y = [], []
     base_dir = "/data/ximing/math-result_left"
     for number in tqdm(range(start, end)):
-        dirname = f'data-500-temp0_{number}'
+        if dataset == 'math-500':
+            dirname = f'data-500-temp0_{number}'
+        else:
+            pass
         dir_path = os.path.join(base_dir, dirname)
         pkl_path = os.path.join(dir_path, f'new_generations_with_entropy_and_prob{number}.pkl')
         if not os.path.exists(pkl_path):
             continue
-        x, y, z = getting_training_examples(pkl_path)
+
+
+        x, y, z = getting_training_examples(pkl_path,method)
         X.extend(x)
         Y.extend(y)
 
@@ -204,11 +208,11 @@ def main():
     model = SemanticEntropyModel(INPUT_DIM, HIDDEN_DIM)
     history = train_probe_regression(
         model, train_loader, val_loader, epochs=50, lr=1e-3,
-        device='cuda', early_stop_rounds=7, save_pred_path='val_pred_results.npz'
+        device='cuda', early_stop_rounds=7, save_pred_path=f'{dataset}_{method}_val_pred_results.npz',method=method
     )
 
     # 加载最优模型并在测试集评估
-    model.load_state_dict(torch.load('best_probe_mse.pt'))
+    model.load_state_dict(torch.load(f'{dataset}_{method}_best_probe_mse.pt'))
     model.eval()
     all_preds, all_targets = [], []
     with torch.no_grad():
@@ -224,7 +228,7 @@ def main():
     test_mae = mean_absolute_error(all_targets, all_preds)
     test_r2 = r2_score(all_targets, all_preds)
     print(f"Test MSE: {test_mse:.4f}, MAE: {test_mae:.4f}, R2: {test_r2:.4f}")
-    np.savez('test_pred_results.npz', pred=all_preds, target=all_targets)
+    np.savez(f'{dataset}_{method}_test_pred_results.npz', pred=all_preds, target=all_targets)
 
 
     val_mse = [h['val_mse'] for h in history]
@@ -236,9 +240,15 @@ def main():
     plt.ylabel('Loss')
     plt.legend()
     plt.title('Validation Loss Curve')
+    plt.savefig(f'{dataset}_{method}_validation_loss_curve.png',dpi=200,bbox_inches='tight')
     plt.show()
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    # "last_hidden_state", "last_second_token", "last_input_token", "output_last_hidden_list"
+    parser.add_argument("--dataset", type=str, required=True, help="dataset")
+    parser.add_argument("--method", type=str, required=True, help="method for X")
+    args = parser.parse_args()
+    main(args.dataset,args.method)
 
 
