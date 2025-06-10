@@ -2,10 +2,10 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader, dataset
-from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from tqdm import tqdm
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import os
@@ -58,7 +58,10 @@ def getting_training_examples(pkl_path):
                 elif method == "last_input_token":
                     x.append(g['last_input_token_state'])
                 elif method == "output_last_hidden_list":
-                    output_last_hidden_list = g['output_last_hidden_list']
+                    ## average pooling last hidden states of all tokens in the sequence, [len ,1 ,D] -> [1,D]
+                    output_last_hidden_list = g['output_last_hidden_list'] # [len ,1 ,D]
+                    output_last_hidden_list = output_last_hidden_list.sequeeze(1) # [len ,D]
+                    output_last_hidden_list = output_last_hidden_list.mean(dim=0, keepdim=True) #[1,D]
                     print('output_last_hidden_list',output_last_hidden_list.size())
                     break
                     x.append(g['output_last_hidden_list'])
@@ -223,8 +226,7 @@ def main():
     print(f"Test MSE: {test_mse:.4f}, MAE: {test_mae:.4f}, R2: {test_r2:.4f}")
     np.savez('test_pred_results.npz', pred=all_preds, target=all_targets)
 
-    # 可视化训练过程
-    import matplotlib.pyplot as plt
+
     val_mse = [h['val_mse'] for h in history]
     val_mae = [h['val_mae'] for h in history]
     plt.figure()
