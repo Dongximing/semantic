@@ -4,6 +4,8 @@ import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader, dataset
 from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+from tqdm import tqdm
 import numpy as np
 import pandas as pd
 import os
@@ -37,7 +39,7 @@ class SemanticEntropyModel(nn.Module):
 
 
 def getting_training_examples(pkl_path):
-    method = "last_hidden_state"
+    method = "output_last_hidden_list"
     x, y, z = [], [], []
     group_size = 21
     if os.path.getsize(pkl_path) > 0:
@@ -51,14 +53,28 @@ def getting_training_examples(pkl_path):
             if g['probability_of_deberta'] is not None:
                 if method == "last_hidden_state":
                     x.append(g['last_hidden_state'])
-                    y.append(g['probability_of_deberta'])
-                    z.append(g['clustering-gpt-prompty_deberta'])
-                else:
+                elif method == "last_second_token":
+                    x.append(g['sec_last_hidden_state'])
+                elif method == "last_input_token":
+                    x.append(g['last_input_token_state'])
+                elif method == "output_last_hidden_list":
+                    output_last_hidden_list = g['output_last_hidden_list']
+                    print('output_last_hidden_list',output_last_hidden_list.size())
+                    break
+                    x.append(g['output_last_hidden_list'])
+
+                elif method == "":
+                    #x.append(g[''])
                     pass
+                elif method == "":
+                    pass
+                    #x.append(g[''])
+                y.append(g['probability_of_deberta'])
+                z.append(g['clustering-gpt-prompty_deberta'])
+
     assert len(x) == len(y)
     return x, y, z
-from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
-from tqdm import tqdm
+
 
 def train_probe_regression(
     model, train_loader, val_loader, epochs=50, lr=1e-3,
@@ -158,7 +174,7 @@ def create_Xs_and_ys(datasets, scores, val_test_splits=[0.2, 0.1], random_state=
 def main():
     # 数据准备
     start = 0
-    end = 100
+    end = 1
     X, Y = [], []
     base_dir = "/data/ximing/math-result_left"
     for number in tqdm(range(start, end)):
