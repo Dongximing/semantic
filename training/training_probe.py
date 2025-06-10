@@ -154,19 +154,21 @@ def train_probe_regression(
     return history
 
 def create_Xs_and_ys(datasets, scores, val_test_splits=[0.2, 0.1], random_state=42):
-    """
-
-    """
     X = np.array([d[0] for d in datasets])
     y = np.array(scores)
+
     valid_size, test_size = val_test_splits
+
 
     X_train_val, X_test, y_train_val, y_test = train_test_split(
         X, y, test_size=test_size, random_state=random_state
     )
+
+    val_adjusted = valid_size / (1 - test_size)
     X_train, X_val, y_train, y_val = train_test_split(
-        X_train_val, y_train_val, test_size=valid_size, random_state=random_state
+        X_train_val, y_train_val, test_size=val_adjusted, random_state=random_state
     )
+
     return X_train, X_val, X_test, y_train, y_val, y_test
 
 
@@ -239,7 +241,7 @@ def main(dataset,method):
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.legend()
-    plt.title('Validation Loss Curve')
+    plt.title(f'{dataset}_{method}_Validation Loss Curve')
     plt.savefig(f'{dataset}_{method}_validation_loss_curve.png',dpi=200,bbox_inches='tight')
     plt.show()
 
