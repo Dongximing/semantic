@@ -79,7 +79,7 @@ if __name__ == "__main__":
     model = AutoModelForCausalLM.from_pretrained(
         "Qwen/QwQ-32B-AWQ",
         torch_dtype=torch.float16,
-        device_map={f"{NUMBER}": NUMBER}
+        device_map=f"cuda:{NUMBER}"
     )
 
     base_dir = '/data/ximing/semantic'
