@@ -53,8 +53,8 @@ def process_file_to_json(save_path, tokenizer, model, problem, answer):
 def inference_model_pickle(task_name: str, model, tokenizer, base_dir,
                            start=0, end=10):
     if task_name == "math-500":
-        ds = load_dataset("HuggingFaceH4/MATH-500")
-        print(type(ds))
+        ds = load_dataset("HuggingFaceH4/MATH-500")['test']
+
     elif task_name == "aime":
         ds = load_dataset("HuggingFaceH4/aime_2024", split="train")
     else:
