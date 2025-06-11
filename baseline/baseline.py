@@ -7,7 +7,7 @@ from tqdm import tqdm
 from datasets import load_dataset
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-NUMBER = 1
+NUMBER = 0
 
 def predict(tokenizer, model, input_data, temperature):
     max_new_tokens = 15000
