@@ -7,7 +7,7 @@ from tqdm import tqdm
 from datasets import load_dataset
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-NUMBER = 0
+NUMBER = 2
 
 def predict(tokenizer, model, input_data, temperature):
     max_new_tokens = 15000
@@ -84,11 +84,11 @@ if __name__ == "__main__":
 
     base_dir = '/data/ximing/semantic'
     inference_model_pickle(
-        task_name="aime",
+        task_name="math-500",
         model=model,
         tokenizer=tokenizer,
         base_dir=base_dir,
-        start=0,
-        end=30
+        start=100,
+        end=200
     )
     print("done")
