@@ -54,6 +54,7 @@ def inference_model_pickle(task_name: str, model, tokenizer, base_dir,
                            start=0, end=10):
     if task_name == "math-500":
         ds = load_dataset("HuggingFaceH4/MATH-500")
+        print(type(ds))
     elif task_name == "aime":
         ds = load_dataset("HuggingFaceH4/aime_2024", split="train")
     else:
