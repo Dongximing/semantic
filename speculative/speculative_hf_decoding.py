@@ -6,32 +6,130 @@ import os
 import time
 from tqdm import tqdm
 from datasets import load_dataset
+from transformers import StoppingCriteria, StoppingCriteriaList
 MATH_PROMPT = "\nPlease reason step by step, and put your final answer within \\boxed{}."
 TARGET_model= 1
 SPEC_model = 0
 TARGET_probe = 2
 SPEC_probe = 3
+
+
+class StoppingCriteriaSub(StoppingCriteria):
+    def __init__(self, stops, tokenizer, initial_length=None):
+        super().__init__()
+        self.stops = stops
+        self.initial_length = initial_length
+        self.tokenizer = tokenizer
+        self.triggered_stop = None
+
+    def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor):
+        generation = self.tokenizer.decode(input_ids[0][self.initial_length:], skip_special_tokens=False)
+        for stop in self.stops:
+            if stop in generation:
+                self.triggered_stop = stop
+                return True
+        return False
+STOP_TOKENS = [
+    ' \n\n', '.\n\n', ':\n\n', '\n\n', ' Wait', 'Alternatively', 'Wait', ' But',
+    ')\n\n', '?\n\n', ']\n\n', ').\n\n'
+]
+
+def generate_with_partial_kv(
+        model, tokenizer, input_ids, past_key_values=None, max_new_tokens=10,
+        temperature=1.0, top_k=50, top_p=0.95
+):
+    device = input_ids.device
+
+
+    if input_ids.numel() == 0 or input_ids.shape[1] == 0:
+        raise ValueError("input_ids cannot be empty")
+
+    seq_len = input_ids.shape[1]
+
+    if past_key_values is None:
+
+        if seq_len > 1:
+            with torch.no_grad():
+                outputs = model(input_ids=input_ids[:, :-1], use_cache=True, return_dict=True)
+                past_key_values = outputs.past_key_values
+    else:
+
+        cached_len = past_key_values[0][0].shape[2]
+        if cached_len < seq_len - 1:
+            new_input_ids = input_ids[:, cached_len:-1]
+            if new_input_ids.shape[1] > 0:
+                with torch.no_grad():
+                    outputs = model(input_ids=new_input_ids, past_key_values=past_key_values, use_cache=True,
+                                    return_dict=True)
+                    past_key_values = outputs.past_key_values
+
+    do_sample = temperature > 0 and (top_k > 0 or top_p < 1.0)
+
+    stopping_criteria_obj = StoppingCriteriaSub(
+        stops=STOP_TOKENS,
+        initial_length=len(input_ids[0]),
+        tokenizer=tokenizer
+    )
+    stopping_criteria = StoppingCriteriaList([
+        stopping_criteria_obj
+    ])
+
+
+    try:
+        output = model.generate(
+            input_ids=input_ids,
+            attention_mask=(input_ids != tokenizer.pad_token_id).long(),
+            max_new_tokens=max_new_tokens,
+            temperature=temperature,
+            top_k=top_k,
+            top_p=top_p,
+            do_sample=do_sample,
+            use_cache=True,
+            return_dict_in_generate=True,
+            past_key_values=past_key_values,
+            pad_token_id=tokenizer.eos_token_id,
+            stopping_criteria=stopping_criteria,
+        )
+    except Exception as e:
+        print(f"Error in model.generate: {e}")
+        print(f"past_key_values type: {type(past_key_values)}")
+        if past_key_values is not None:
+            print(f"past_key_values length: {len(past_key_values)}")
+            print(f"first layer shape: {past_key_values[0][0].shape if len(past_key_values) > 0 else 'N/A'}")
+    generated_ids = output.sequences
+    past_key_values = output.past_key_values
+
+    return generated_ids, past_key_values
 def speculative_decoding(target_model, target_tokenizer, speculative_model,speculative_tokenizer,problem, target_temperature,speculative_temperature,max_new_tokens):
     messages = [
         {"role": "user", "content": problem + MATH_PROMPT}
     ]
-    target_text = target_tokenizer.apply_chat_template(
+    generated_ids = target_text = target_tokenizer.apply_chat_template( #big
         messages,
         tokenize=False,
         add_generation_prompt=True
     )
-    speculative_text = speculative_tokenizer.apply_chat_template(
+    speculative_text = speculative_tokenizer.apply_chat_template( #small
         messages,
         tokenize=False,
         add_generation_prompt=True
     )
-    print(target_text)
-    print('-----------------------------------')
-    print(speculative_text)
+    # we start at the target model
+    start_model_inputs = target_tokenizer(target_text, return_tensors="pt").to(target_model.device)
+    prompt_len = start_model_inputs.shape[1]
+    spec_kv, tgt_kv = None, None
+    correct_tokens, try_correct_num = [], 0
+    begin = True
 
 
-    model_inputs = target_tokenizer([target_text], return_tensors="pt").to(target_model.device)
 
+
+    if change_flag:
+        try_correct_num = try_correct_num + 1
+        generated_ids, tgt_kv = generate_with_partial_kv(
+        target_model, target_tokenizer, generated_ids, tgt_kv_candidate,
+            max_new_tokens=change_tokens, temperature=0.6, top_k=50, top_p=0.95
+        )
 
 
 
@@ -85,6 +183,7 @@ if __name__ == "__main__":
     parser.add_argument("--max_new_tokens", type=int, help="max_new_tokens",default=32000)
     parser.add_argument("--top_p", type=float, help="top_p",default=0.9)
     parser.add_argument("--top_k", type=int, help="top_k",default=50)
+    parser.add_argument("--target_probe", type=str, help="num_return_sequences",default=1)
     args = parser.parse_args()
     target_model = transformers.AutoModelForCausalLM.from_pretrained(
         args.target_model,
