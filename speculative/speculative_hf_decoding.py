@@ -13,7 +13,7 @@ TARGET_probe = 2
 SPEC_probe = 3
 def speculative_decoding(target_model, target_tokenizer, speculative_model,speculative_tokenizer,problem, target_temperature,speculative_temperature,max_new_tokens):
     messages = [
-        {"role": "user", "content": problem +MATH_PROMPT}
+        {"role": "user", "content": problem + MATH_PROMPT+ ' <think>\n'}
     ]
     target_text = target_tokenizer.apply_chat_template(
         messages,
