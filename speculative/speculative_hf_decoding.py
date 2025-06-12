@@ -104,7 +104,7 @@ if __name__ == "__main__":
     problems_and_answers = [{"problem": item["problem"], "answer": item["answer"]} for item in ds]
 
     for idx, number in enumerate(tqdm(range(args.start_dataset, args.end_dataset))):
-        dirname = f'baseline_{args.task_name}_{number}'
+        dirname = f'spec_{args.dataset}_{number}'
         dir_path = os.path.join(args.data_dir, dirname)
         problem = problems_and_answers[idx]['problem']
         answer = problems_and_answers[idx]['answer']
