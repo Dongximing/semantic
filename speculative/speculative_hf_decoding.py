@@ -7,11 +7,37 @@ import time
 from tqdm import tqdm
 from datasets import load_dataset
 from transformers import StoppingCriteria, StoppingCriteriaList
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+BEGIN_TOKEN_NUM = 200
+SPECULATIVE_OUTPUT_LENGTH = 200
 MATH_PROMPT = "\nPlease reason step by step, and put your final answer within \\boxed{}."
 TARGET_model= 1
 SPEC_model = 0
 TARGET_probe = 2
 SPEC_probe = 3
+
+class SemanticEntropyProbTarget(nn.Module):
+    def __init__(self, input_dim, hidden_dim):
+        super().__init__()
+        self.fc1 = nn.Linear(input_dim, hidden_dim)
+        self.fc2 = nn.Linear(hidden_dim, 1)
+    def forward(self, x):
+        h = F.relu(self.fc1(x))
+        out = torch.sigmoid(self.fc2(h))
+        return out.squeeze(-1)
+
+class SemanticEntropyProbSpec(nn.Module):
+    def __init__(self, input_dim, hidden_dim):
+        super().__init__()
+        self.fc1 = nn.Linear(input_dim, hidden_dim)
+        self.fc2 = nn.Linear(hidden_dim, 1)
+    def forward(self, x):
+        h = F.relu(self.fc1(x))
+        out = torch.sigmoid(self.fc2(h))
+        return out.squeeze(-1)
 
 
 class StoppingCriteriaSub(StoppingCriteria):
@@ -38,7 +64,6 @@ def generate_with_partial_kv(
         model, tokenizer, input_ids, past_key_values=None, max_new_tokens=10,
         temperature=1.0, top_k=50, top_p=0.95
 ):
-    device = input_ids.device
 
 
     if input_ids.numel() == 0 or input_ids.shape[1] == 0:
@@ -81,6 +106,7 @@ def generate_with_partial_kv(
             attention_mask=(input_ids != tokenizer.pad_token_id).long(),
             max_new_tokens=max_new_tokens,
             temperature=temperature,
+            output_hidden_states=True,
             top_k=top_k,
             top_p=top_p,
             do_sample=do_sample,
@@ -98,52 +124,86 @@ def generate_with_partial_kv(
             print(f"first layer shape: {past_key_values[0][0].shape if len(past_key_values) > 0 else 'N/A'}")
     generated_ids = output.sequences
     past_key_values = output.past_key_values
-
-    return generated_ids, past_key_values
-def speculative_decoding(target_model, target_tokenizer, speculative_model,speculative_tokenizer,problem, target_temperature,speculative_temperature,max_new_tokens):
-    messages = [
-        {"role": "user", "content": problem + MATH_PROMPT}
-    ]
-    generated_ids = target_text = target_tokenizer.apply_chat_template( #big
-        messages,
-        tokenize=False,
-        add_generation_prompt=True
-    )
-    speculative_text = speculative_tokenizer.apply_chat_template( #small
-        messages,
-        tokenize=False,
-        add_generation_prompt=True
-    )
-    # we start at the target model
-    start_model_inputs = target_tokenizer(target_text, return_tensors="pt").to(target_model.device)
-    prompt_len = start_model_inputs.shape[1]
-    spec_kv, tgt_kv = None, None
-    correct_tokens, try_correct_num = [], 0
-    begin = True
-
-
-
-
-    if change_flag:
-        try_correct_num = try_correct_num + 1
-        generated_ids, tgt_kv = generate_with_partial_kv(
-        target_model, target_tokenizer, generated_ids, tgt_kv_candidate,
-            max_new_tokens=change_tokens, temperature=0.6, top_k=50, top_p=0.95
+    hidden = outputs.hidden_states
+    output_last_hidden_list = torch.stack([layer[-1][:, -1, :] for layer in hidden]).cpu()
+    output_last_hidden_list = output_last_hidden_list.squeeze(1)  # [len ,D]
+    output_last_hidden_list = output_last_hidden_list.mean(dim=0, keepdim=True)  # [1,D]
+    return generated_ids, past_key_values,output_last_hidden_list
+def speculative_decoding(target_model, target_tokenizer, speculative_model,speculative_tokenizer,problem, target_temperature,speculative_temperature,max_new_tokens,model_target_probe,model_spec_probe):
+        messages = [
+            {"role": "user", "content": problem + MATH_PROMPT}
+        ]
+        generated_ids = target_text = target_tokenizer.apply_chat_template( #big
+            messages,
+            tokenize=False,
+            add_generation_prompt=True
         )
+        speculative_text = speculative_tokenizer.apply_chat_template( #small
+            messages,
+            tokenize=False,
+            add_generation_prompt=True
+        )
+        start_model_inputs = target_tokenizer(target_text, return_tensors="pt").to(target_model.device)
+        prompt_len = start_model_inputs.shape[1]
+        spec_kv, tgt_kv = None, None
+        correct_tokens, try_correct_num = [], 0
+        token_num, change_tokens, change_flag = 0, 0, False
+        begin = True
+
+        while generated_ids.shape[1] < max_new_tokens:#TODO
+            # we start at the target model.
+            if begin:
+                change_tokens = BEGIN_TOKEN_NUM
+                begin = False
+                change_flag = True
+                tgt_kv_candidate = None
+                spe_decoded_text = ''
+            if not begin:
+                # generate the text and check by probe
+                input_length = generated_ids.shape[1]
+                generated_ids, spec_kv,pooling_hidden_information = generate_with_partial_kv(
+                    speculative_model, speculative_tokenizer, generated_ids, spec_kv,
+                    max_new_tokens=SPECULATIVE_OUTPUT_LENGTH, temperature=0.6, top_k=50, top_p=0.95
+                )
+                with torch.no_grad():
+                    prob_target = model_spec_probe(pooling_hidden_information)
+                with torch.no_grad():
+                    prob_spec = model_target_probe(X_new)
+
+                decoded_text = speculative_tokenizer.decode(generated_ids[0, input_length:], skip_special_tokens=True)
 
 
 
-    return
+
+
+
+            if change_flag:
+                try_correct_num = try_correct_num + 1
+                generated_ids, tgt_kv,output_last_hidden_list = generate_with_partial_kv(
+                target_model, target_tokenizer, generated_ids, tgt_kv_candidate,
+                    max_new_tokens=change_tokens, temperature=0.6, top_k=50, top_p=0.95
+                )
+                # if inferencing the model stops at the first time
+                if target_tokenizer.eos_token_id in generated_ids[0, prompt_len:]:
+                    break
+
+            if target_tokenizer.eos_token_id in generated_ids[0, prompt_len:]:
+                break
+            generated_text = tokenizer.decode(generated_ids[0, :], skip_special_tokens=True)
+
+
+
+        return generated_text, try_correct_num,len(generated_ids[0])-prompt_len,correct_tokens
 
 
 
 
-    pass
-def process_file_to_json(dir_path, target_model, target_tokenizer,speculative_model, speculative_tokenizer,problem, answer,target_temperature,speculative_temperature,max_new_tokens):
+
+def process_file_to_json(dir_path, target_model, target_tokenizer,speculative_model, speculative_tokenizer,problem, answer,target_temperature,speculative_temperature,max_new_tokens,model_target_probe,model_spec_probe):
     all_generations = []
     try:
         start_time = time.time()
-        result = speculative_decoding(target_model, target_tokenizer, speculative_model, speculative_tokenizer, problem, target_temperature, speculative_temperature,max_new_tokens)
+        result = speculative_decoding(target_model, target_tokenizer, speculative_model, speculative_tokenizer, problem, target_temperature, speculative_temperature,max_new_tokens,model_target_probe,model_spec_probe)
         end_time = time.time()
         real_answer, full_answer, input_data = result
         all_generations.append({
@@ -185,6 +245,16 @@ if __name__ == "__main__":
     parser.add_argument("--top_k", type=int, help="top_k",default=50)
     parser.add_argument("--target_probe", type=str, help="num_return_sequences",default=1)
     args = parser.parse_args()
+
+    model_target_probe = SemanticEntropyProbTarget(5120, 256)
+    model_target_probe.load_state_dict(torch.load(f'{args.target_probe}.pt'))
+    model_target_probe = model_target_probe.to(f'cuda:{TARGET_probe}')
+
+    model_spec_probe = SemanticEntropyProbSpec(1536, 256)
+    model_spec_probe.load_state_dict(torch.load(f'{args.speculative_probe}.pt'))
+    model_spec_probe = model_spec_probe.to(f'cuda:{TARGET_probe}')
+
+
     target_model = transformers.AutoModelForCausalLM.from_pretrained(
         args.target_model,
         torch_dtype=torch.float16,
@@ -220,4 +290,4 @@ if __name__ == "__main__":
         dir_path = os.path.join(args.data_dir, dirname)
         problem = problems_and_answers[idx]['problem']
         answer = problems_and_answers[idx]['answer']
-        process_file_to_json(dir_path, target_model, target_tokenizer,speculative_model, speculative_tokenizer, problem,answer,args.target_temperature,args.speculative_temperature,args.max_new_tokens)
+        process_file_to_json(dir_path, target_model, target_tokenizer,speculative_model, speculative_tokenizer, problem,answer,args.target_temperature,args.speculative_temperature,args.max_new_tokens,model_target_probe,model_spec_probe)
