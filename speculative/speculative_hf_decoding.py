@@ -20,9 +20,22 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
         tokenize=False,
         add_generation_prompt=True
     )
+    speculative_text = speculative_tokenizer.apply_chat_template(
+        messages,
+        tokenize=False,
+        add_generation_prompt=True
+    )
     print(target_text)
+    print('-----------------------------------')
+    print(speculative_text)
+
 
     model_inputs = target_tokenizer([target_text], return_tensors="pt").to(target_model.device)
+
+
+
+
+    return
 
 
 
