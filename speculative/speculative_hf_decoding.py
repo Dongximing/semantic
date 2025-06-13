@@ -268,27 +268,28 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
 
 def process_file_to_json(dir_path, target_model, target_tokenizer,speculative_model, speculative_tokenizer,problem, answer,target_temperature,speculative_temperature,max_new_tokens,model_target_probe,model_spec_probe):
     all_generations = []
-    try:
-        start_time = time.time()
-        result = speculative_decoding(target_model, target_tokenizer, speculative_model, speculative_tokenizer, problem, target_temperature, speculative_temperature,max_new_tokens,model_target_probe,model_spec_probe)
-        end_time = time.time()
-        generated_text, try_correct_num = result
+    # try:
+    start_time = time.time()
+    print(f'problem: {problem}')
+    result = speculative_decoding(target_model, target_tokenizer, speculative_model, speculative_tokenizer, problem, target_temperature, speculative_temperature,max_new_tokens,model_target_probe,model_spec_probe)
+    end_time = time.time()
+    generated_text, try_correct_num = result
 
-        print('generated_text',generated_text)
-        all_generations.append({
-            "input_text": problem,
-            "real_answer": generated_text,
-            "try_correct_num": try_correct_num,
-            "standard_answer": answer,
-            "execution_time": f"{end_time - start_time:.2f}s"
-        })
-    except Exception as e:
-        all_generations.append({
-            "input_text": problem,
-            "real_answer": None,
-            "full_answer": None,
-            "answer": answer,
-        })
+    print('generated_text',generated_text)
+    all_generations.append({
+        "input_text": problem,
+        "real_answer": generated_text,
+        "try_correct_num": try_correct_num,
+        "standard_answer": answer,
+        "execution_time": f"{end_time - start_time:.2f}s"
+    })
+    # except Exception as e:
+    #     all_generations.append({
+    #         "input_text": problem,
+    #         "real_answer": None,
+    #         "full_answer": None,
+    #         "answer": answer,
+    #     })
 
     os.makedirs(dir_path, exist_ok=True)
     out_path = os.path.join(dir_path, "spec_generation.json")
