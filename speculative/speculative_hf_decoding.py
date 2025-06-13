@@ -235,11 +235,12 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 )
                 # check the entropy of the target model and speculative model.
                 with torch.no_grad():
-                    prob_target = model_spec_probe(pooling_hidden_information)
+                    prob_target = model_spec_probe(pooling_hidden_information.to(f"cuda:{TARGET_probe}"))
                 with torch.no_grad():
-                    prob_spec = model_target_probe(target_pooling_hidden_information)
+                    prob_spec = model_target_probe(target_pooling_hidden_information.to(f"cuda:{SPEC_probe}"))
                 # if the prob of the target model is higher than the prob of the speculative model, we use the speculative model to keep going.
                 # if the prob of the target model is lower than the prob of the speculative model, we use the target model to generate the current part.
+                print(f'prob_target: {prob_target}, prob_spec:{prob_spec} ')
                 if prob_target >= prob_spec:
                     use_target = False
                     valid_tgt_kv = tgt_kv[:-1] # we just want to real generation KV cache,
