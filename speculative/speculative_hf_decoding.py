@@ -129,6 +129,7 @@ def generate_with_partial_kv(
     generated_ids = output.sequences
     print("generated_ids:\n",tokenizer.decode(generated_ids[0, :], skip_special_tokens=True))
     past_key_values = output.past_key_values
+    print(len(past_key_values))
 
     hidden = output.hidden_states
     if checking:
