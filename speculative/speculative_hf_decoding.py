@@ -132,10 +132,14 @@ def generate_with_partial_kv(
     output_last_hidden_list = output_last_hidden_list.squeeze(1)  # [len ,D]
     output_last_hidden_list = output_last_hidden_list.mean(dim=0, keepdim=True)  # [1,D]
     return generated_ids, past_key_values,output_last_hidden_list
+
+
 def speculative_decoding(target_model, target_tokenizer, speculative_model,speculative_tokenizer,problem, target_temperature,speculative_temperature,max_new_tokens,model_target_probe,model_spec_probe):
+        # add prompt before inferencing the model
         messages = [
             {"role": "user", "content": problem + MATH_PROMPT}
         ]
+        # apply the pattern for speculative model and target model
         generated_ids = target_text = target_tokenizer.apply_chat_template( #big
             messages,
             tokenize=False,
@@ -146,17 +150,37 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
             tokenize=False,
             add_generation_prompt=True
         )
+        # since we first feed the input to the target model, we need to add record the length of the input text in the target model and speculative model both;
         original_speculative_text_len = len(speculative_text.shape[1])
         original_target_text_len = len(target_text.shape[1])
-        start_model_inputs = target_tokenizer(target_text, return_tensors="pt").to(target_model.device)
-        prompt_len = start_model_inputs.shape[1]
+        # this one is for the edge case, We need to check that the target model generates the answer within 200 words, then we need to stop directly.
+        start_target_model_inputs = target_tokenizer(target_text, return_tensors="pt").to(target_model.device)
+        target_prompt_len = start_target_model_inputs.shape[1]
+        # there are kv caches in both the target model and speculative model.
         spec_kv, tgt_kv = None, None
         correct_tokens, try_correct_num = [], 0
+        # change flag is used to check whether the target models need to guide the speculative model.
         token_num, change_tokens, change_flag = 0, 0, False
+        # 'begin' implicate the first time we start the speculative model.
         begin = True
-        use_target = False
+        use_target = True
 
-        while generated_ids.shape[1] < max_new_tokens:#TODO
+        def checking_is_finish(generated_ids, max_new_tokens, use_target):
+
+            if use_target:
+                if generated_ids.shape[1] - original_target_text_len < max_new_tokens:
+                    return True
+                else:
+                    return False
+            else:
+                if generated_ids.shape[1] - original_target_text_len < max_new_tokens:
+                    return True
+                else:
+                    return False
+
+
+
+        while checking_is_finish(generated_ids,max_new_tokens,use_target):
             # we start at the target model.
             if begin:
                 change_tokens = BEGIN_TOKEN_NUM
@@ -165,7 +189,8 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 spe_decoded_text = '',
                 use_target = True
             if not begin:
-                # generate the text and check by probe
+                # generating the text and check by probe
+                # if it uses the target model, we need to covert the input text to the speculative model.
                 if use_target:
                     target_output_id = generated_ids
                     real_target_output = target_tokenizer.decode(generated_ids[:-(generated_ids.shape[1] - original_target_text_len)])
@@ -183,31 +208,41 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 target_tokenizer_input = target_tokenizer(speculative_real_output, return_tensors="pt").to(
                     target_model.device)
                 # big model checking
+                # if we use the target model at last generation, we directly use 'target_output_id' and 'target_tokenizer_input'
+                # if not, we use last the checking_target_ids and 'target_tokenizer_input'
                 if use_target:
                     checking_target_ids = target_output_id + target_tokenizer_input
                 else:
-                    checking_target_ids = target_output_id
-
-                check_output, tgt_kv,target_pooling_hidden_information = generate_with_partial_kv(
+                    checking_target_ids =  checking_target_ids + target_tokenizer_input
+                ## TODO: need to optimize the checking generation
+                check_output, tgt_kv, target_pooling_hidden_information = generate_with_partial_kv(
                 target_model, target_tokenizer, checking_target_ids , valid_tgt_kv,
-                    max_new_tokens=1, temperature=0.1, top_k=50, top_p=0.95,checking=True
+                    max_new_tokens=1, temperature=0.1, top_k=50, top_p=0.95, checking=True
                 )
+                # check the entropy of the target model and speculative model.
                 with torch.no_grad():
                     prob_target = model_spec_probe(pooling_hidden_information)
                 with torch.no_grad():
                     prob_spec = model_target_probe(target_pooling_hidden_information)
+                # if the prob of the target model is higher than the prob of the speculative model, we use the speculative model to keep going.
+                # if the prob of the target model is lower than the prob of the speculative model, we use the target model to generate the current part.
                 if prob_target >= prob_spec:
                     use_target = False
-                    valid_tgt_kv = tgt_kv[:-1]
+                    valid_tgt_kv = tgt_kv[:-1] # we just want to real generation KV cache,
                     spec_kv = checking_spec_kv
                     generated_ids = checking_generated_ids
-                    target_output_id = target_output_id + target_tokenizer_input
+                    target_output_id = checking_target_ids
                 else:
                     use_target = True
-                    generated_ids = small_input_ids
+                    # valid_tgt_kv  not change
+                    generated_ids = checking_target_ids - target_tokenizer_input
+                    #spec_kv = spec_kv # not change
 
 
+            # Let the target model finish the generation.
+            # At the beginning of the generation, Let the target model generate the first part of completion.
             if use_target:
+                # record the usage of the target model;
                 try_correct_num = try_correct_num + 1
                 generated_ids, valid_tgt_kv,output_last_hidden_list = generate_with_partial_kv(
                 target_model, target_tokenizer, generated_ids, valid_tgt_kv,
@@ -215,16 +250,17 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 )
 
                 # if inferencing the model stops at the first time
-                if target_tokenizer.eos_token_id in generated_ids[0, prompt_len:]:
+                if target_tokenizer.eos_token_id in generated_ids[0, target_prompt_len:]:
+                    generated_text = target_tokenizer.decode(generated_ids[0, :], skip_special_tokens=True)
                     break
 
-            if speculative_tokenizer.eos_token_id in generated_ids[0, prompt_len:]:
+            if speculative_tokenizer.eos_token_id in generated_ids[0, target_prompt_len:]:
                 break
             generated_text = speculative_tokenizer.decode(generated_ids[0, :], skip_special_tokens=True)
 
 
 
-        return generated_text, try_correct_num,len(generated_ids[0])-prompt_len,correct_tokens
+        return generated_text, try_correct_num
 
 
 
