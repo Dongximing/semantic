@@ -154,65 +154,73 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
         correct_tokens, try_correct_num = [], 0
         token_num, change_tokens, change_flag = 0, 0, False
         begin = True
+        use_target = False
 
         while generated_ids.shape[1] < max_new_tokens:#TODO
             # we start at the target model.
             if begin:
                 change_tokens = BEGIN_TOKEN_NUM
                 begin = False
-                change_flag = True
-                tgt_kv_candidate = None
-                spe_decoded_text = ''
+                valid_tgt_kv = None
+                spe_decoded_text = '',
+                use_target = True
             if not begin:
                 # generate the text and check by probe
-                if change_flag:
-                    target_output = target_tokenizer.decode(generated_ids[:-(generated_ids.shape[1] - original_target_text_len)])
-                    speculative_tokenizer_input = speculative_tokenizer(target_output, return_tensors="pt").to(speculative_model.device)
+                if use_target:
+                    target_output_id = generated_ids
+                    real_target_output = target_tokenizer.decode(generated_ids[:-(generated_ids.shape[1] - original_target_text_len)])
+                    speculative_tokenizer_input = speculative_tokenizer(real_target_output, return_tensors="pt").to(speculative_model.device)
                     generated_ids = torch.cat([speculative_text+speculative_tokenizer_input], dim=-1)
 
-                input_generated_ids = generated_ids
+                small_input_ids = generated_ids
 
                ## small model generation
-                generated_ids, checking_spec_kv,pooling_hidden_information = generate_with_partial_kv(
-                    speculative_model, speculative_tokenizer,generated_ids , spec_kv,
+                checking_generated_ids, checking_spec_kv,pooling_hidden_information = generate_with_partial_kv(
+                    speculative_model, speculative_tokenizer, small_input_ids , spec_kv,
                     max_new_tokens=SPECULATIVE_OUTPUT_LENGTH, temperature=0.6, top_k=50, top_p=0.95,checking=False
                 )
+                speculative_real_output = speculative_tokenizer.decode(checking_generated_ids[:-(checking_generated_ids.shape[1] - small_input_ids.shape[1])])
+                target_tokenizer_input = target_tokenizer(speculative_real_output, return_tensors="pt").to(
+                    target_model.device)
                 # big model checking
-                generated_ids, tgt_kv,target_pooling_hidden_information = generate_with_partial_kv(
-                target_model, target_tokenizer, generated_ids, tgt_kv_candidate,
-                    max_new_tokens=1, temperature=0.6, top_k=50, top_p=0.95,checking=True
+                if use_target:
+                    checking_target_ids = target_output_id + target_tokenizer_input
+                else:
+                    checking_target_ids = target_output_id
+
+                check_output, tgt_kv,target_pooling_hidden_information = generate_with_partial_kv(
+                target_model, target_tokenizer, checking_target_ids , valid_tgt_kv,
+                    max_new_tokens=1, temperature=0.1, top_k=50, top_p=0.95,checking=True
                 )
                 with torch.no_grad():
                     prob_target = model_spec_probe(pooling_hidden_information)
                 with torch.no_grad():
                     prob_spec = model_target_probe(target_pooling_hidden_information)
                 if prob_target >= prob_spec:
-                    change_flag = False
-                    tgt_kv_candidate = tgt_kv
+                    use_target = False
+                    valid_tgt_kv = tgt_kv[:-1]
                     spec_kv = checking_spec_kv
+                    generated_ids = checking_generated_ids
+                    target_output_id = target_output_id + target_tokenizer_input
                 else:
-                    change_flag = True
-                    generated_ids = input_generated_ids
-                    tgt_kv =
+                    use_target = True
+                    generated_ids = small_input_ids
 
 
-
-
-
-
-            if change_flag:
+            if use_target:
                 try_correct_num = try_correct_num + 1
-                generated_ids, tgt_kv,output_last_hidden_list = generate_with_partial_kv(
-                target_model, target_tokenizer, generated_ids, tgt_kv_candidate,
+                generated_ids, valid_tgt_kv,output_last_hidden_list = generate_with_partial_kv(
+                target_model, target_tokenizer, generated_ids, valid_tgt_kv,
                     max_new_tokens=change_tokens, temperature=0.6, top_k=50, top_p=0.95,checking=False
                 )
+
                 # if inferencing the model stops at the first time
                 if target_tokenizer.eos_token_id in generated_ids[0, prompt_len:]:
                     break
 
-            if target_tokenizer.eos_token_id in generated_ids[0, prompt_len:]:
+            if speculative_tokenizer.eos_token_id in generated_ids[0, prompt_len:]:
                 break
-            generated_text = tokenizer.decode(generated_ids[0, :], skip_special_tokens=True)
+            generated_text = speculative_tokenizer.decode(generated_ids[0, :], skip_special_tokens=True)
 
 
 
