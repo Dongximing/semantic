@@ -248,6 +248,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
             # At the beginning of the generation, Let the target model generate the first part of completion.
             if use_target:
                 # record the usage of the target model;
+                begin = False
                 try_correct_num = try_correct_num + 1
                 print('try_correct_num',try_correct_num)
                 generated_ids, valid_tgt_kv,output_last_hidden_list = generate_with_partial_kv(
