@@ -101,6 +101,7 @@ def generate_with_partial_kv(
     print('-------------------------------')
     print('model name hidden_size',model.config.hidden_size)
     print('-------------------------------')
+    print('before past_key_values',len(past_key_values))
 
 
     try:
@@ -131,6 +132,7 @@ def generate_with_partial_kv(
     past_key_values = output.past_key_values
 
     hidden = output.hidden_states
+    print('after past_key_values',len(past_key_values))
     print(len(hidden))
     if checking:
         output_last_hidden_list = torch.stack([layer[-1][:, -1, :] for layer in hidden[:-1]]).cpu()
