@@ -124,6 +124,7 @@ def generate_with_partial_kv(
             print(f"past_key_values length: {len(past_key_values)}")
             print(f"first layer shape: {past_key_values[0][0].shape if len(past_key_values) > 0 else 'N/A'}")
     generated_ids = output.sequences
+    print("generated_ids:\n",generated_ids)
     past_key_values = output.past_key_values
 
     hidden = output.hidden_states
