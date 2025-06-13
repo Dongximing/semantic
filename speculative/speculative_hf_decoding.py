@@ -155,7 +155,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
         start_target_model_inputs = target_tokenizer(target_text, return_tensors="pt").to(target_model.device)
         target_prompt_len = start_target_model_inputs["input_ids"].shape[1]
         # original_speculative_text_len = len(speculative_text.shape[1])
-        original_target_text_len = len(start_target_model_inputs.shape[1])
+        original_target_text_len = len(start_target_model_inputs["input_ids"].shape[1])
         # there are kv caches in both the target model and speculative model.
         spec_kv, tgt_kv = None, None
         correct_tokens, try_correct_num = [], 0
