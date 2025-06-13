@@ -124,6 +124,7 @@ def generate_with_partial_kv(
             print(f"first layer shape: {past_key_values[0][0].shape if len(past_key_values) > 0 else 'N/A'}")
     generated_ids = output.sequences
     past_key_values = output.past_key_values
+    print('past_key_values',past_key_values)
     hidden = outputs.hidden_states
     if checking:
         output_last_hidden_list = torch.stack([layer[-1][:, -1, :] for layer in hidden[:-1]]).cpu()
@@ -156,7 +157,6 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
         generated_ids = start_target_model_inputs['input_ids']
         target_prompt_len = start_target_model_inputs["input_ids"].shape[1]
         start_speculative_text_inputs = target_tokenizer(speculative_text, return_tensors="pt")['input_ids'].to(speculative_model.device)
-        # original_speculative_text_len = len(speculative_text.shape[1])
         original_target_text_len = start_target_model_inputs["input_ids"].shape[1]
         # there are kv caches in both the target model and speculative model.
         spec_kv, tgt_kv = None, None
