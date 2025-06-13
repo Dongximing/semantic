@@ -189,7 +189,6 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
             # we start at the target model.
             if begin:
                 change_tokens = BEGIN_TOKEN_NUM
-                begin = False
                 valid_tgt_kv = None
                 spe_decoded_text = '',
                 use_target = True
