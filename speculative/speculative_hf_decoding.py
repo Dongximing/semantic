@@ -310,7 +310,6 @@ if __name__ == "__main__":
     parser.add_argument("--max_new_tokens", type=int, help="max_new_tokens",default=32000)
     parser.add_argument("--top_p", type=float, help="top_p",default=0.9)
     parser.add_argument("--top_k", type=int, help="top_k",default=50)
-    parser.add_argument("--target_probe", type=str, help="num_return_sequences",default=1)
     args = parser.parse_args()
 
     model_target_probe = SemanticEntropyProbTarget(5120, 256)
