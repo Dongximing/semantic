@@ -110,6 +110,7 @@ def generate_with_partial_kv(
             top_k=top_k,
             top_p=top_p,
             do_sample=do_sample,
+            output_scores=True,
             use_cache=True,
             return_dict_in_generate=True,
             past_key_values=past_key_values,
@@ -126,7 +127,7 @@ def generate_with_partial_kv(
     past_key_values = output.past_key_values
 
     hidden = outputs.hidden_states
-    print('past_key_values', hidden)
+    print('hidden', hidden)
     if checking:
         output_last_hidden_list = torch.stack([layer[-1][:, -1, :] for layer in hidden[:-1]]).cpu()
     else:
