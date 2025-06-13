@@ -199,7 +199,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 # if it uses the target model, we need to covert the input text to the speculative model.
                 if use_target:
                     target_output_id = generated_ids
-                    real_target_output = target_tokenizer.decode(generated_ids[:-(generated_ids.shape[1] - original_target_text_len)],skip_special_tokens=True)
+                    real_target_output = target_tokenizer.decode(generated_ids[0,original_target_text_len:],skip_special_tokens=True)
                     print('kkkkkkkkkkkkkkkkkkkk')
                     print('real_target_output:\n',real_target_output)
 
@@ -283,7 +283,6 @@ def process_file_to_json(dir_path, target_model, target_tokenizer,speculative_mo
     all_generations = []
     # try:
     start_time = time.time()
-    print(f'problem: {problem}')
     result = speculative_decoding(target_model, target_tokenizer, speculative_model, speculative_tokenizer, problem, target_temperature, speculative_temperature,max_new_tokens,model_target_probe,model_spec_probe)
     end_time = time.time()
     generated_text, try_correct_num = result
