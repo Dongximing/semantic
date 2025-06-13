@@ -196,7 +196,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                     target_output_id = generated_ids
                     real_target_output = target_tokenizer.decode(generated_ids[:-(generated_ids.shape[1] - original_target_text_len)])
                     speculative_tokenizer_input = speculative_tokenizer(real_target_output, return_tensors="pt").to(speculative_model.device)
-                    generated_ids = torch.cat([speculative_text+speculative_tokenizer_input], dim=-1)
+                    generated_ids = torch.cat([speculative_text,speculative_tokenizer_input], dim=-1)
 
                 small_input_ids = generated_ids
 
