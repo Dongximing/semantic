@@ -128,7 +128,6 @@ def generate_with_partial_kv(
     past_key_values = output.past_key_values
 
     hidden = output.hidden_states
-    print('hidden', hidden)
     if checking:
         output_last_hidden_list = torch.stack([layer[-1][:, -1, :] for layer in hidden[:-1]]).cpu()
     else:
