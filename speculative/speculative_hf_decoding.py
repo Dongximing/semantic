@@ -134,8 +134,9 @@ def generate_with_partial_kv(
     hidden = output.hidden_states
     print('after past_key_values',past_key_values[0][0].shape[2])
     print(len(hidden))
+    ##TODO: need to optimize the 'if checking' function
     if checking:
-        output_last_hidden_list = torch.stack([layer[-1][:, -1, :] for layer in hidden[:-1]]).cpu()
+        output_last_hidden_list = torch.stack([layer[-1][:, -1, :] for layer in hidden[:]]).cpu()
     else:
         output_last_hidden_list = torch.stack([layer[-1][:, -1, :] for layer in hidden]).cpu()
     output_last_hidden_list = output_last_hidden_list.squeeze(1)  # [len ,D]
