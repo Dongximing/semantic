@@ -200,6 +200,9 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 if use_target:
                     target_output_id = generated_ids
                     real_target_output = target_tokenizer.decode(generated_ids[:-(generated_ids.shape[1] - original_target_text_len)],skip_special_tokens=True)
+                    print('kkkkkkkkkkkkkkkkkkkk')
+                    print('real_target_output:\n',real_target_output)
+
                     speculative_tokenizer_input = speculative_tokenizer(real_target_output, return_tensors="pt")['input_ids'].to(speculative_model.device)
                     generated_ids = torch.cat([start_speculative_text_inputs,speculative_tokenizer_input], dim=-1)
                     print('speculative_tokenizer_input',target_tokenizer.decode(generated_ids[0,:],skip_special_tokens=True))
