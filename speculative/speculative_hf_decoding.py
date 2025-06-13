@@ -272,12 +272,14 @@ def process_file_to_json(dir_path, target_model, target_tokenizer,speculative_mo
         start_time = time.time()
         result = speculative_decoding(target_model, target_tokenizer, speculative_model, speculative_tokenizer, problem, target_temperature, speculative_temperature,max_new_tokens,model_target_probe,model_spec_probe)
         end_time = time.time()
-        real_answer, full_answer, input_data = result
+        generated_text, try_correct_num = result
+
+        print('generated_text',generated_text)
         all_generations.append({
-            "input_text": input_data,
-            "real_answer": real_answer,
-            "full_answer": full_answer,
-            "answer": answer,
+            "input_text": problem,
+            "real_answer": generated_text,
+            "try_correct_num": try_correct_num,
+            "standard_answer": answer,
             "execution_time": f"{end_time - start_time:.2f}s"
         })
     except Exception as e:
@@ -292,6 +294,7 @@ def process_file_to_json(dir_path, target_model, target_tokenizer,speculative_mo
     out_path = os.path.join(dir_path, "spec_generation.json")
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(all_generations, f, ensure_ascii=False, indent=2)
+
 
 
 
