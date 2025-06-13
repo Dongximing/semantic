@@ -99,7 +99,7 @@ def generate_with_partial_kv(
         stopping_criteria_obj
     ])
     print('-------------------------------')
-    print('model name',model.config.model_type)
+    print('model name hidden_size',model.config.hidden_size)
     print('-------------------------------')
 
 
