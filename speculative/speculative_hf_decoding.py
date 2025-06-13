@@ -152,7 +152,8 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
         )
         # since we first feed the input to the target model, we need to add record the length of the input text in the target model and speculative model both;
         # this one is for the edge case, We need to check that the target model generates the answer within 200 words, then we need to stop directly.
-        generated_ids = start_target_model_inputs = target_tokenizer(target_text, return_tensors="pt").to(target_model.device)
+        start_target_model_inputs = target_tokenizer(target_text, return_tensors="pt").to(target_model.device)
+        generated_ids = start_target_model_inputs['input_ids']
         target_prompt_len = start_target_model_inputs["input_ids"].shape[1]
         # original_speculative_text_len = len(speculative_text.shape[1])
         original_target_text_len = start_target_model_inputs["input_ids"].shape[1]
