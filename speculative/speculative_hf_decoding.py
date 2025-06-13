@@ -98,6 +98,9 @@ def generate_with_partial_kv(
     stopping_criteria = StoppingCriteriaList([
         stopping_criteria_obj
     ])
+    print('-------------------------------')
+    print('model name',model.config.model_type)
+    print('-------------------------------')
 
 
     try:
