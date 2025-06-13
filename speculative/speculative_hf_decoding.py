@@ -102,7 +102,8 @@ def generate_with_partial_kv(
 
     try:
         output = model.generate(
-            **input_ids,
+            input_ids=input_ids,
+            attention_mask=(input_ids != tokenizer.pad_token_id).long(),
             max_new_tokens=max_new_tokens,
             temperature=temperature,
             top_k=top_k,
