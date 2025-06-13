@@ -235,6 +235,10 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 )
                 # check the entropy of the target model and speculative model.
                 with torch.no_grad():
+                    print(pooling_hidden_information.dtype)
+                    for p in model_spec_probe.parameters():
+                        print(p.dtype)
+                        break
                     prob_target = model_spec_probe(pooling_hidden_information.to(f"cuda:{TARGET_probe}"))
                 with torch.no_grad():
                     prob_spec = model_target_probe(target_pooling_hidden_information.to(f"cuda:{SPEC_probe}"))
