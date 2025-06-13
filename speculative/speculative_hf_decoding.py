@@ -239,9 +239,9 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                     for p in model_spec_probe.parameters():
                         print(p.dtype)
                         break
-                    prob_target = model_spec_probe(pooling_hidden_information.to(f"cuda:{TARGET_probe}"))
+                    prob_target = model_spec_probe(pooling_hidden_information.float().to(f"cuda:{TARGET_probe}"))
                 with torch.no_grad():
-                    prob_spec = model_target_probe(target_pooling_hidden_information.to(f"cuda:{SPEC_probe}"))
+                    prob_spec = model_target_probe(target_pooling_hidden_information.float().to(f"cuda:{SPEC_probe}"))
                 # if the prob of the target model is higher than the prob of the speculative model, we use the speculative model to keep going.
                 # if the prob of the target model is lower than the prob of the speculative model, we use the target model to generate the current part.
                 print(f'prob_target: {prob_target}, prob_spec:{prob_spec} ')
