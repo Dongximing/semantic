@@ -339,7 +339,7 @@ if __name__ == "__main__":
 
     model_spec_probe = SemanticEntropyProbSpec(1536, 256)
     model_spec_probe.load_state_dict(torch.load(f'{args.speculative_probe}.pt'))
-    model_spec_probe = model_spec_probe.to(f'cuda:{TARGET_probe}')
+    model_spec_probe = model_spec_probe.to(f'cuda:{SPEC_probe}')
 
 
     target_model = transformers.AutoModelForCausalLM.from_pretrained(
