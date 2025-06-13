@@ -124,8 +124,9 @@ def generate_with_partial_kv(
             print(f"first layer shape: {past_key_values[0][0].shape if len(past_key_values) > 0 else 'N/A'}")
     generated_ids = output.sequences
     past_key_values = output.past_key_values
-    print('past_key_values',past_key_values)
+
     hidden = outputs.hidden_states
+    print('past_key_values', hidden)
     if checking:
         output_last_hidden_list = torch.stack([layer[-1][:, -1, :] for layer in hidden[:-1]]).cpu()
     else:
