@@ -206,7 +206,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                     max_new_tokens=SPECULATIVE_OUTPUT_LENGTH, temperature=0.6, top_k=50, top_p=0.95,checking=False
                 )
                 speculative_real_output = speculative_tokenizer.decode(checking_generated_ids[:-(checking_generated_ids.shape[1] - small_input_ids.shape[1])])
-                target_tokenizer_input = target_tokenizer(speculative_real_output, return_tensors="pt").to(
+                target_tokenizer_input = target_tokenizer(speculative_real_output, return_tensors="pt")['input_ids'].to(
                     target_model.device)
                 # big model checking
                 # if we use the target model at last generation, we directly use 'target_output_id' and 'target_tokenizer_input'
