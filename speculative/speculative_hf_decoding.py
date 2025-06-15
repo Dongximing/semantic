@@ -81,6 +81,7 @@ def generate_with_partial_kv(
 
         cached_len = past_key_values[0][0].shape[2]
         print('**cached_len',cached_len)
+        print('**input_ids',input_ids.shape[1])
         if cached_len < seq_len - 1:
             new_input_ids = input_ids[:, cached_len:-1]
             if new_input_ids.shape[1] > 0:
