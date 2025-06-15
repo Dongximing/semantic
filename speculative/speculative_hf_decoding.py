@@ -250,7 +250,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 else:
                     use_target = True
                     # valid_tgt_kv  not change
-                    generated_ids = checking_target_ids[0,:-target_tokenizer_input.shape[1]]
+                    generated_ids = checking_target_ids[:,:-target_tokenizer_input.shape[1]]
                     print('generated_ids shape',generated_ids.shape)
                     start_speculative_text_inputs = small_input_ids
                     #spec_kv = spec_kv # not change
