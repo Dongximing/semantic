@@ -14,8 +14,8 @@ import torch.nn.functional as F
 BEGIN_TOKEN_NUM = 200
 SPECULATIVE_OUTPUT_LENGTH = 200
 MATH_PROMPT = "\nPlease reason step by step, and put your final answer within \\boxed{}."
-TARGET_model= 1
-SPEC_model = 0
+TARGET_model= 0
+SPEC_model = 1
 TARGET_probe = 2
 SPEC_probe = 3
 
