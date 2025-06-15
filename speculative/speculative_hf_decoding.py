@@ -272,6 +272,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 begin = False
                 try_correct_num = try_correct_num + 1
                 print('try_correct_num',try_correct_num)
+                print('valid_tgt_kv',valid_tgt_kv[0][0].shape[2])
                 generated_ids, valid_tgt_kv,output_last_hidden_list = generate_with_partial_kv(
                 target_model, target_tokenizer, generated_ids, valid_tgt_kv,
                     max_new_tokens=change_tokens, temperature=0.6, top_k=50, top_p=0.95,checking=False
