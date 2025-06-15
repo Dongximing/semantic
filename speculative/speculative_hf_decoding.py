@@ -87,6 +87,7 @@ def generate_with_partial_kv(
                     outputs = model(input_ids=new_input_ids, past_key_values=past_key_values, use_cache=True,
                                     return_dict=True)
                     past_key_values = outputs.past_key_values
+                    checking_past_key_values = past_key_values
 
     do_sample = temperature > 0 and (top_k > 0 or top_p < 1.0)
 
@@ -141,6 +142,8 @@ def generate_with_partial_kv(
         output_last_hidden_list = torch.stack([layer[-1][:, -1, :] for layer in hidden]).cpu()
     output_last_hidden_list = output_last_hidden_list.squeeze(1)  # [len ,D]
     output_last_hidden_list = output_last_hidden_list.mean(dim=0, keepdim=True)  # [1,D]
+    if checking:
+        past_key_values = checking_past_key_values
     return generated_ids, past_key_values,output_last_hidden_list
 
 
