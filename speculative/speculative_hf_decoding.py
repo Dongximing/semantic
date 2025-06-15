@@ -237,6 +237,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 target_model, target_tokenizer, checking_target_ids , valid_tgt_kv,
                     max_new_tokens=1, temperature=0.1, top_k=50, top_p=0.95, checking=True
                 )
+                print('******** checking valid_tgt_kv',valid_tgt_kv[0][0].shape[2])
                 # check the entropy of the target model and speculative model.
                 with torch.no_grad():
                     prob_target = model_target_probe(target_pooling_hidden_information.float().to(f"cuda:{TARGET_probe}"))
