@@ -204,7 +204,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 if use_target:
                     target_output_id = generated_ids
                     real_target_output = target_tokenizer.decode(generated_ids[0,original_target_text_len:],skip_special_tokens=True)
-                    print('kkkkkkkkkkkkkkkkkkkk')
+                    print('-------------------------------------real_target_output    -------------------------\n')
                     print('real_target_output:\n',real_target_output)
 
                     speculative_tokenizer_input = speculative_tokenizer(real_target_output, return_tensors="pt")['input_ids'].to(speculative_model.device)
@@ -241,7 +241,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 # if the prob of the target model is higher than the prob of the speculative model, we use the speculative model to keep going.
                 # if the prob of the target model is lower than the prob of the speculative model, we use the target model to generate the current part.
                 print(f'prob_target: {prob_target}, prob_spec:{prob_spec} ')
-                if prob_target >= prob_spec:
+                if prob_target.item() >= prob_spec.item():
                     use_target = False
                     valid_tgt_kv = tgt_kv[:-1] # we just want to real generation KV cache,
                     spec_kv = checking_spec_kv
