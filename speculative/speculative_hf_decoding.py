@@ -192,7 +192,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 else:
                     return False
 
-
+        print('-------------------------------------start the process -------------------------\n\n\n')
 
         while checking_is_finish(generated_ids,max_new_tokens,use_target):
             # we start at the target model.
@@ -207,7 +207,6 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 if use_target:
                     target_output_id = generated_ids
                     real_target_output = target_tokenizer.decode(generated_ids[0,original_target_text_len:],skip_special_tokens=True)
-                    print('-------------------------------------real_target_output    -------------------------\n')
                     print('real_target_output:\n',real_target_output)
 
                     speculative_tokenizer_input = speculative_tokenizer(real_target_output, return_tensors="pt")['input_ids'].to(speculative_model.device)
