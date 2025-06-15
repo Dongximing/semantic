@@ -231,7 +231,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 if use_target:
                     checking_target_ids =torch.cat([target_output_id,target_tokenizer_input], dim=-1)
                 else:
-                    checking_target_ids =  torch.cat([generated_ids,target_tokenizer_input], dim=-1)
+                    checking_target_ids =  torch.cat([generated_ids.to("cuda:0"),target_tokenizer_input.to("cuda:0")], dim=-1)
                 ## TODO: need to optimize the checking generation
                 check_output, tgt_kv, target_pooling_hidden_information = generate_with_partial_kv(
                 target_model, target_tokenizer, checking_target_ids , valid_tgt_kv,
