@@ -294,14 +294,17 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 else:
 
                     # valid_tgt_kv  not change
-                    #valid_tgt_kv =
                     if use_target:
                         generated_ids = target_output_id
                     else:
                         generated_ids = previous_checking_target_ids
 
                     print('previous', previous[0][0].shape[2])
-                    spec_kv = copy.deepcopy(previous)
+                    if previous[0][0].shape[2] != 5120:
+                        spec_kv = copy.deepcopy(previous)
+                    else:
+                        valid_tgt_kv = copy.deepcopy(previous)
+
                     use_target = True
                     print('*******************', valid_tgt_kv[0][0].shape[2])
                    # generated_ids = checking_target_ids[:,:-target_tokenizer_input.shape[1]]
