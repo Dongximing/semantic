@@ -293,6 +293,8 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                     # valid_tgt_kv  not change
                     if use_target:
                         generated_ids = target_output_id
+                    else:
+
                     print('previous', previous[0][0].shape[2])
                     valid_tgt_kv = previous
                     use_target = True
@@ -315,7 +317,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
 
                 previous_original_target_text_len = generated_ids.shape[1]
                 generated_ids, valid_tgt_kv,output_last_hidden_list = generate_with_partial_kv(
-                target_model, target_tokenizer, generated_ids, valid_tgt_kv,
+                target_model, target_tokenizer, generated_ids.to("cuda:0"), valid_tgt_kv,
                     max_new_tokens=change_tokens, temperature=0.6, top_k=50, top_p=0.95,checking=False
                 )
                 print('original_target_text_len------------------------lllllll',original_target_text_len)
