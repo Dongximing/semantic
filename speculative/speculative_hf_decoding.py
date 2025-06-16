@@ -240,6 +240,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 if valid_tgt_kv:
                     print('******** checking valid_tgt_kv--------------1', valid_tgt_kv[0][0].shape[2])
                 previous = valid_tgt_kv
+                print('first -------------- previous', previous[0][0].shape[2])
                 check_output, checking_tgt_kv, target_pooling_hidden_information = generate_with_partial_kv(
                 target_model, target_tokenizer, checking_target_ids , valid_tgt_kv,
                     max_new_tokens=1, temperature=0.1, top_k=50, top_p=0.95, checking=True
