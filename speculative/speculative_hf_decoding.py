@@ -256,7 +256,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 print(f'prob_target: {prob_target}, prob_spec:{prob_spec} ')
                 if prob_target.item() >= prob_spec.item():
                     use_target = False
-                    valid_tgt_kv = copy.deepcopy(tgt_kv)# we just want to real generation KV cache,
+                    #valid_tgt_kv = copy.deepcopy(tgt_kv)# we just want to real generation KV cache,
                     spec_kv = copy.deepcopy(checking_spec_kv)
                     generated_ids = checking_generated_ids
                     target_output_id = checking_target_ids
