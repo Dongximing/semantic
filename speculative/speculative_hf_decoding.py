@@ -200,6 +200,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
         generated_ids = start_target_model_inputs['input_ids']
         target_prompt_len = start_target_model_inputs["input_ids"].shape[1]
         start_speculative_text_inputs = target_tokenizer(speculative_text, return_tensors="pt")['input_ids'].to(speculative_model.device)
+        previous_start_speculative_text_inputs = start_speculative_text_inputs
         original_target_text_len = start_target_model_inputs["input_ids"].shape[1]
         # there are kv caches in both the target model and speculative model.
         spec_kv, tgt_kv = None, None
@@ -240,14 +241,11 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                     target_output_id = generated_ids
                     real_target_output = target_tokenizer.decode(generated_ids[0,previous_original_target_text_len:],skip_special_tokens=True)
                     print('*****real_target_output:\n',real_target_output)
-
                     speculative_tokenizer_input = speculative_tokenizer(real_target_output, return_tensors="pt")['input_ids'].to(speculative_model.device)
-                    generated_ids = torch.cat([start_speculative_text_inputs,speculative_tokenizer_input], dim=-1)
-
-
+                    generated_ids = torch.cat([previous_start_speculative_text_inputs,speculative_tokenizer_input], dim=-1)
                 small_input_ids = generated_ids
                 print('*****speculative_tokenizer_input\n',
-                      target_tokenizer.decode(generated_ids[0, :], skip_special_tokens=True))
+                      speculative_tokenizer.decode(small_input_ids[0, :], skip_special_tokens=True))
 
                ## small model generation
                 checking_generated_ids, checking_spec_kv,pooling_hidden_information = generate_with_partial_kv(
@@ -263,7 +261,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 if use_target:
                     checking_target_ids =torch.cat([target_output_id,target_tokenizer_input], dim=-1)
                 else:
-                    checking_target_ids =  torch.cat([generated_ids.to("cuda:0"),target_tokenizer_input.to("cuda:0")], dim=-1)
+                    checking_target_ids =  torch.cat([generated_ids.to(f"cuda:{TARGET_model}"),target_tokenizer_input.to(f"cuda:{TARGET_model}")], dim=-1)
                 ## TODO: need to optimize the checking generation
                 if valid_tgt_kv:
                     print('******** checking valid_tgt_kv--------------1', valid_tgt_kv[0][0].shape[2])
@@ -316,7 +314,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
 
                 previous_original_target_text_len = generated_ids.shape[1]
                 generated_ids, valid_tgt_kv,output_last_hidden_list = generate_with_partial_kv(
-                target_model, target_tokenizer, generated_ids.to("cuda:0"), valid_tgt_kv,
+                target_model, target_tokenizer, generated_ids.to(f"cuda:{TARGET_model}"), valid_tgt_kv,
                     max_new_tokens=change_tokens, temperature=0.6, top_k=50, top_p=0.95,checking=False
                 )
                 print('original_target_text_len------------------------lllllll',original_target_text_len)
