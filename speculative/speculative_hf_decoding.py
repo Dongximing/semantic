@@ -300,10 +300,10 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                         generated_ids = previous_checking_target_ids
 
                     print('previous', previous[0][0].shape[2])
-                    if previous[0][0].shape[2] != 5120:
-                        spec_kv = copy.deepcopy(previous)
-                    else:
-                        valid_tgt_kv = copy.deepcopy(previous)
+                    # if previous[0][0].shape[2] != 5120:
+                    # spec_kv = copy.deepcopy(previous)
+
+                    valid_tgt_kv = copy.deepcopy(previous)
 
                     use_target = True
                     print('*******************', valid_tgt_kv[0][0].shape[2])
