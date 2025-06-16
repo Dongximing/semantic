@@ -184,6 +184,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
         # 'begin' implicate the first time we start the speculative model.
         begin = True
         use_target = True
+        previous_original_target_text_len = original_target_text_len
 
         def checking_is_finish(generated_ids, max_new_tokens, use_target):
 
@@ -212,7 +213,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 # if it uses the target model, we need to covert the input text to the speculative model.
                 if use_target:
                     target_output_id = generated_ids
-                    real_target_output = target_tokenizer.decode(generated_ids[0,original_target_text_len:],skip_special_tokens=True)
+                    real_target_output = target_tokenizer.decode(generated_ids[0,previous_original_target_text_len:],skip_special_tokens=True)
                     print('real_target_output:\n',real_target_output)
 
                     speculative_tokenizer_input = speculative_tokenizer(real_target_output, return_tensors="pt")['input_ids'].to(speculative_model.device)
@@ -287,12 +288,11 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 if valid_tgt_kv:
                     print('** before valid_tgt_kv', valid_tgt_kv[0][0].shape[2])
 
-
+                previous_original_target_text_len = generated_ids.shape[1]
                 generated_ids, valid_tgt_kv,output_last_hidden_list = generate_with_partial_kv(
                 target_model, target_tokenizer, generated_ids, valid_tgt_kv,
                     max_new_tokens=change_tokens, temperature=0.6, top_k=50, top_p=0.95,checking=False
                 )
-                original_target_text_len = generated_ids.shape[1]
                 print('original_target_text_len------------------------lllllll',original_target_text_len)
                 print('** after valid_tgt_kv', valid_tgt_kv[0][0].shape[2])
 
