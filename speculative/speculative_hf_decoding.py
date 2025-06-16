@@ -125,6 +125,7 @@ def generate_with_partial_kv(
 
 
     try:
+        print("input_ids shape:", input_ids.shape)
         output = model.generate(
             input_ids=input_ids,
             attention_mask=(input_ids != tokenizer.pad_token_id).long(),
@@ -292,7 +293,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                         generated_ids = target_output_id
 
                     print('previous', previous[0][0].shape[2])
-                    valid_tgt_kv = previous
+                    valid_tgt_kv = copy.deepcopy(previous)
                     use_target = True
                     print('*******************', valid_tgt_kv[0][0].shape[2])
                    # generated_ids = checking_target_ids[:,:-target_tokenizer_input.shape[1]]
