@@ -124,31 +124,31 @@ def generate_with_partial_kv(
 
 
 
-    try:
-        print("input_ids shape:", input_ids.shape)
-        print("past_key_values shape:", past_key_values[0][0].shape[2] if past_key_values is not None else "N/A")
-        output = model.generate(
-            input_ids=input_ids,
-            attention_mask=(input_ids != tokenizer.pad_token_id).long(),
-            max_new_tokens=max_new_tokens,
-            temperature=temperature,
-            top_k=top_k,
-            top_p=top_p,
-            do_sample=do_sample,
-            use_cache=True,
-            return_dict_in_generate=True,
-            output_scores=True,
-            output_hidden_states=True,
-            past_key_values=past_key_values,
-            pad_token_id=tokenizer.eos_token_id,
-            stopping_criteria=stopping_criteria,
-        )
-    except Exception as e:
-        print(f"Error in model.generate: {e}")
-        print(f"past_key_values type: {type(past_key_values)}")
-        if past_key_values is not None:
-            print(f"past_key_values length: {len(past_key_values)}")
-            print(f"first layer shape: {past_key_values[0][0].shape if len(past_key_values) > 0 else 'N/A'}")
+    # try:
+    print("input_ids shape:", input_ids.shape)
+    print("past_key_values shape:", past_key_values[0][0].shape[2] if past_key_values is not None else "N/A")
+    output = model.generate(
+        input_ids=input_ids,
+        attention_mask=(input_ids != tokenizer.pad_token_id).long(),
+        max_new_tokens=max_new_tokens,
+        temperature=temperature,
+        top_k=top_k,
+        top_p=top_p,
+        do_sample=do_sample,
+        use_cache=True,
+        return_dict_in_generate=True,
+        output_scores=True,
+        output_hidden_states=True,
+        past_key_values=past_key_values,
+        pad_token_id=tokenizer.eos_token_id,
+        stopping_criteria=stopping_criteria,
+    )
+    # except Exception as e:
+    #     print(f"Error in model.generate: {e}")
+    #     print(f"past_key_values type: {type(past_key_values)}")
+    #     if past_key_values is not None:
+    #         print(f"past_key_values length: {len(past_key_values)}")
+    #         print(f"first layer shape: {past_key_values[0][0].shape if len(past_key_values) > 0 else 'N/A'}")
     generated_ids = output.sequences
 
     if model.config.hidden_size == 5120:
