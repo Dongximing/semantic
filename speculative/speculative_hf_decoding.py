@@ -238,9 +238,11 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
 
                     speculative_tokenizer_input = speculative_tokenizer(real_target_output, return_tensors="pt")['input_ids'].to(speculative_model.device)
                     generated_ids = torch.cat([start_speculative_text_inputs,speculative_tokenizer_input], dim=-1)
-                    print('*****speculative_tokenizer_input\n',target_tokenizer.decode(generated_ids[0,:],skip_special_tokens=True))
+
 
                 small_input_ids = generated_ids
+                print('*****speculative_tokenizer_input\n',
+                      target_tokenizer.decode(generated_ids[0, :], skip_special_tokens=True))
 
                ## small model generation
                 checking_generated_ids, checking_spec_kv,pooling_hidden_information = generate_with_partial_kv(
