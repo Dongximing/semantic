@@ -167,7 +167,7 @@ def generate_with_partial_kv(
     output_last_hidden_list = output_last_hidden_list.squeeze(1)  # [len ,D]
     output_last_hidden_list = output_last_hidden_list.mean(dim=0, keepdim=True)  # [1,D]
     if checking:
-        past_key_values = checking_past_key_values
+        past_key_values = copy.deepcopy(checking_past_key_values)
     return generated_ids, past_key_values,output_last_hidden_list
 
 
