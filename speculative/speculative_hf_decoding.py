@@ -104,7 +104,11 @@ def generate_with_partial_kv(
     print('-------------------------------')
     print('model name hidden_size',model.config.hidden_size)
     print('-------------------------------')
-    print('before past_key_values',past_key_values[0][0].shape[2])
+    if model.config.hidden_size == 5120:
+        print('Big model past_key_values',past_key_values[0][0].shape[2])
+    else:
+        print('small model past_key_values', past_key_values[0][0].shape[2])
+
 
 
     try:
