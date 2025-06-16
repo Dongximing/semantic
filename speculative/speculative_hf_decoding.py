@@ -313,7 +313,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 # record the usage of the target model;
                 begin = False
                 try_correct_num = try_correct_num + 1
-                print('try_correct_num',try_correct_num)
+                print('************************************************************************************  try_correct_num',try_correct_num)
                 if valid_tgt_kv:
                     print('** before valid_tgt_kv', valid_tgt_kv[0][0].shape[2])
 
