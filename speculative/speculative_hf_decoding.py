@@ -266,6 +266,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                         generated_ids = target_output_id
                     else:
                         generated_ids = ''
+                    print('previous', previous[0][0].shape[2])
                     valid_tgt_kv = previous
                     use_target = True
                     print('*******************', valid_tgt_kv[0][0].shape[2])
