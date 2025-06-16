@@ -304,8 +304,8 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 break
             generated_text = speculative_tokenizer.decode(generated_ids[0, :], skip_special_tokens=True)
 
-
-
+        print('-------------------------------------end the process -------------------------\n\n\n')
+        print(generated_text)
         return generated_text, try_correct_num
 
 
