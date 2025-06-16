@@ -292,6 +292,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 target_model, target_tokenizer, generated_ids, valid_tgt_kv,
                     max_new_tokens=change_tokens, temperature=0.6, top_k=50, top_p=0.95,checking=False
                 )
+                original_target_text_len += len(generated_ids.shape[1]-original_target_text_len)
                 print('** after valid_tgt_kv', valid_tgt_kv[0][0].shape[2])
 
                 # if inferencing the model stops at the first time
