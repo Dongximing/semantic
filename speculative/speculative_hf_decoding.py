@@ -10,7 +10,7 @@ from transformers import StoppingCriteria, StoppingCriteriaList
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
+import copy
 BEGIN_TOKEN_NUM = 200
 SPECULATIVE_OUTPUT_LENGTH = 200
 MATH_PROMPT = "\nPlease reason step by step, and put your final answer within \\boxed{}."
@@ -239,7 +239,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 ## TODO: need to optimize the checking generation
                 if valid_tgt_kv:
                     print('******** checking valid_tgt_kv--------------1', valid_tgt_kv[0][0].shape[2])
-                previous = valid_tgt_kv
+                previous = copy.deepcopy(valid_tgt_kv)
                 print('first -------------- previous', previous[0][0].shape[2])
                 check_output, checking_tgt_kv, target_pooling_hidden_information = generate_with_partial_kv(
                 target_model, target_tokenizer, checking_target_ids , valid_tgt_kv,
