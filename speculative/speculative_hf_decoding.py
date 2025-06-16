@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 import transformers
 import torch
 import argparse
@@ -89,7 +91,7 @@ def generate_with_partial_kv(
                     outputs = model(input_ids=new_input_ids, past_key_values=past_key_values, use_cache=True,
                                     return_dict=True)
                     past_key_values = outputs.past_key_values
-                    checking_past_key_values = past_key_values
+                    checking_past_key_values = copy.deepcopy(past_key_values)
 
     do_sample = temperature > 0 and (top_k > 0 or top_p < 1.0)
 
