@@ -155,8 +155,10 @@ def generate_with_partial_kv(
     print('after past_key_values',past_key_values[0][0].shape[2])
     if model.config.hidden_size == 5120:
         print('big model output len ',len(hidden))
+        print('big total model output len',generated_ids.shape[1])
     else:
         print('small model output len ',len(hidden))
+        print('small total model output len', generated_ids.shape[1])
 
     print('***************  end generate_with_partial_kv  *********************\n\n\n')
     ##TODO: need to optimize the 'if checking' function
