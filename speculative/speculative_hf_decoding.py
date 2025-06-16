@@ -262,7 +262,8 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 if use_target:
                     checking_target_ids =torch.cat([target_output_id,target_tokenizer_input], dim=-1)
                 else:
-                    previous_checking_target_ids =checking_target_ids
+                    previous_checking_target_ids = copy.deepcopy(checking_target_ids)
+                    print('previous_checking_target_ids',previous_checking_target_ids.shape)
                     checking_target_ids =  torch.cat([checking_target_ids.to(f"cuda:{TARGET_model}"),target_tokenizer_input.to(f"cuda:{TARGET_model}")], dim=-1)
                 ## TODO: need to optimize the checking generation
                 if valid_tgt_kv:
