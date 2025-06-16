@@ -298,6 +298,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 # if inferencing the model stops at the first time
                 if target_tokenizer.eos_token_id in generated_ids[0, target_prompt_len:]:
                     generated_text = target_tokenizer.decode(generated_ids[0, :], skip_special_tokens=True)
+                    print('target_tokenizer.eos_token_id in the generated_text',target_tokenizer.eos_token_id)
                     break
 
             if speculative_tokenizer.eos_token_id in generated_ids[0, target_prompt_len:]:
