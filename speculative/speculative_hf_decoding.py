@@ -126,6 +126,7 @@ def generate_with_partial_kv(
 
     try:
         print("input_ids shape:", input_ids.shape)
+        print("past_key_values shape:", past_key_values[0][0].shape[2] if past_key_values is not None else "N/A")
         output = model.generate(
             input_ids=input_ids,
             attention_mask=(input_ids != tokenizer.pad_token_id).long(),
