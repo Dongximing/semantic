@@ -102,6 +102,8 @@ def generate_with_partial_kv(
         stopping_criteria_obj
     ])
     print('-------------------------------')
+    if checking:
+        print('checking by big model')
     print('model name hidden_size',model.config.hidden_size)
     print('-------------------------------')
     if model.config.hidden_size == 5120:
