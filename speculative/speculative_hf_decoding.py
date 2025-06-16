@@ -251,6 +251,8 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                       speculative_tokenizer.decode(small_input_ids[0, :], skip_special_tokens=True))
 
                ## small model generation
+                previous_spec_kv = copy.deepcopy(spec_kv)
+
                 checking_generated_ids, checking_spec_kv,pooling_hidden_information = generate_with_partial_kv(
                     speculative_model, speculative_tokenizer, small_input_ids , spec_kv,
                     max_new_tokens=SPECULATIVE_OUTPUT_LENGTH, temperature=0.6, top_k=50, top_p=0.95,checking=False
@@ -301,7 +303,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
 
                     print('previous', previous[0][0].shape[2])
                     # if previous[0][0].shape[2] != 5120:
-                    # spec_kv = copy.deepcopy(previous)
+                    spec_kv = copy.deepcopy(previous_spec_kv)
 
                     valid_tgt_kv = copy.deepcopy(previous)
 
