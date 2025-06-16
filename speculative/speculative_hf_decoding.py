@@ -200,7 +200,6 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
         generated_ids = start_target_model_inputs['input_ids']
         target_prompt_len = start_target_model_inputs["input_ids"].shape[1]
         start_speculative_text_inputs = target_tokenizer(speculative_text, return_tensors="pt")['input_ids'].to(speculative_model.device)
-        previous_start_speculative_text_inputs = start_speculative_text_inputs
         original_target_text_len = start_target_model_inputs["input_ids"].shape[1]
         # there are kv caches in both the target model and speculative model.
         spec_kv, tgt_kv = None, None
@@ -242,7 +241,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                     real_target_output = target_tokenizer.decode(generated_ids[0,previous_original_target_text_len:],skip_special_tokens=True)
                     print('*****real_target_output:\n',real_target_output)
                     speculative_tokenizer_input = speculative_tokenizer(real_target_output, return_tensors="pt")['input_ids'].to(speculative_model.device)
-                    generated_ids = torch.cat([previous_start_speculative_text_inputs,speculative_tokenizer_input], dim=-1)
+                    generated_ids = torch.cat([start_speculative_text_inputs,speculative_tokenizer_input], dim=-1)
                 small_input_ids = generated_ids
                 print('*****speculative_tokenizer_input\n',
                       speculative_tokenizer.decode(small_input_ids[0, :], skip_special_tokens=True))
