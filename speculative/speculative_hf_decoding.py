@@ -66,7 +66,10 @@ def generate_with_partial_kv(
         model, tokenizer, input_ids, past_key_values=None, max_new_tokens=10,
         temperature=1.0, top_k=50, top_p=0.95,checking = False
 ):
-
+    print('***************  generate_with_partial_kv  *********************\n\n\n')
+    if checking:
+        print('checking by big model')
+    print('model name hidden_size',model.config.hidden_size)
 
     if input_ids.numel() == 0 or input_ids.shape[1] == 0:
         raise ValueError("input_ids cannot be empty")
@@ -82,8 +85,13 @@ def generate_with_partial_kv(
     else:
 
         cached_len = past_key_values[0][0].shape[2]
-        print('**cached_len',cached_len)
-        print('**input_ids',input_ids.shape[1])
+        if model.config.hidden_size == 5120:
+            print('**  big model cached_len',cached_len)
+            print('**   big model input_ids',input_ids.shape[1])
+        else:
+            print('** small model cached_len',cached_len)
+            print('** small input_ids',input_ids.shape[1])
+
         if cached_len < seq_len - 1:
             new_input_ids = input_ids[:, cached_len:-1]
             if new_input_ids.shape[1] > 0:
@@ -103,11 +111,7 @@ def generate_with_partial_kv(
     stopping_criteria = StoppingCriteriaList([
         stopping_criteria_obj
     ])
-    print('-------------------------------')
-    if checking:
-        print('checking by big model')
-    print('model name hidden_size',model.config.hidden_size)
-    print('-------------------------------')
+
     if model.config.hidden_size == 5120:
         print('Big model past_key_values',past_key_values[0][0].shape[2])
     else:
@@ -149,7 +153,12 @@ def generate_with_partial_kv(
 
     hidden = output.hidden_states
     print('after past_key_values',past_key_values[0][0].shape[2])
-    print(len(hidden))
+    if model.config.hidden_size == 5120:
+        print('big model output len ',len(hidden))
+    else:
+        print('small model output len ',len(hidden))
+
+    print('***************  end generate_with_partial_kv  *********************\n\n\n')
     ##TODO: need to optimize the 'if checking' function
     if checking:
         output_last_hidden_list = torch.stack([layer[-1][:, -1, :] for layer in hidden[:]]).cpu()
