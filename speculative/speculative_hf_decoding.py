@@ -68,7 +68,7 @@ def generate_with_partial_kv(
 ):
     print('***************  generate_with_partial_kv  *********************\n\n\n')
     if checking:
-        print('checking by big model')
+        print('^^^^^^^^checking by big model^^^^^^^^^^^')
     print('model name hidden_size',model.config.hidden_size)
 
     if input_ids.numel() == 0 or input_ids.shape[1] == 0:
@@ -82,6 +82,11 @@ def generate_with_partial_kv(
             with torch.no_grad():
                 outputs = model(input_ids=input_ids[:, :-1], use_cache=True, return_dict=True)
                 past_key_values = outputs.past_key_values
+        if model.config.hidden_size == 5120:
+            print('**   big model input_ids  and past_key_values is null',input_ids.shape[1])
+        else:
+            print('**   small input_ids and past_key_values is null',input_ids.shape[1])
+
     else:
 
         cached_len = past_key_values[0][0].shape[2]
