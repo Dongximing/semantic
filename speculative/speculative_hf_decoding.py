@@ -401,17 +401,18 @@ if __name__ == "__main__":
 
     model_target_probe = SemanticEntropyProbTarget(5120, 256)
     model_target_probe.load_state_dict(torch.load(f'{args.target_probe}.pt'))
-    model_target_probe = model_target_probe.to(f'cuda:{TARGET_probe}')
+    model_target_probe = model_target_probe.to('cuda:3')
 
     model_spec_probe = SemanticEntropyProbSpec(1536, 256)
     model_spec_probe.load_state_dict(torch.load(f'{args.speculative_probe}.pt'))
-    model_spec_probe = model_spec_probe.to(f'cuda:{SPEC_probe}')
+    model_spec_probe = model_spec_probe.to('cuda:3')
 
 
     target_model = transformers.AutoModelForCausalLM.from_pretrained(
         args.target_model,
         torch_dtype=torch.float16,
-        device_map=f"cuda:{TARGET_model}"
+        device_map="auto",
+        max_memory={0: "24GB", 1: "24GB"}
     )
     target_tokenizer = transformers.AutoTokenizer.from_pretrained(
     args.target_model,
@@ -420,7 +421,7 @@ if __name__ == "__main__":
     speculative_model = transformers.AutoModelForCausalLM.from_pretrained(
         args.speculative_model,
         torch_dtype=torch.float16,
-        device_map=f"cuda:{SPEC_model}"
+        device_map="cuda:2"
 
     )
     speculative_tokenizer = transformers.AutoTokenizer.from_pretrained(
