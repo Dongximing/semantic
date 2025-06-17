@@ -32,7 +32,7 @@ if __name__ == '__main__':
         elif args.dataset == 'aime':
             dirname = f'spec_{args.dataset}_{number}'
         dir_path = os.path.join(args.eval_path, dirname)
-        json_path = os.path.join(dir_path, "generation.json")
+        json_path = os.path.join(dir_path, "spec_generation.json")
         with open(json_path, "r", encoding="utf-8") as f:
             generations = json.load(f)
             print('generations',generations)
