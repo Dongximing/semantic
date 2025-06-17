@@ -268,7 +268,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 else:
                     previous_checking_target_ids = copy.deepcopy(checking_target_ids)
                     print('previous_checking_target_ids',previous_checking_target_ids.shape)
-                    checking_target_ids =  torch.cat([checking_target_ids.to(f"cuda:{TARGET_model}"),target_tokenizer_input.to(f"cuda:{TARGET_model}")], dim=-1)
+                    checking_target_ids =  torch.cat([checking_target_ids.to(target_model.device),target_tokenizer_input.to(target_model.device)], dim=-1)
                 ## TODO: need to optimize the checking generation
                 if valid_tgt_kv:
                     print('******** checking valid_tgt_kv--------------1', valid_tgt_kv[0][0].shape[2])
@@ -281,9 +281,9 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 print('******** checking valid_tgt_kv',valid_tgt_kv[0][0].shape[2])
                 # check the entropy of the target model and speculative model.
                 with torch.no_grad():
-                    prob_target = model_target_probe(target_pooling_hidden_information.float().to(f"cuda:{TARGET_probe}"))
+                    prob_target = model_target_probe(target_pooling_hidden_information.float().to(f"cuda:{3}"))
                 with torch.no_grad():
-                    prob_spec = model_spec_probe(pooling_hidden_information.float().to(f"cuda:{SPEC_probe}"))
+                    prob_spec = model_spec_probe(pooling_hidden_information.float().to(f"cuda:{3}"))
                 # if the prob of the target model is higher than the prob of the speculative model, we use the speculative model to keep going.
                 # if the prob of the target model is lower than the prob of the speculative model, we use the target model to generate the current part.
                 print(f'prob_target: {prob_target}, prob_spec:{prob_spec} ')
