@@ -35,6 +35,7 @@ if __name__ == '__main__':
         json_path = os.path.join(dir_path, "generation.json")
         with open(json_path, "r", encoding="utf-8") as f:
             generations = json.load(f)
+            print('generations',generations)
             predict = generations[0]['real_answer']
             print(predict)
             standard = generations[0]['answer']
