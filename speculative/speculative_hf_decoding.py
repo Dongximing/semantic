@@ -102,7 +102,12 @@ def generate_with_partial_kv(
             if new_input_ids.shape[1] > 0:
                 with torch.no_grad():
                     outputs = model(input_ids=new_input_ids, past_key_values=past_key_values, use_cache=True,
-                                    return_dict=True)
+                                    return_dict=True,
+                                    return_dict_in_generate=True,
+                                    output_scores=True,
+                                    output_hidden_states=True,
+                                    )
+                    big_hidden = outputs.hidden_states
                     past_key_values = outputs.past_key_values
         checking_past_key_values = copy.deepcopy(past_key_values)
 
@@ -170,7 +175,10 @@ def generate_with_partial_kv(
     print('***************  end generate_with_partial_kv  *********************\n\n\n')
     ##TODO: need to optimize the 'if checking' function
     if checking:
+        output_last_hidden_list_big = torch.stack([layer[-1][:, -1, :] for layer in big_hidden[:]]).cpu()
+
         output_last_hidden_list = torch.stack([layer[-1][:, -1, :] for layer in hidden[:]]).cpu()
+        output_last_hidden_list = torch.cat([output_last_hidden_list_big, output_last_hidden_list], dim=0)
     else:
         output_last_hidden_list = torch.stack([layer[-1][:, -1, :] for layer in hidden]).cpu()
     output_last_hidden_list = output_last_hidden_list.squeeze(1)  # [len ,D]
@@ -394,7 +402,7 @@ if __name__ == "__main__":
     parser.add_argument("--speculative_probe", type=str, help="speculative_probe",default="/home/shaowei/training_probe/math-500_output_last_hidden_list_best_probe_mse")
     parser.add_argument("--target_temperature", type=float, help="target_temperature",default=0.1)
     parser.add_argument("--speculative_temperature", type=float, help="speculative_temperature",default=0.6)
-    parser.add_argument("--max_new_tokens", type=int, help="max_new_tokens",default=32000)
+    parser.add_argument("--max_new_tokens", type=int, help="max_new_tokens",default=12000)
     parser.add_argument("--top_p", type=float, help="top_p",default=0.9)
     parser.add_argument("--top_k", type=int, help="top_k",default=50)
     args = parser.parse_args()
