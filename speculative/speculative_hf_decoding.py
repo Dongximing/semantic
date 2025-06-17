@@ -175,8 +175,9 @@ def generate_with_partial_kv(
     print('***************  end generate_with_partial_kv  *********************\n\n\n')
     ##TODO: need to optimize the 'if checking' function
     if checking:
-        output_last_hidden_list_big = torch.stack([layer[-1][:, -1, :] for layer in big_hidden[:]]).cpu()
 
+        output_last_hidden_list_big = torch.stack([layer[-1][:, -1, :] for layer in big_hidden]).cpu()
+        print(output_last_hidden_list_big.shape)
         output_last_hidden_list = torch.stack([layer[-1][:, -1, :] for layer in hidden[:]]).cpu()
         output_last_hidden_list = torch.cat([output_last_hidden_list_big, output_last_hidden_list], dim=0)
     else:
