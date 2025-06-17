@@ -36,7 +36,7 @@ if __name__ == '__main__':
         with open(json_path, "r", encoding="utf-8") as f:
             generations = json.load(f)
             predict = generations[0]['real_answer']
-            standard = generations[0]['standard_answer']
+            standard = generations[0]['answer']
         result = check_math_correctness(standard,predict)
         if result:
             number_correct += 1
