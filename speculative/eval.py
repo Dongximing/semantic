@@ -19,7 +19,7 @@ if __name__ == '__main__':
     parser.add_argument('--start', type=int, default=100)
     parser.add_argument('--end', type=int, default=200)
     parser.add_argument('--dataset', type=str, default='math-500')
-    parser.add_argument('--eval_path', type=str, default='/data/semantic/speculative/spec_result_math-500')
+    parser.add_argument('--eval_path', type=str, default='/data/ximing/semantic')
     parser.add_argument('--seed', type=int, default=42)
     args = parser.parse_args()
     seed_everything(args.seed)
@@ -27,14 +27,14 @@ if __name__ == '__main__':
     number_correct = 0
     total_number = args.end - args.start
 
-    for idx, number in enumerate(tqdm(range(args.start_dataset, args.end_dataset))):
+    for idx, number in enumerate(tqdm(range(args.start, args.end))):
 
         if args.dataset == 'math-500':
-            dirname = f'spec_{args.dataset}_{number}'
+            dirname = f'baseline_{args.dataset}_{number}'
         elif args.dataset == 'aime':
-            dirname = f'spec_{args.dataset}_{number}'
-        dir_path = os.path.join(args.base_dir, dirname)
-        json_path = os.path.join(dir_path, "spec_generation.json")
+            dirname = f'baseline_{args.dataset}_{number}'
+        dir_path = os.path.join(args.eval_path, dirname)
+        json_path = os.path.join(dir_path, "generation.json")
         with open(json_path, "r", encoding="utf-8") as f:
             generations = json.load(f)
             predict = generations[0]['real_answer']
