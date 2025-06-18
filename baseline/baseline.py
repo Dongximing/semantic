@@ -22,7 +22,7 @@ def seed_everything(seed):
         torch.backends.cudnn.benchmark = False
 
 
-NUMBER = 2
+NUMBER = 0
 
 def predict(tokenizer, model, input_data, temperature):
     max_new_tokens = 15000
@@ -91,17 +91,17 @@ def inference_model_pickle(task_name: str, model, tokenizer, base_dir,
     print("[Info] Processing completed.")
 
 if __name__ == "__main__":
+    seed_everything(42)
     tokenizer = AutoTokenizer.from_pretrained(
-        "Qwen/QwQ-32B-AWQ",
+        "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
         trust_remote_code=True
     )
     model = AutoModelForCausalLM.from_pretrained(
-        "Qwen/QwQ-32B-AWQ",
+        "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
         torch_dtype=torch.float16,
         device_map=f"cuda:{NUMBER}"
     )
 
-    seed_everything(42)
     base_dir = '/data/ximing/semantic/'
     inference_model_pickle(
         task_name="math-500",
