@@ -11,6 +11,7 @@ import numpy as np
 import random
 import torch
 SEED = 42
+MATH_PROMPT = "\nPlease reason step by step, and put your final answer within \\boxed{}."
 def seed_everything(seed):
     torch.manual_seed(seed)
     np.random.seed(seed)
@@ -26,7 +27,16 @@ NUMBER = 0
 
 def predict(tokenizer, model, input_data, temperature):
     max_new_tokens = 15000
-    inputs = tokenizer(input_data, return_tensors="pt").to(f"cuda:{NUMBER}")
+    messages = [
+        {"role": "user", "content": input_data + MATH_PROMPT}
+    ]
+    # apply the pattern for speculative model and target model
+    target_text = tokenizer.apply_chat_template(  # big
+        messages,
+        tokenize=False,
+        add_generation_prompt=True
+    )
+    inputs = tokenizer(target_text, return_tensors="pt").to(f"cuda:{NUMBER}")
     initial_length = len(inputs['input_ids'][0])
 
     with torch.no_grad():
@@ -45,7 +55,7 @@ def predict(tokenizer, model, input_data, temperature):
 def process_file_to_json(save_path, tokenizer, model, problem, answer):
     all_generations = []
     try:
-        real_answer, full_answer, input_data,full_answer_len = predict(tokenizer, model, problem, temperature=0.1)
+        real_answer, full_answer, input_data,full_answer_len = predict(tokenizer, model, problem, temperature=0.6)
         all_generations.append({
             "input_text": input_data,
             "real_answer": real_answer,
