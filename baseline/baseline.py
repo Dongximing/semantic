@@ -10,7 +10,7 @@ import argparse
 import numpy as np
 import random
 import torch
-
+SEED = 42
 def seed_everything(seed):
     torch.manual_seed(seed)
     np.random.seed(seed)
@@ -69,7 +69,7 @@ def process_file_to_json(save_path, tokenizer, model, problem, answer):
         json.dump(all_generations, f, ensure_ascii=False, indent=2)
 
 def inference_model_pickle(task_name: str, model, tokenizer, base_dir,
-                           start=0, end=10):
+                           start=0, end=10,seed=42):
     if task_name == "math-500":
         ds = load_dataset("HuggingFaceH4/MATH-500")['test']
 
@@ -82,7 +82,7 @@ def inference_model_pickle(task_name: str, model, tokenizer, base_dir,
     problems_and_answers = [{"problem": item["problem"], "answer": item["answer"]} for item in ds]
 
     for idx, number in enumerate(tqdm(range(start, end))):
-        dirname = f'baseline_{task_name}_{number}'
+        dirname = f'seed_{seed}baseline_{task_name}_{number}'
         dir_path = os.path.join(base_dir, dirname)
         problem = problems_and_answers[idx]['problem']
         answer = problems_and_answers[idx]['answer']
@@ -101,7 +101,7 @@ if __name__ == "__main__":
         device_map=f"cuda:{NUMBER}"
     )
 
-
+    seed_everything(42)
     base_dir = '/data/ximing/semantic/'
     inference_model_pickle(
         task_name="math-500",
@@ -109,6 +109,7 @@ if __name__ == "__main__":
         tokenizer=tokenizer,
         base_dir=base_dir,
         start=100,
-        end=500
+        end=500,
+        seed=SEED
     )
     print("done")
