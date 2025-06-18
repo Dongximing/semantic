@@ -82,7 +82,7 @@ def inference_model_pickle(task_name: str, model, tokenizer, base_dir,
     problems_and_answers = [{"problem": item["problem"], "answer": item["answer"]} for item in ds]
 
     for idx, number in enumerate(tqdm(range(start, end))):
-        dirname = f'seed_{seed}baseline_{task_name}_{number}'
+        dirname = f'seed_{seed}_baseline_{task_name}_{number}'
         dir_path = os.path.join(base_dir, dirname)
         problem = problems_and_answers[idx]['problem']
         answer = problems_and_answers[idx]['answer']
@@ -102,7 +102,7 @@ if __name__ == "__main__":
         device_map=f"cuda:{NUMBER}"
     )
 
-    base_dir = '/data/ximing/semantic/r1_1.5B_baseline_math_500_seed42/'
+    base_dir = '/home/cs/staff/shaowei/semantic/r1_1.5B_baseline_math_500_seed42/'
     inference_model_pickle(
         task_name="math-500",
         model=model,
