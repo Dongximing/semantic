@@ -6,6 +6,7 @@ import pandas as pd
 import os
 import datetime
 from datasets import load_dataset
+from tqdm import tqdm
 
 
 def inference_model(task_name: str, model, tokenizer):
@@ -14,7 +15,7 @@ def inference_model(task_name: str, model, tokenizer):
         prompts = df['problem'][0:100].tolist()
         answers = df['answer'][0:100].tolist()
         start_number = 0
-        result_base_dir = "./qwen-32b_math-result"
+        result_base_dir = "./qwen-32b_r1_math-result"
     elif task_name == 'aime':
         dataset = load_dataset("AI-MO/aimo-validation-aime")
         dataset = dataset['train']
@@ -22,9 +23,9 @@ def inference_model(task_name: str, model, tokenizer):
         prompts = new_dataset['problem'][:]
         answers = new_dataset['answer'][:]
         start_number = 0
-        result_base_dir = "./qwen-32b_aime"
+        result_base_dir = "./qwen-32b_r1_aime"
 
-    for index, prompt in enumerate(prompts):
+    for index, prompt in tqdm(enumerate(prompts), total=len(prompts)):
 
         if  task_name == 'math-500':
             number = start_number + index
@@ -50,7 +51,6 @@ def inference_model(task_name: str, model, tokenizer):
             "answer": answers[index] if index < len(answers) else None
         }
         try:
-            print(f"---------inference----sample----{index}-------------------\n")
             messages = [
                 {"role": "user", "content": prompt}
             ]
