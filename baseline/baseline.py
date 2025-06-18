@@ -102,7 +102,7 @@ if __name__ == "__main__":
         device_map=f"cuda:{NUMBER}"
     )
 
-    base_dir = '/data/ximing/semantic/'
+    base_dir = '/data/ximing/semantic/r1_1.5B_baseline_math_500_seed42/'
     inference_model_pickle(
         task_name="math-500",
         model=model,
