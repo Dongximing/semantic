@@ -11,10 +11,10 @@ from datasets import load_dataset
 def inference_model(task_name: str, model, tokenizer):
     if task_name == 'math-500':
         df = pd.read_json(f"/home/ximing/test_vllm/{task_name}/test.jsonl", lines=True)
-        prompts = df['problem'][1:2].tolist()
-        answers = df['answer'][1:2].tolist()
-        start_number = 1
-        result_base_dir = "./math-result_left"
+        prompts = df['problem'][0:100].tolist()
+        answers = df['answer'][0:100].tolist()
+        start_number = 0
+        result_base_dir = "./qwen-32b_math-result"
     elif task_name == 'aime':
         dataset = load_dataset("AI-MO/aimo-validation-aime")
         dataset = dataset['train']
@@ -22,7 +22,7 @@ def inference_model(task_name: str, model, tokenizer):
         prompts = new_dataset['problem'][:]
         answers = new_dataset['answer'][:]
         start_number = 0
-        result_base_dir = "./aime"
+        result_base_dir = "./qwen-32b_aime"
 
     for index, prompt in enumerate(prompts):
 
@@ -112,7 +112,7 @@ def main():
     parser.add_argument(
         "--main-model-path",
         type=str,
-        default="Qwen/QwQ-32B-AWQ",
+        default="casperhansen/deepseek-r1-distill-qwen-32b-awq",
     )
     parser.add_argument(
         "--task",
