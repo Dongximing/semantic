@@ -25,7 +25,7 @@ def seed_everything(seed):
 NUMBER = 0
 
 def predict(tokenizer, model, input_data, temperature):
-    max_new_tokens = 12
+    max_new_tokens = 15000
     inputs = tokenizer(input_data, return_tensors="pt").to(f"cuda:{NUMBER}")
     initial_length = len(inputs['input_ids'][0])
 
