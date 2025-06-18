@@ -13,6 +13,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import copy
+from utils import seed_everything
 BEGIN_TOKEN_NUM = 200
 SPECULATIVE_OUTPUT_LENGTH = 200
 MATH_PROMPT = "\nPlease reason step by step, and put your final answer within \\boxed{}."
@@ -66,10 +67,10 @@ def generate_with_partial_kv(
         model, tokenizer, input_ids, past_key_values=None, max_new_tokens=10,
         temperature=1.0, top_k=50, top_p=0.95,checking = False
 ):
-    print('***************  generate_with_partial_kv  *********************\n\n\n')
-    if checking:
-        print('^^^^^^^^checking by big model^^^^^^^^^^^')
-    print('model name hidden_size',model.config.hidden_size)
+    # print('***************  generate_with_partial_kv  *********************\n\n\n')
+    # if checking:
+    #     print('^^^^^^^^checking by big model^^^^^^^^^^^')
+    # print('model name hidden_size',model.config.hidden_size)
 
     if input_ids.numel() == 0 or input_ids.shape[1] == 0:
         raise ValueError("input_ids cannot be empty")
@@ -82,20 +83,20 @@ def generate_with_partial_kv(
             with torch.no_grad():
                 outputs = model(input_ids=input_ids[:, :-1], use_cache=True, return_dict=True)
                 past_key_values = outputs.past_key_values
-        if model.config.hidden_size == 5120:
-            print('**   big model input_ids  and past_key_values is null',input_ids.shape[1])
-        else:
-            print('**   small input_ids and past_key_values is null',input_ids.shape[1])
+        # if model.config.hidden_size == 5120:
+        #     print('**   big model input_ids  and past_key_values is null',input_ids.shape[1])
+        # else:
+        #     print('**   small input_ids and past_key_values is null',input_ids.shape[1])
 
     else:
 
         cached_len = past_key_values[0][0].shape[2]
-        if model.config.hidden_size == 5120:
-            print('**  big model cached_len',cached_len)
-            print('**   big model input_ids',input_ids.shape[1])
-        else:
-            print('** small model cached_len',cached_len)
-            print('** small input_ids',input_ids.shape[1])
+        # if model.config.hidden_size == 5120:
+        #     print('**  big model cached_len',cached_len)
+        #     print('**   big model input_ids',input_ids.shape[1])
+        # else:
+        #     print('** small model cached_len',cached_len)
+        #     print('** small input_ids',input_ids.shape[1])
 
         if cached_len < seq_len - 1:
             new_input_ids = input_ids[:, cached_len:-1]
@@ -122,16 +123,16 @@ def generate_with_partial_kv(
         stopping_criteria_obj
     ])
 
-    if model.config.hidden_size == 5120:
-        print('Big model past_key_values',past_key_values[0][0].shape[2])
-    else:
-        print('small model past_key_values', past_key_values[0][0].shape[2])
+    # if model.config.hidden_size == 5120:
+    #     print('Big model past_key_values',past_key_values[0][0].shape[2])
+    # else:
+    #     print('small model past_key_values', past_key_values[0][0].shape[2])
 
 
 
     # try:
-    print("input_ids shape:", input_ids.shape)
-    print("past_key_values shape:", past_key_values[0][0].shape[2] if past_key_values is not None else "N/A")
+    # print("input_ids shape:", input_ids.shape)
+    # print("past_key_values shape:", past_key_values[0][0].shape[2] if past_key_values is not None else "N/A")
     output = model.generate(
         input_ids=input_ids,
         attention_mask=(input_ids != tokenizer.pad_token_id).long(),
@@ -156,28 +157,28 @@ def generate_with_partial_kv(
     #         print(f"first layer shape: {past_key_values[0][0].shape if len(past_key_values) > 0 else 'N/A'}")
     generated_ids = output.sequences
 
-    if model.config.hidden_size == 5120:
-        print("****big model generated_ids:\n",tokenizer.decode(generated_ids[0, :], skip_special_tokens=True))
-    else:
-        print('****small model generated_ids:\n', tokenizer.decode(generated_ids[0, :], skip_special_tokens=True))
+    # if model.config.hidden_size == 5120:
+    #     print("****big model generated_ids:\n",tokenizer.decode(generated_ids[0, :], skip_special_tokens=True))
+    # else:
+    #     print('****small model generated_ids:\n', tokenizer.decode(generated_ids[0, :], skip_special_tokens=True))
 
     past_key_values = output.past_key_values
 
     hidden = output.hidden_states
-    print('after past_key_values',past_key_values[0][0].shape[2])
-    if model.config.hidden_size == 5120:
-        print('big model output len ',len(hidden))
-        print('big total model output len',generated_ids.shape[1])
-    else:
-        print('small model output len ',len(hidden))
-        print('small total model output len', generated_ids.shape[1])
+    # print('after past_key_values',past_key_values[0][0].shape[2])
+    # if model.config.hidden_size == 5120:
+    #     print('big model output len ',len(hidden))
+    #     print('big total model output len',generated_ids.shape[1])
+    # else:
+    #     print('small model output len ',len(hidden))
+    #     print('small total model output len', generated_ids.shape[1])
 
-    print('***************  end generate_with_partial_kv  *********************\n\n\n')
+    # print('***************  end generate_with_partial_kv  *********************\n\n\n')
     ##TODO: need to optimize the 'if checking' function
     if checking:
 
         output_last_hidden_list_big = torch.stack([layer[:, -1, :] for layer in big_hidden]).cpu()
-        print(output_last_hidden_list_big.shape)
+        # print(output_last_hidden_list_big.shape)
         output_last_hidden_list = torch.stack([layer[-1][:, -1, :] for layer in hidden[:]]).cpu()
         output_last_hidden_list = torch.cat([output_last_hidden_list_big, output_last_hidden_list], dim=0)
     else:
@@ -185,7 +186,7 @@ def generate_with_partial_kv(
     output_last_hidden_list = output_last_hidden_list.squeeze(1)  # [len ,D]
     output_last_hidden_list = output_last_hidden_list.mean(dim=0, keepdim=True)  # [1,D]
     if checking:
-        print('checking_past_key_values',checking_past_key_values[0][0].shape[2])
+        # print('checking_past_key_values',checking_past_key_values[0][0].shape[2])
         return generated_ids,checking_past_key_values,output_last_hidden_list
     else:
         return generated_ids, past_key_values,output_last_hidden_list
@@ -220,6 +221,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
         # change flag is used to check whether the target models need to guide the speculative model.
         token_num, change_tokens, change_flag = 0, 0, False
         # 'begin' implicate the first time we start the speculative model.
+        detail = []
         begin = True
         use_target = True
         previous_original_target_text_len = original_target_text_len
@@ -237,7 +239,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 else:
                     return False
 
-        print('-------------------------------------start the process -------------------------\n\n\n')
+        # print('-------------------------------------start the process -------------------------\n\n\n')
 
         while checking_is_finish(generated_ids,max_new_tokens,use_target):
             # we start at the target model.
@@ -252,12 +254,13 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 if use_target:
                     target_output_id = generated_ids
                     real_target_output = target_tokenizer.decode(generated_ids[0,previous_original_target_text_len:],skip_special_tokens=True)
-                    print('*****real_target_output:\n',real_target_output)
+                    # print('*****real_target_output:\n',real_target_output)
+                    detail.append({'target_model':real_target_output})
                     speculative_tokenizer_input = speculative_tokenizer(real_target_output, return_tensors="pt")['input_ids'].to(speculative_model.device)
                     generated_ids = torch.cat([start_speculative_text_inputs,speculative_tokenizer_input], dim=-1)
                 small_input_ids = generated_ids
-                print('*****speculative_tokenizer_input\n',
-                      speculative_tokenizer.decode(small_input_ids[0, :], skip_special_tokens=True))
+                # print('*****speculative_tokenizer_input\n',
+                #       speculative_tokenizer.decode(small_input_ids[0, :], skip_special_tokens=True))
 
                ## small model generation
                 previous_spec_kv = copy.deepcopy(spec_kv)
@@ -276,18 +279,18 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                     checking_target_ids =torch.cat([target_output_id,target_tokenizer_input], dim=-1)
                 else:
                     previous_checking_target_ids = copy.deepcopy(checking_target_ids)
-                    print('previous_checking_target_ids',previous_checking_target_ids.shape)
+                    # print('previous_checking_target_ids',previous_checking_target_ids.shape)
                     checking_target_ids =  torch.cat([checking_target_ids.to(target_model.device),target_tokenizer_input.to(target_model.device)], dim=-1)
                 ## TODO: need to optimize the checking generation
-                if valid_tgt_kv:
-                    print('******** checking valid_tgt_kv--------------1', valid_tgt_kv[0][0].shape[2])
+                # if valid_tgt_kv:
+                #     print('******** checking valid_tgt_kv--------------1', valid_tgt_kv[0][0].shape[2])
                 previous = copy.deepcopy(valid_tgt_kv)
-                print('first -------------- previous', previous[0][0].shape[2])
+                # print('first -------------- previous', previous[0][0].shape[2])
                 check_output, checking_tgt_kv, target_pooling_hidden_information = generate_with_partial_kv(
                 target_model, target_tokenizer, checking_target_ids , valid_tgt_kv,
                     max_new_tokens=1, temperature=0.1, top_k=50, top_p=0.95, checking=True
                 )
-                print('******** checking valid_tgt_kv',valid_tgt_kv[0][0].shape[2])
+                # print('******** checking valid_tgt_kv',valid_tgt_kv[0][0].shape[2])
                 # check the entropy of the target model and speculative model.
                 with torch.no_grad():
                     prob_target = model_target_probe(target_pooling_hidden_information.float().to(f"cuda:{3}"))
@@ -295,8 +298,9 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                     prob_spec = model_spec_probe(pooling_hidden_information.float().to(f"cuda:{3}"))
                 # if the prob of the target model is higher than the prob of the speculative model, we use the speculative model to keep going.
                 # if the prob of the target model is lower than the prob of the speculative model, we use the target model to generate the current part.
-                print(f'prob_target: {prob_target}, prob_spec:{prob_spec} ')
+                # print(f'prob_target: {prob_target}, prob_spec:{prob_spec} ')
                 if prob_target.item() >= prob_spec.item():
+                    detail.append({'spe_model':speculative_real_output})
                     correct_spe_number +=1
                     use_target = False
                     valid_tgt_kv = copy.deepcopy(checking_tgt_kv)# we just want to real generation KV cache,
@@ -311,16 +315,16 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                     else:
                         generated_ids = previous_checking_target_ids
 
-                    print('previous', previous[0][0].shape[2])
+                    # print('previous', previous[0][0].shape[2])
                     # if previous[0][0].shape[2] != 5120:
                     spec_kv = copy.deepcopy(previous_spec_kv)
 
                     valid_tgt_kv = copy.deepcopy(previous)
 
                     use_target = True
-                    print('*******************', valid_tgt_kv[0][0].shape[2])
+                    # print('*******************', valid_tgt_kv[0][0].shape[2])
                    # generated_ids = checking_target_ids[:,:-target_tokenizer_input.shape[1]]
-                    print('generated_ids shape',generated_ids.shape)
+                   #  print('generated_ids shape',generated_ids.shape)
                     start_speculative_text_inputs = small_input_ids
                     #spec_kv = spec_kv # not change
 
@@ -340,21 +344,21 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 target_model, target_tokenizer, generated_ids.to(f"cuda:{TARGET_model}"), valid_tgt_kv,
                     max_new_tokens=change_tokens, temperature=0.6, top_k=50, top_p=0.95,checking=False
                 )
-                print('original_target_text_len------------------------lllllll',original_target_text_len)
-                print('** after valid_tgt_kv', valid_tgt_kv[0][0].shape[2])
+                # print('original_target_text_len------------------------lllllll',original_target_text_len)
+                # print('** after valid_tgt_kv', valid_tgt_kv[0][0].shape[2])
 
                 # if inferencing the model stops at the first time
                 if target_tokenizer.eos_token_id in generated_ids[0, target_prompt_len:]:
                     generated_text = target_tokenizer.decode(generated_ids[0, :], skip_special_tokens=True)
-                    print('target_tokenizer.eos_token_id in the generated_text',target_tokenizer.eos_token_id)
+                    #print('target_tokenizer.eos_token_id in the generated_text',target_tokenizer.eos_token_id)
                     break
 
             if speculative_tokenizer.eos_token_id in generated_ids[0, target_prompt_len:]:
                 break
             generated_text = speculative_tokenizer.decode(generated_ids[0, :], skip_special_tokens=True)
 
-        print('-------------------------------------end the process -------------------------\n\n\n')
-        print(generated_text)
+        # print('-------------------------------------end the process -------------------------\n\n\n')
+        # print(generated_text)
         return generated_text, try_correct_num,correct_spe_number
 
 
@@ -400,7 +404,7 @@ if __name__ == "__main__":
     parser.add_argument("--target_model", type=str,  help="target_model",default="Qwen/QwQ-32B-AWQ")
     parser.add_argument("--speculative_model", type=str,  help="speculative_model", default="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
     parser.add_argument("--data_dir", type=str,  help="data_dir",default='/data/semantic/speculative/spec_result_math-500')
-    parser.add_argument("--start_dataset", type=int, help="the beginning of the dataset",default=200)
+    parser.add_argument("--start_dataset", type=int, help="the beginning of the dataset",default=100)
     parser.add_argument("--end_dataset", type=int, help="the end of the dataset",default=500)
     parser.add_argument("--target_probe", type=str, help="target_probe",default="/data/semantic/training/math-500_output_last_hidden_list_best_probe_mse")
     parser.add_argument("--speculative_probe", type=str, help="speculative_probe",default="/home/shaowei/training_probe/math-500_output_last_hidden_list_best_probe_mse")
@@ -409,8 +413,9 @@ if __name__ == "__main__":
     parser.add_argument("--max_new_tokens", type=int, help="max_new_tokens",default=14000)
     parser.add_argument("--top_p", type=float, help="top_p",default=0.9)
     parser.add_argument("--top_k", type=int, help="top_k",default=50)
+    parser.add_argument("--seed", type=int, help="seed", default=42)
     args = parser.parse_args()
-
+    seed_everything(args.seed)
     model_target_probe = SemanticEntropyProbTarget(5120, 256)
     model_target_probe.load_state_dict(torch.load(f'{args.target_probe}.pt'))
     model_target_probe = model_target_probe.to('cuda:3')
