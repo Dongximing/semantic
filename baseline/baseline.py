@@ -6,6 +6,21 @@ import traceback
 from tqdm import tqdm
 from datasets import load_dataset
 from transformers import AutoModelForCausalLM, AutoTokenizer
+import argparse
+import numpy as np
+import random
+import torch
+
+def seed_everything(seed):
+    torch.manual_seed(seed)
+    np.random.seed(seed)
+    random.seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(seed)
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
+
 
 NUMBER = 2
 
@@ -23,17 +38,19 @@ def predict(tokenizer, model, input_data, temperature):
         )
 
     full_answer = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    full_answer_len = len(outputs.shape[1])
     real_answer = tokenizer.decode(outputs[0][initial_length:], skip_special_tokens=True)
-    return real_answer, full_answer, input_data
+    return real_answer, full_answer, input_data,full_answer_len
 
 def process_file_to_json(save_path, tokenizer, model, problem, answer):
     all_generations = []
     try:
-        real_answer, full_answer, input_data = predict(tokenizer, model, problem, temperature=0.1)
+        real_answer, full_answer, input_data,full_answer_len = predict(tokenizer, model, problem, temperature=0.1)
         all_generations.append({
             "input_text": input_data,
             "real_answer": real_answer,
             "full_answer": full_answer,
+            "tokens_full_answer":full_answer_len,
             "answer": answer
         })
     except Exception as e:
@@ -42,6 +59,7 @@ def process_file_to_json(save_path, tokenizer, model, problem, answer):
             "real_answer": None,
             "full_answer": None,
             "answer": answer,
+            "tokens_full_answer":None,
             "error": traceback.format_exc()
         })
 
@@ -83,13 +101,14 @@ if __name__ == "__main__":
         device_map=f"cuda:{NUMBER}"
     )
 
-    base_dir = '/data/ximing/semantic'
+
+    base_dir = '/data/ximing/semantic/'
     inference_model_pickle(
         task_name="math-500",
         model=model,
         tokenizer=tokenizer,
         base_dir=base_dir,
         start=100,
-        end=200
+        end=500
     )
     print("done")
