@@ -414,7 +414,7 @@ if __name__ == "__main__":
     parser.add_argument("--max_new_tokens", type=int, help="max_new_tokens",default=14000)
     parser.add_argument("--top_p", type=float, help="top_p",default=0.9)
     parser.add_argument("--top_k", type=int, help="top_k",default=50)
-    parser.add_argument("--seed", type=int, help="seed", default=42)
+    parser.add_argument("--seed", type=int, help="seed", default=123)
     args = parser.parse_args()
     seed_everything(args.seed)
     model_target_probe = SemanticEntropyProbTarget(5120, 256)
