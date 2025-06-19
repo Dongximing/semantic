@@ -101,7 +101,7 @@ def inference_model_pickle(task_name: str, model, tokenizer, base_dir,
     print("[Info] Processing completed.")
 
 if __name__ == "__main__":
-    seed_everything(42)
+    seed_everything(123)
     tokenizer = AutoTokenizer.from_pretrained(
         "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
         trust_remote_code=True
@@ -112,7 +112,7 @@ if __name__ == "__main__":
         device_map=f"cuda:{NUMBER}"
     )
 
-    base_dir = '/home/cs/staff/shaowei/semantic/r1_1.5B_baseline_math_500_seed42/'
+    base_dir = '/home/cs/staff/shaowei/semantic/r1_1.5B_baseline_math_500_seed123/'
     inference_model_pickle(
         task_name="math-500",
         model=model,
