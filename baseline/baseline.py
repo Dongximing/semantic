@@ -64,6 +64,7 @@ def process_file_to_json(save_path, tokenizer, model, problem, answer):
             "answer": answer
         })
     except Exception as e:
+        print('ggggg')
         all_generations.append({
             "input_text": problem,
             "real_answer": None,
