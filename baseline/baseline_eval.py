@@ -1,5 +1,5 @@
 
-from speculative.paser import *
+from ..speculative.paser import *
 from speculative.utils import *
 import os
 import json
