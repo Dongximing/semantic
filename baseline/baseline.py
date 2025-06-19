@@ -48,7 +48,7 @@ def predict(tokenizer, model, input_data, temperature):
         )
 
     full_answer = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    full_answer_len = len(outputs.shape[1])
+    full_answer_len = outputs.shape[1]
     real_answer = tokenizer.decode(outputs[0][initial_length:], skip_special_tokens=True)
     return real_answer, full_answer, input_data,full_answer_len
 
