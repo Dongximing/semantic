@@ -17,7 +17,7 @@ if __name__ == '__main__':
     parser.add_argument('--start', type=int, default=100)
     parser.add_argument('--end', type=int, default=500)
     parser.add_argument('--dataset', type=str, default='math-500')
-    parser.add_argument('--eval_path', type=str, default='/home/cs/staff/shaowei/semantic/r1_1.5B_baseline_math_500_seed42')
+    parser.add_argument('--eval_path', type=str, default='/data/semantic/speculative/spec_result_math-500_seed_42')
     #/home/cs/staff/shaowei/semantic
     parser.add_argument('--seed', type=int, default=42)
     args = parser.parse_args()
@@ -29,13 +29,11 @@ if __name__ == '__main__':
     for idx, number in enumerate(tqdm(range(args.start, args.end))):
 
         if args.dataset == 'math-500':
-            dirname = f'seed_42_baseline_{args.dataset}_{number}'
-            #seed_42_baseline_math-500_
-            #spec_
+            dirname = f'spec_{args.dataset}_{number}'
         elif args.dataset == 'aime':
             dirname = f'spec_{args.dataset}_{number}'
         dir_path = os.path.join(args.eval_path, dirname)
-        json_path = os.path.join(dir_path, "generation.json")
+        json_path = os.path.join(dir_path, "spec_generation.json")
         if not os.path.exists(json_path):
             print(f"[Warning] {json_path} does not exist, skipping...")
             continue
@@ -44,7 +42,7 @@ if __name__ == '__main__':
             #print('generations',generations)
             predict = generations[0]['real_answer']
             #print(predict)
-            standard = generations[0]['answer']
+            standard = generations[0]['standard_answer']
         result = check_math_correctness(standard,predict)
         if result:
             number_correct += 1
