@@ -1,6 +1,6 @@
 
-from paser import *
-from utils import *
+from speculative.paser import *
+from speculative.utils import *
 import os
 import json
 from tqdm import tqdm
