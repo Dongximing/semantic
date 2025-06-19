@@ -35,7 +35,7 @@ if __name__ == '__main__':
         elif args.dataset == 'aime':
             dirname = f'spec_{args.dataset}_{number}'
         dir_path = os.path.join(args.eval_path, dirname)
-        json_path = os.path.join(dir_path, "spec_generation.json")
+        json_path = os.path.join(dir_path, "generation.json")
         if not os.path.exists(json_path):
             print(f"[Warning] {json_path} does not exist, skipping...")
             continue
