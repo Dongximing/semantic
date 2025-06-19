@@ -356,10 +356,11 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
             if speculative_tokenizer.eos_token_id in generated_ids[0, target_prompt_len:]:
                 break
             generated_text = speculative_tokenizer.decode(generated_ids[0, :], skip_special_tokens=True)
+            length_of_output = generated_ids.shape[1]
 
         # print('-------------------------------------end the process -------------------------\n\n\n')
         # print(generated_text)
-        return generated_text, try_correct_num,correct_spe_number,detail
+        return generated_text, try_correct_num,correct_spe_number,detail,length_of_output
 
 
 
@@ -371,7 +372,7 @@ def process_file_to_json(dir_path, target_model, target_tokenizer,speculative_mo
     start_time = time.time()
     result = speculative_decoding(target_model, target_tokenizer, speculative_model, speculative_tokenizer, problem, target_temperature, speculative_temperature,max_new_tokens,model_target_probe,model_spec_probe)
     end_time = time.time()
-    generated_text, try_correct_num,correct_spe_number,detail = result
+    generated_text, try_correct_num,correct_spe_number,detail,length_of_output = result
 
     all_generations.append({
         "input_text": problem,
@@ -380,7 +381,8 @@ def process_file_to_json(dir_path, target_model, target_tokenizer,speculative_mo
         "standard_answer": answer,
         "execution_time": f"{end_time - start_time:.2f}s",
         "correct_spe_number":correct_spe_number,
-        "detail":detail
+        "detail":detail,
+        "length_of_output":length_of_output
 
     })
     # except Exception as e:
