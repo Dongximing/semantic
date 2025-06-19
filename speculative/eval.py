@@ -29,7 +29,9 @@ if __name__ == '__main__':
     for idx, number in enumerate(tqdm(range(args.start, args.end))):
 
         if args.dataset == 'math-500':
-            dirname = f'spec_{args.dataset}_{number}'
+            dirname = f'seed_42_baseline_{args.dataset}_{number}'
+            #seed_42_baseline_math-500_
+            #spec_
         elif args.dataset == 'aime':
             dirname = f'spec_{args.dataset}_{number}'
         dir_path = os.path.join(args.eval_path, dirname)
