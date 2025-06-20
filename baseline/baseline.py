@@ -26,7 +26,7 @@ def seed_everything(seed):
 NUMBER = 0
 
 def predict(tokenizer, model, input_data, temperature):
-    max_new_tokens = 15000
+    max_new_tokens = 14000
     messages = [
         {"role": "user", "content": input_data + MATH_PROMPT}
     ]
