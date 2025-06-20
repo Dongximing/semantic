@@ -23,7 +23,7 @@ def seed_everything(seed):
         torch.backends.cudnn.benchmark = False
 
 
-NUMBER = 0
+NUMBER = 3
 
 def predict(tokenizer, model, input_data, temperature):
     max_new_tokens = 15000
@@ -102,7 +102,7 @@ def inference_model_pickle(task_name: str, model, tokenizer, base_dir,
     print("[Info] Processing completed.")
 
 if __name__ == "__main__":
-    seed_everything(123)
+    seed_everything(42)
     tokenizer = AutoTokenizer.from_pretrained(
         "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
         trust_remote_code=True
@@ -113,7 +113,7 @@ if __name__ == "__main__":
         device_map=f"cuda:{NUMBER}"
     )
 
-    base_dir = '/home/cs/staff/shaowei/semantic/r1_1.5B_baseline_math_500_seed123/'
+    base_dir = '/home/cs/staff/shaowei/semantic/r1_1.5B_baseline_math_500_seed42/'
     inference_model_pickle(
         task_name="math-500",
         model=model,
