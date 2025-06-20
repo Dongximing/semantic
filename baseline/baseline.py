@@ -105,14 +105,15 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str, help="dataset", default='aime')  # math-500
     parser.add_argument("--seed", type=int, help="seed", default=123)
+    parser.add_argument("--model", type=str, help="model", default="Qwen/QwQ-32B-AWQ")
     args = parser.parse_args()
     seed_everything(args.seed)
     tokenizer = AutoTokenizer.from_pretrained(
-        "Qwen/QwQ-32B-AWQ",
+        pretrained_model_name_or_path=args.model,
         trust_remote_code=True
     )
     model = AutoModelForCausalLM.from_pretrained(
-        "Qwen/QwQ-32B-AWQ",
+        pretrained_model_name_or_path=args.model,
         torch_dtype=torch.float16,
         device_map="auto"
     )
