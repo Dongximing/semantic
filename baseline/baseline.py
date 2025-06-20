@@ -10,6 +10,7 @@ import argparse
 import numpy as np
 import random
 import torch
+import time
 
 MATH_PROMPT = "\nPlease reason step by step, and put your final answer within \\boxed{}."
 def seed_everything(seed):
@@ -38,7 +39,7 @@ def predict(tokenizer, model, input_data, temperature):
     )
     inputs = tokenizer(target_text, return_tensors="pt").to(f"cuda:{NUMBER}")
     initial_length = len(inputs['input_ids'][0])
-
+    start_time  = time.time()
     with torch.no_grad():
         outputs = model.generate(
             **inputs,
@@ -46,22 +47,24 @@ def predict(tokenizer, model, input_data, temperature):
             temperature=temperature,
             do_sample=True,
         )
+    execution_time = time.time() - start_time
 
     full_answer = tokenizer.decode(outputs[0], skip_special_tokens=True)
     full_answer_len = outputs.shape[1]
     real_answer = tokenizer.decode(outputs[0][initial_length:], skip_special_tokens=True)
-    return real_answer, full_answer, input_data,full_answer_len
+    return real_answer, full_answer, input_data,full_answer_len,execution_time
 
 def process_file_to_json(save_path, tokenizer, model, problem, answer):
     all_generations = []
     try:
-        real_answer, full_answer, input_data,full_answer_len = predict(tokenizer, model, problem, temperature=0.6)
+        real_answer, full_answer, input_data,full_answer_len,execution_time = predict(tokenizer, model, problem, temperature=0.6)
         all_generations.append({
             "input_text": input_data,
             "real_answer": real_answer,
             "full_answer": full_answer,
             "tokens_full_answer":full_answer_len,
-            "answer": answer
+            "answer": answer,
+            "execution_time":execution_time
         })
     except Exception as e:
         print('ggggg')
