@@ -10,7 +10,7 @@ import argparse
 import numpy as np
 import random
 import torch
-SEED = 42
+
 MATH_PROMPT = "\nPlease reason step by step, and put your final answer within \\boxed{}."
 def seed_everything(seed):
     torch.manual_seed(seed)
@@ -23,7 +23,7 @@ def seed_everything(seed):
         torch.backends.cudnn.benchmark = False
 
 
-NUMBER = 3
+NUMBER = 0
 
 def predict(tokenizer, model, input_data, temperature):
     max_new_tokens = 15000
@@ -102,7 +102,11 @@ def inference_model_pickle(task_name: str, model, tokenizer, base_dir,
     print("[Info] Processing completed.")
 
 if __name__ == "__main__":
-    seed_everything(42)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--dataset", type=str, help="dataset", default='aime')  # math-500
+    parser.add_argument("--seed", type=int, help="seed", default=123)
+    args = parser.parse_args()
+    seed_everything(args.seed)
     tokenizer = AutoTokenizer.from_pretrained(
         "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
         trust_remote_code=True
@@ -110,17 +114,17 @@ if __name__ == "__main__":
     model = AutoModelForCausalLM.from_pretrained(
         "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
         torch_dtype=torch.float16,
-        device_map=f"cuda:{NUMBER}"
+        device_map="auto"
     )
 
-    base_dir = '/data/semantic/baseline/r1_1.5B_baseline_math_500_seed42/'
+    base_dir = f'/home/cs/staff/shaowei/semantic/baseline/r1_1.5B_baseline_{args.dataset}_seed{args.seed}/'
     inference_model_pickle(
-        task_name="math-500",
+        task_name=args.dataset,
         model=model,
         tokenizer=tokenizer,
         base_dir=base_dir,
-        start=100,
-        end=500,
-        seed=SEED
+        start=0,
+        end=30,
+        seed=args.seed
     )
     print("done")
