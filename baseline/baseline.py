@@ -114,7 +114,7 @@ if __name__ == "__main__":
     model = AutoModelForCausalLM.from_pretrained(
         "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
         torch_dtype=torch.float16,
-        device_map="cuda:4"
+        device_map="cuda:3"
     )
 
     base_dir = f'/home/cs/staff/shaowei/semantic/baseline/r1_1.5B_baseline_{args.dataset}_seed{args.seed}/'
