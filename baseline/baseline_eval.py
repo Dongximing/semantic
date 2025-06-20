@@ -29,9 +29,9 @@ if __name__ == '__main__':
     for idx, number in enumerate(tqdm(range(args.start, args.end))):
 
         if args.dataset == 'math-500':
-            dirname = f'seed_42_baseline_{args.dataset}_{number}'
+            dirname = f'seed_{args.seed}_baseline_{args.dataset}_{number}'
         elif args.dataset == 'aime':
-            dirname = f'spec_{args.dataset}_{number}'
+            dirname = f'seed_{args.seed}_baseline_{args.dataset}_{number}'
         dir_path = os.path.join(args.eval_path, dirname)
         json_path = os.path.join(dir_path, "generation.json")
         if not os.path.exists(json_path):
