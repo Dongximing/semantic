@@ -11,7 +11,7 @@ MATH_PROMPT = "\nPlease reason step by step, and put your final answer within \\
 
 def inference_model(task_name: str, model, tokenizer):
     if task_name == 'math-500':
-        df = pd.read_json(f"/home/ximing/{task_name}/test.jsonl", lines=True)
+        df = pd.read_json(f"/home/shaowei/{task_name}/test.jsonl", lines=True)
         prompts = df['problem'][0:100].tolist()
         answers = df['answer'][0:100].tolist()
         start_number = 0
