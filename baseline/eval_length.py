@@ -5,8 +5,8 @@ import json
 from transformers import AutoTokenizer
 
 # 配置参数
-root_dir = "/data/semantic/speculative/spec_result_math-500_seed_42"
-prefix = "spec_math-500_"
+root_dir = "/data/semantic/speculative/spec_result_aime_seed_42/"
+prefix = "spec_aime_"
 json_file = "spec_generation.json"
 tokenizer = AutoTokenizer.from_pretrained("Qwen/QwQ-32B-AWQ")  # 替换为你的tokenizer名
 
