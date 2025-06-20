@@ -15,7 +15,7 @@ def inference_model(task_name: str, model, tokenizer):
         prompts = df['problem'][0:100].tolist()
         answers = df['answer'][0:100].tolist()
         start_number = 0
-        result_base_dir = "./qwen-32b_r1_math-result"
+        result_base_dir = "./deepseek-32b_r1_awq_math"
     elif task_name == 'aime':
         dataset = load_dataset("AI-MO/aimo-validation-aime")
         dataset = dataset['train']
@@ -23,7 +23,7 @@ def inference_model(task_name: str, model, tokenizer):
         prompts = new_dataset['problem'][:]
         answers = new_dataset['answer'][:]
         start_number = 0
-        result_base_dir = "./qwen-32b_r1_aime"
+        result_base_dir = "./deepseek-32b_r1_awq_aime"
 
     for index, prompt in tqdm(enumerate(prompts), total=len(prompts)):
 
@@ -64,6 +64,7 @@ def inference_model(task_name: str, model, tokenizer):
                 outputs = model.generate(
                     **model_inputs,
                     max_new_tokens=4096,
+                    temperature=0.1,
                     do_sample=False,
                     return_dict_in_generate=True
                 )
@@ -117,7 +118,7 @@ def main():
     parser.add_argument(
         "--task",
         type=str,
-        default="aime",
+        default="math-500",
     )
     args = parser.parse_args()
     model = AutoModelForCausalLM.from_pretrained(
