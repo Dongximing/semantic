@@ -108,16 +108,16 @@ if __name__ == "__main__":
     args = parser.parse_args()
     seed_everything(args.seed)
     tokenizer = AutoTokenizer.from_pretrained(
-        "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
+        "Qwen/QwQ-32B-AWQ",
         trust_remote_code=True
     )
     model = AutoModelForCausalLM.from_pretrained(
-        "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
+        "Qwen/QwQ-32B-AWQ",
         torch_dtype=torch.float16,
         device_map="auto"
     )
 
-    base_dir = f'/home/cs/staff/shaowei/semantic/baseline/r1_1.5B_baseline_{args.dataset}_seed{args.seed}/'
+    base_dir = f'/home/cs/staff/shaowei/semantic/baseline/32B_qwq_baseline_{args.dataset}_seed{args.seed}/'
     inference_model_pickle(
         task_name=args.dataset,
         model=model,
