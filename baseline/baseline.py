@@ -103,7 +103,7 @@ def inference_model_pickle(task_name: str, model, tokenizer, base_dir,
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", type=str, help="dataset", default='math-500')  # math-500
+    parser.add_argument("--dataset", type=str, help="dataset", default='aime')  # math-500
     parser.add_argument("--seed", type=int, help="seed", default=123)
     args = parser.parse_args()
     seed_everything(args.seed)
@@ -123,8 +123,8 @@ if __name__ == "__main__":
         model=model,
         tokenizer=tokenizer,
         base_dir=base_dir,
-        start=482,
-        end=500,
+        start=0,
+        end=30,
         seed=args.seed
     )
     print("done")
