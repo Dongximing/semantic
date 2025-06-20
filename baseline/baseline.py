@@ -103,7 +103,7 @@ def inference_model_pickle(task_name: str, model, tokenizer, base_dir,
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", type=str, help="dataset", default='aime')  # math-500
+    parser.add_argument("--dataset", type=str, help="dataset", default=' math-500')  # math-500
     parser.add_argument("--seed", type=int, help="seed", default=123)
     args = parser.parse_args()
     seed_everything(args.seed)
@@ -114,7 +114,7 @@ if __name__ == "__main__":
     model = AutoModelForCausalLM.from_pretrained(
         "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
         torch_dtype=torch.float16,
-        device_map="auto"
+        device_map="cuda:4"
     )
 
     base_dir = f'/home/cs/staff/shaowei/semantic/baseline/r1_1.5B_baseline_{args.dataset}_seed{args.seed}/'
@@ -123,8 +123,8 @@ if __name__ == "__main__":
         model=model,
         tokenizer=tokenizer,
         base_dir=base_dir,
-        start=0,
-        end=30,
+        start=482,
+        end=500,
         seed=args.seed
     )
     print("done")
