@@ -109,6 +109,7 @@ if __name__ == "__main__":
     parser.add_argument("--dataset", type=str, help="dataset", default='aime')  # math-500
     parser.add_argument("--seed", type=int, help="seed", default=123)
     parser.add_argument("--model", type=str, help="model", default="Qwen/QwQ-32B-AWQ")
+    parser.add_argument("--start", type=int, help="model", default=4)
     args = parser.parse_args()
     seed_everything(args.seed)
     tokenizer = AutoTokenizer.from_pretrained(
@@ -127,7 +128,7 @@ if __name__ == "__main__":
         model=model,
         tokenizer=tokenizer,
         base_dir=base_dir,
-        start=0,
+        start=args.start,
         end=30,
         seed=args.seed
     )
