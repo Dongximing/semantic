@@ -112,7 +112,7 @@ def main():
     parser.add_argument(
         "--main-model-path",
         type=str,
-        default="bartowski/DeepSeek-R1-Distill-Qwen-32B-GGUF",
+        default="unsloth/DeepSeek-R1-Distill-Qwen-32B-bnb-4bit",
     )
     parser.add_argument(
         "--task",
