@@ -13,10 +13,10 @@ from collections import Counter
 # STOP_TOKENS_ID = [4710,382,1447,271,13824,92014,14190,1988,692,1939,2533,3593] #10696 80022 88190
 
 AIME_STOP_TOKENS = [
-    ' \n\n', '.\n\n', ':\n\n', '\n\n', ' Wait', 'Alternatively', 'Wait', ' But',
-    ')\n\n', '?\n\n', ']\n\n', ').\n\n', ' Alternatively','Hmm',' Hmm'
+    ' \n\n', '.\n\n', ':\n\n', '\n\n',
+    ')\n\n', '?\n\n', ']\n\n', ').\n\n',
 ]
-AIME_STOP_TOKENS_ID = [4710,382,1447,271,13824,92014,14190,1988,692,1939,2533,3593,38478 ,80022,88190]
+AIME_STOP_TOKENS_ID = [4710,382,1447,271,692,1939,2533,3593]
 
 def collect_stop_segments(token_ids, stop_ids):
     

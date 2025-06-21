@@ -9,12 +9,12 @@ from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import sys 
 STOP_TOKENS = [
-    ' \n\n', '.\n\n', ':\n\n', '\n\n', ' Wait', 'Alternatively', 'Wait', ' But',
+    ' \n\n', '.\n\n', ':\n\n', '\n\n',
     ')\n\n', '?\n\n', ']\n\n', ').\n\n'
 ]
 AIME_STOP_TOKENS = [
-    ' \n\n', '.\n\n', ':\n\n', '\n\n', ' Wait', 'Alternatively', 'Wait', ' But',
-    ')\n\n', '?\n\n', ']\n\n', ').\n\n', ' Alternatively','Hmm',' Hmm'
+    ' \n\n', '.\n\n', ':\n\n', '\n\n',
+    ')\n\n', '?\n\n', ']\n\n', ').\n\n',
 ]
 NUMBER = 1
 def predict(tokenizer, model, input_data, temperature, return_full=False, return_latent=False):
