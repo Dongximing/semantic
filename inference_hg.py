@@ -59,7 +59,7 @@ def inference_model(task_name: str, model, tokenizer):
                 tokenize=False,
                 add_generation_prompt=True,
             )
-            model_inputs = tokenizer([formatted_input], return_tensors="pt").to('cuda')
+            model_inputs = tokenizer([formatted_input], return_tensors="pt").to(model.device)
             with torch.inference_mode():
                 outputs = model.generate(
                     **model_inputs,
@@ -124,7 +124,8 @@ def main():
     model = AutoModelForCausalLM.from_pretrained(
         args.main_model_path,
         torch_dtype=torch.float16,
-        device_map="auto"
+        device_map="auto",
+     max_memory={0: "24GB", 1: "24GB"}
     )
     tokenizer = AutoTokenizer.from_pretrained(args.main_model_path)
     inference_model(task_name=args.task, model=model, tokenizer=tokenizer)
