@@ -16,9 +16,9 @@ AIME_STOP_TOKENS = [
     ' \n\n', '.\n\n', ':\n\n', '\n\n',
     ')\n\n', '?\n\n', ']\n\n', ').\n\n',
 ]
-NUMBER = 1
+NUMBER = 0
 def predict(tokenizer, model, input_data, temperature, return_full=False, return_latent=False):
-    max_new_tokens = 150
+    max_new_tokens = 500
     inputs = tokenizer(input_data, return_tensors="pt").to(f"cuda:{NUMBER}")
     initial_length = len(inputs['input_ids'][0])
     STOP = None
@@ -267,16 +267,16 @@ def inference_model_pickle(task_name: str, model, tokenizer, base_dir,
 
 if __name__ == "__main__":
     tokenizer = AutoTokenizer.from_pretrained(
-        "Qwen/QwQ-32B-AWQ",
+        "unsloth/DeepSeek-R1-Distill-Qwen-32B-bnb-4bit",
         trust_remote_code=True
     )
     model = AutoModelForCausalLM.from_pretrained(
-        "Qwen/QwQ-32B-AWQ",
+        "unsloth/DeepSeek-R1-Distill-Qwen-32B-bnb-4bit",
         torch_dtype=torch.float16,
         device_map=f"cuda:{NUMBER}"
     )
     #/home/cs/staff/shaowei/semantic/aime
     #/data/ximing/aime
-    base_dir= '/data/ximing/aime'
-    inference_model_pickle(task_name="aime", model=model,base_dir=base_dir, tokenizer=tokenizer,start=35, end=60)
+    base_dir= 'home/cs/staff/shaowei/semantic/deepseek-32b_r1_awq_math'
+    inference_model_pickle(task_name="aime", model=model,base_dir=base_dir, tokenizer=tokenizer,start=0, end=20)
     print("done")
