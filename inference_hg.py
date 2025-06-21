@@ -12,8 +12,8 @@ MATH_PROMPT = "\nPlease reason step by step, and put your final answer within \\
 def inference_model(task_name: str, model, tokenizer):
     if task_name == 'math-500':
         df = pd.read_json(f"/home/shaowei/{task_name}/test.jsonl", lines=True)
-        prompts = df['problem'][2:100].tolist()
-        answers = df['answer'][2:100].tolist()
+        prompts = df['problem'][0:100].tolist()
+        answers = df['answer'][0:100].tolist()
         start_number = 0
         result_base_dir = "./deepseek-32b_r1_awq_math"
     elif task_name == 'aime':
