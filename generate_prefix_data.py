@@ -71,4 +71,4 @@ if __name__ == "__main__":
         "Qwen/QwQ-32B-AWQ",
         trust_remote_code=True
     )
-    inference_model("aime", None, tokenizer)
+    inference_model("math-500", None, tokenizer)
