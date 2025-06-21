@@ -112,7 +112,7 @@ def main():
     parser.add_argument(
         "--main-model-path",
         type=str,
-        default="casperhansen/deepseek-r1-distill-qwen-32b-awq",
+        default="bartowski/DeepSeek-R1-Distill-Qwen-32B-GGUF",
     )
     parser.add_argument(
         "--task",
@@ -123,8 +123,8 @@ def main():
     model = AutoModelForCausalLM.from_pretrained(
         args.main_model_path,
         torch_dtype=torch.float16,
-        device_map="auto",
-     max_memory={0: "24GB", 1: "24GB"}
+        device_map="cuda:0",
+
     )
     tokenizer = AutoTokenizer.from_pretrained(args.main_model_path)
     inference_model(task_name=args.task, model=model, tokenizer=tokenizer)
