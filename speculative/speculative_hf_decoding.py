@@ -59,7 +59,7 @@ class StoppingCriteriaSub(StoppingCriteria):
                 return True
         return False
 STOP_TOKENS = [
-    ' \n\n', '.\n\n', ':\n\n', '\n\n', ' Wait', 'Alternatively', 'Wait', ' But',
+    ' \n\n', '.\n\n', ':\n\n', '\n\n',
     ')\n\n', '?\n\n', ']\n\n', ').\n\n'
 ]
 
@@ -267,7 +267,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
 
                 checking_generated_ids, checking_spec_kv,pooling_hidden_information = generate_with_partial_kv(
                     speculative_model, speculative_tokenizer, small_input_ids , spec_kv,
-                    max_new_tokens=SPECULATIVE_OUTPUT_LENGTH, temperature=0.1, top_k=50, top_p=0.95,checking=False
+                    max_new_tokens=SPECULATIVE_OUTPUT_LENGTH, temperature=0.6, top_k=50, top_p=0.95,checking=False
                 )
                 speculative_real_output = speculative_tokenizer.decode(checking_generated_ids[0,small_input_ids.shape[1]:])
                 target_tokenizer_input = target_tokenizer(speculative_real_output, return_tensors="pt")['input_ids'].to(
@@ -288,7 +288,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 # print('first -------------- previous', previous[0][0].shape[2])
                 check_output, checking_tgt_kv, target_pooling_hidden_information = generate_with_partial_kv(
                 target_model, target_tokenizer, checking_target_ids , valid_tgt_kv,
-                    max_new_tokens=1, temperature=0.1, top_k=50, top_p=0.95, checking=True
+                    max_new_tokens=1, temperature=0.6, top_k=50, top_p=0.95, checking=True
                 )
                 # print('******** checking valid_tgt_kv',valid_tgt_kv[0][0].shape[2])
                 # check the entropy of the target model and speculative model.
@@ -342,7 +342,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 previous_original_target_text_len = generated_ids.shape[1]
                 generated_ids, valid_tgt_kv,output_last_hidden_list = generate_with_partial_kv(
                 target_model, target_tokenizer, generated_ids.to(f"cuda:{TARGET_model}"), valid_tgt_kv,
-                    max_new_tokens=change_tokens, temperature=0.1, top_k=50, top_p=0.95,checking=False
+                    max_new_tokens=change_tokens, temperature=0.6, top_k=50, top_p=0.95,checking=False
                 )
                 # print('original_target_text_len------------------------lllllll',original_target_text_len)
                 # print('** after valid_tgt_kv', valid_tgt_kv[0][0].shape[2])
