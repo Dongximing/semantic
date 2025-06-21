@@ -65,7 +65,6 @@ def inference_model(task_name: str, model, tokenizer):
                     **model_inputs,
                     max_new_tokens=4096,
                     temperature=0.1,
-                    do_sample=False,
                     return_dict_in_generate=True
                 )
 
