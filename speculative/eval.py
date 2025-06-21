@@ -44,7 +44,7 @@ if __name__ == '__main__':
             predict = generations[0]['real_answer']
             #print(predict)
             standard = generations[0]['standard_answer']
-            number_of_tokens += generations[0]['length_of_real_output']
+            number_of_tokens += generations[0]['length_of_output']
         result = check_math_correctness(standard,predict)
         if result:
             number_correct += 1
