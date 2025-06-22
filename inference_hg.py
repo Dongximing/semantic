@@ -11,9 +11,9 @@ MATH_PROMPT = "\nPlease reason step by step, and put your final answer within \\
 
 def inference_model(task_name: str, model, tokenizer):
     if task_name == 'math-500':
-        df = pd.read_json(f"/home/cs/staff/shaowei/{task_name}/test.jsonl", lines=True)
-        prompts = df['problem'][0:100].tolist()
-        answers = df['answer'][0:100].tolist()
+        df = pd.read_json(f"/home/shaowei/{task_name}/test.jsonl", lines=True)
+        prompts = df['problem'][30:100].tolist()
+        answers = df['answer'][30:100].tolist()
         start_number = 0
         result_base_dir = "./deepseek-32b_r1_awq_math"
     elif task_name == 'aime':
@@ -123,7 +123,7 @@ def main():
     model = AutoModelForCausalLM.from_pretrained(
         args.main_model_path,
         torch_dtype=torch.float16,
-        device_map="cuda:0",
+        device_map="cuda:3",
 
     )
     tokenizer = AutoTokenizer.from_pretrained(args.main_model_path)
