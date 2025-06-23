@@ -278,5 +278,5 @@ if __name__ == "__main__":
     #/home/cs/staff/shaowei/semantic/aime
     #/data/ximing/aime
     base_dir= '/data/semantic/deepseek-32b_r1_awq_math'
-    inference_model_pickle(task_name="math-500", model=model,base_dir=base_dir, tokenizer=tokenizer,start=60, end=80)
+    inference_model_pickle(task_name="math-500", model=model,base_dir=base_dir, tokenizer=tokenizer,start=80, end=100)
     print("done")
