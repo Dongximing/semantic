@@ -50,7 +50,7 @@ def process_file(json_path, out_json_path, tokenizer):
     print(f"Saved {out_json_path} with {len(out_segments)} segments.")
 
 def inference_model(task_name: str, model, tokenizer):
-    base_dir = '/data/semantic/deepseek-32b_r1_awq_math'
+    base_dir = '/home/cs/staff/shaowei/semantic/deepseek-32b_r1_awq_math'
     # base_dir = '/home/shaowei/hf/math-result_left'
     for dirname in os.listdir(base_dir):
         if dirname.startswith('data-500-temp0_'):
