@@ -366,8 +366,8 @@ if __name__ == "__main__":
     parser.add_argument("--target_model", type=str,  help="target_model",default="Qwen/QwQ-32B-AWQ")
     parser.add_argument("--speculative_model", type=str,  help="speculative_model", default="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
     parser.add_argument("--data_dir", type=str,  help="data_dir",default='/data/semantic/speculative/spec_result_math-500_seed_')
-    parser.add_argument("--start_dataset", type=int, help="the beginning of the dataset",default=105)
-    parser.add_argument("--end_dataset", type=int, help="the end of the dataset",default=110)
+    parser.add_argument("--start_dataset", type=int, help="the beginning of the dataset",default=100)
+    parser.add_argument("--end_dataset", type=int, help="the end of the dataset",default=500)
     parser.add_argument("--target_probe", type=str, help="target_probe",default="/data/semantic/training/math-500_output_last_hidden_list_best_probe_mse")#aime_output_last_hidden_list_best_probe_mse
     parser.add_argument("--speculative_probe", type=str, help="speculative_probe",default="/home/shaowei/training_probe/math-500_output_last_hidden_list_best_probe_mse")
     parser.add_argument("--target_temperature", type=float, help="target_temperature",default=0.1)
@@ -381,7 +381,7 @@ if __name__ == "__main__":
     model_target_probe = SemanticEntropyProbTarget(5120, 256)
     model_target_probe.load_state_dict(torch.load(f'{args.target_probe}.pt'))
     model_target_probe = model_target_probe.to('cuda:3')
-
+    wrong_list = [100, 101, 103, 105, 110, 126, 128, 138, 139, 142, 150, 152, 154, 164, 166, 168, 176, 180, 198, 204, 205, 210, 214, 217, 219, 237, 238, 240, 242, 248, 251, 264, 282, 284, 286, 291, 295, 296, 298, 299, 301, 306, 308, 309, 317, 324, 327, 338, 341, 349, 351, 352, 355, 369, 381, 383, 392, 400, 403, 416, 419, 422, 425, 432, 444, 453, 456, 460, 464, 469, 470, 473, 478, 481, 483, 485, 490, 491, 493]
     model_spec_probe = SemanticEntropyProbSpec(1536, 256)
     model_spec_probe.load_state_dict(torch.load(f'{args.speculative_probe}.pt'))
     model_spec_probe = model_spec_probe.to('cuda:3')
@@ -422,10 +422,17 @@ if __name__ == "__main__":
 
     ds = ds.select(range(args.start_dataset, args.end_dataset))
     problems_and_answers = [{"problem": item["problem"], "answer": item["answer"]} for item in ds]
-
-    for idx, number in enumerate(tqdm(range(args.start_dataset, args.end_dataset))):
+    for idx, number in enumerate(tqdm(wrong_list, total=len(wrong_list))):
+        print("doing wrong number:", number)
         dirname = f'spec_{args.dataset}_{number}'
         dir_path = os.path.join(f"{args.data_dir}{args.seed}", dirname)
-        problem = problems_and_answers[idx]['problem']
-        answer = problems_and_answers[idx]['answer']
+        problem = problems_and_answers[number]['problem']
+        answer = problems_and_answers[number]['answer']
         process_file_to_json(dir_path, target_model, target_tokenizer,speculative_model, speculative_tokenizer, problem,answer,args.target_temperature,args.speculative_temperature,args.max_new_tokens,model_target_probe,model_spec_probe)
+    #
+    # for idx, number in enumerate(tqdm(range(args.start_dataset, args.end_dataset))):
+    #     dirname = f'spec_{args.dataset}_{number}'
+    #     dir_path = os.path.join(f"{args.data_dir}{args.seed}", dirname)
+    #     problem = problems_and_answers[idx]['problem']
+    #     answer = problems_and_answers[idx]['answer']
+    #     process_file_to_json(dir_path, target_model, target_tokenizer,speculative_model, speculative_tokenizer, problem,answer,args.target_temperature,args.speculative_temperature,args.max_new_tokens,model_target_probe,model_spec_probe)
