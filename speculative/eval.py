@@ -15,7 +15,7 @@ def check_math_correctness(ref, generation):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--start', type=int, default=100)
-    parser.add_argument('--end', type=int, default=180)
+    parser.add_argument('--end', type=int, default=500)
     parser.add_argument('--dataset', type=str, default='math-500')
     parser.add_argument('--eval_path', type=str, default='/data/semantic/speculative/spec_result_math-500_seed_456')
     #/home/cs/staff/shaowei/semantic
@@ -26,6 +26,7 @@ if __name__ == '__main__':
     number_correct = 0
     number_of_tokens = 0
     total_number = args.end - args.start
+    wrong_list =  []
 
     for idx, number in enumerate(tqdm(range(args.start, args.end))):
 
@@ -49,9 +50,11 @@ if __name__ == '__main__':
         if result:
             number_correct += 1
         else:
+            wrong_list.append(number)
             print(f'Error in {dirname}')
     print(f'Accuracy: {number_correct / total_number} in {args.dataset}')
     print("Number of tokens: ", number_of_tokens/total_number)
     print(f'Number_correct: {number_correct}')
     print(f'Total: {total_number}')
+    print(f"wrong_list: {wrong_list}")
 
