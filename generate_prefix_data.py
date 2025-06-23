@@ -68,7 +68,7 @@ def inference_model(task_name: str, model, tokenizer):
 
 if __name__ == "__main__":
     tokenizer = AutoTokenizer.from_pretrained(
-        "Qwen/QwQ-32B-AWQ",
+        "unsloth/DeepSeek-R1-Distill-Qwen-32B-bnb-4bit",
         trust_remote_code=True
     )
     inference_model("math-500", None, tokenizer)
