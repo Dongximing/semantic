@@ -138,7 +138,7 @@ def generate_with_partial_kv(
     if checking:
 
         output_last_hidden_list_big = big_hidden[-1].cpu()
-        print(output_last_hidden_list_big.shape)
+        # print(output_last_hidden_list_big.shape)
         output_last_hidden_list =output_last_hidden_list_big.squeeze(0)
         output_last_hidden_list = output_last_hidden_list.mean(dim=0, keepdim=True)
     else:
@@ -256,7 +256,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                     prob_spec = model_spec_probe(pooling_hidden_information.float().to(f"cuda:{3}"))
                 # if the prob of the target model is higher than the prob of the speculative model, we use the speculative model to keep going.
                 # if the prob of the target model is lower than the prob of the speculative model, we use the target model to generate the current part.
-                # print(f'prob_target: {prob_target}, prob_spec:{prob_spec} ')
+                print(f'prob_target: {prob_target}, prob_spec:{prob_spec} ')
                 if prob_target.item() >= prob_spec.item():
                     detail.append({'spe_model':speculative_real_output})
                     correct_spe_number +=1
@@ -331,6 +331,7 @@ def process_file_to_json(dir_path, target_model, target_tokenizer,speculative_mo
     result = speculative_decoding(target_model, target_tokenizer, speculative_model, speculative_tokenizer, problem, target_temperature, speculative_temperature,max_new_tokens,model_target_probe,model_spec_probe)
     end_time = time.time()
     generated_text, try_correct_num,correct_spe_number,detail,length_of_output = result
+    print('real_answer\n',generated_text)
 
     all_generations.append({
         "input_text": problem,
