@@ -143,7 +143,7 @@ def process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_genera
                         real_answer,predicted_answer, log_likelihoods, probs, ppl,triggered_stop,
                         (last_hidden_state, sec_last_hidden_state, last_input_token_state,
                          embedding, emb_last_before_gen, emb_before_eos, output_last_hidden_list)
-                    ) = predict(tokenizer, model, input_text, temperature=0.7, return_full=False, return_latent=True)
+                    ) = predict(tokenizer, model, input_text, temperature=0.6, return_full=False, return_latent=True)
 
 
                 log_entry.update({
