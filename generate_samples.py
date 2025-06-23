@@ -16,7 +16,7 @@ AIME_STOP_TOKENS = [
     ' \n\n', '.\n\n', ':\n\n', '\n\n',
     ')\n\n', '?\n\n', ']\n\n', ').\n\n',
 ]
-NUMBER = 0
+NUMBER = 1
 def predict(tokenizer, model, input_data, temperature, return_full=False, return_latent=False):
     max_new_tokens = 500
     inputs = tokenizer(input_data, return_tensors="pt").to(f"cuda:{NUMBER}")
