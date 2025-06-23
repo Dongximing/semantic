@@ -50,7 +50,7 @@ def main():
     parser.add_argument(
         "--main-model-path",
         type=str,
-        default="Qwen/QwQ-32B-AWQ",
+        default="unsloth/DeepSeek-R1-Distill-Qwen-32B-bnb-4bit",
     )
     # Qwen/QwQ-32B-AWQ
     #/home/ximing/QwQ-32B-AWQ/
