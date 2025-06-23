@@ -17,7 +17,7 @@ if __name__ == '__main__':
     parser.add_argument('--start', type=int, default=100)
     parser.add_argument('--end', type=int, default=180)
     parser.add_argument('--dataset', type=str, default='math-500')
-    parser.add_argument('--eval_path', type=str, default='/data/semantic/speculative/spec_result_math-500_seed_42')
+    parser.add_argument('--eval_path', type=str, default='/data/semantic/speculative/spec_result_math-500_seed_456')
     #/home/cs/staff/shaowei/semantic
     parser.add_argument('--seed', type=int, default=42)
     args = parser.parse_args()
