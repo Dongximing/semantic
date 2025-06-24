@@ -199,7 +199,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 else:
                     return False
 
-        print('-------------------------------------start the process -------------------------\n\n\n')
+
 
         while checking_is_finish(generated_ids,max_new_tokens,use_target):
             # we start at the target model.
@@ -217,8 +217,6 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                     speculative_tokenizer_input = speculative_tokenizer(real_target_output, return_tensors="pt")['input_ids'].to(speculative_model.device)
                     generated_ids = torch.cat([start_speculative_text_inputs,speculative_tokenizer_input], dim=-1)
                 small_input_ids = generated_ids
-                # print('*****speculative_tokenizer_input\n',
-                #       speculative_tokenizer.decode(small_input_ids[0, :], skip_special_tokens=True))
 
                ## small model generation
                 previous_spec_kv = copy.deepcopy(spec_kv)
@@ -240,10 +238,8 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                     # print('previous_checking_target_ids',previous_checking_target_ids.shape)
                     checking_target_ids =  torch.cat([checking_target_ids.to(target_model.device),target_tokenizer_input.to(target_model.device)], dim=-1)
                 ## TODO: need to optimize the checking generation
-                # if valid_tgt_kv:
-                #     print('******** checking valid_tgt_kv--------------1', valid_tgt_kv[0][0].shape[2])
+
                 previous = copy.deepcopy(valid_tgt_kv)
-                # print('first -------------- previous', previous[0][0].shape[2])
                 check_output, checking_tgt_kv, target_pooling_hidden_information = generate_with_partial_kv(
                 target_model, target_tokenizer, checking_target_ids , valid_tgt_kv,
                     max_new_tokens=1, temperature=0.6, top_k=50, top_p=0.95, checking=True
@@ -272,16 +268,10 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                     else:
                         generated_ids = previous_checking_target_ids
 
-                    # print('previous', previous[0][0].shape[2])
-                    # if previous[0][0].shape[2] != 5120:
                     spec_kv = copy.deepcopy(previous_spec_kv)
-
                     valid_tgt_kv = copy.deepcopy(previous)
 
                     use_target = True
-                    # print('*******************', valid_tgt_kv[0][0].shape[2])
-                   # generated_ids = checking_target_ids[:,:-target_tokenizer_input.shape[1]]
-                   #  print('generated_ids shape',generated_ids.shape)
                     start_speculative_text_inputs = small_input_ids
                     #spec_kv = spec_kv # not change
 
@@ -292,17 +282,12 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 # record the usage of the target model;
                 begin = False
                 try_correct_num = try_correct_num + 1
-                #print('************************************************************************************  try_correct_num',try_correct_num)
-                # if valid_tgt_kv:
-                #     print('** before valid_tgt_kv', valid_tgt_kv[0][0].shape[2])
 
                 previous_original_target_text_len = generated_ids.shape[1]
                 generated_ids, valid_tgt_kv,output_last_hidden_list = generate_with_partial_kv(
                 target_model, target_tokenizer, generated_ids.to(f"cuda:{TARGET_model}"), valid_tgt_kv,
                     max_new_tokens=change_tokens, temperature=0.6, top_k=50, top_p=0.95,checking=False
                 )
-                # print('original_target_text_len------------------------lllllll',original_target_text_len)
-                # print('** after valid_tgt_kv', valid_tgt_kv[0][0].shape[2])
 
                 # if inferencing the model stops at the first time
                 if target_tokenizer.eos_token_id in generated_ids[0, target_prompt_len:]:
@@ -315,8 +300,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
             generated_text = speculative_tokenizer.decode(generated_ids[0, :], skip_special_tokens=True)
             length_of_output = generated_ids.shape[1]
 
-        # print('-------------------------------------end the process -------------------------\n\n\n')
-        # print(generated_text)
+
         return generated_text, try_correct_num,correct_spe_number,detail,length_of_output
 
 
@@ -380,7 +364,7 @@ if __name__ == "__main__":
     model_target_probe = SemanticEntropyProbTarget(5120, 256)
     model_target_probe.load_state_dict(torch.load(f'{args.target_probe}.pt'))
     model_target_probe = model_target_probe.to('cuda:3')
-    wrong_list = [100, 101, 103, 105, 110, 126, 128, 138, 139, 142, 150, 152, 154, 164, 166, 168, 176, 180, 198, 204, 205, 210, 214, 217, 219, 237, 238, 240, 242, 248, 251, 264, 282, 284, 286, 291, 295, 296, 298, 299, 301, 306, 308, 309, 317, 324, 327, 338, 341, 349, 351, 352, 355, 369, 381, 383, 392, 400, 403, 416, 419, 422, 425, 432, 444, 453, 456, 460, 464, 469, 470, 473, 478, 481, 483, 485, 490, 491, 493]
+    wrong_list = [ 126, 128, 138, 139, 142, 150, 152, 154, 164, 166, 168, 176, 180, 198, 204,  214, 217, 219, 237,  240, 248, 251,  282, 284, 286, 291, 295, 296, 299, 301, 306, 308, 309, 317, 324, 327, 338, 341, 349,  352, 355, 369, 381, 383, 392, 400, 403, 416, 419, 422, 425, 432, 444, 453, 456, 460, 464, 469, 470, 473, 478, 481, 483, 485, 490, 491, 493]
     model_spec_probe = SemanticEntropyProbSpec(1536, 256)
     model_spec_probe.load_state_dict(torch.load(f'{args.speculative_probe}.pt'))
     model_spec_probe = model_spec_probe.to('cuda:3')
