@@ -253,7 +253,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 # if the prob of the target model is higher than the prob of the speculative model, we use the speculative model to keep going.
                 # if the prob of the target model is lower than the prob of the speculative model, we use the target model to generate the current part.
                 print(f"prob_target.item() {prob_target.item()} , prob_spec.item() {prob_spec.item()}")
-                if prob_target.item() >= prob_spec.item() or (prob_target.item() >= 0.95 and prob_spec.item() >= 0.95):
+                if prob_target.item() >= prob_spec.item():
                     detail.append({'spe_model':speculative_real_output})
                     correct_spe_number +=1
                     use_target = False
@@ -364,7 +364,7 @@ if __name__ == "__main__":
     model_target_probe = SemanticEntropyProbTarget(5120, 256)
     model_target_probe.load_state_dict(torch.load(f'{args.target_probe}.pt'))
     model_target_probe = model_target_probe.to('cuda:3')
-    wrong_list = [  180, 204,240, 248, 251,  282, 286, 295, 296, 299, 301, 306, 308, 309, 317, 327, 338, 341, 349,  352, 355, 369, 381, 392, 400, 403, 416, 422, 425, 432, 444, 460, 464, 469, 470, 473, 478, 481, 483, 485, 490, 493]
+    wrong_list = [ 240, 248, 251,  282, 286, 295, 296, 299, 301, 306, 308, 309, 317, 327, 338, 341, 349,  352, 355, 369, 381, 392, 400, 403, 416, 422, 425, 432, 444, 460, 464, 469, 470, 473, 478, 481, 483, 485, 490, 493]
     #wrong_list 123= [100, 101, 103, 110, 115, 119, 126, 128, 138, 147, 154, 165, 166, 168, 188, 198, 204, 205, 213, 214, 217, 222, 223, 224, 229, 236, 239, 240, 242, 246, 248, 264, 274, 279, 282, 284, 286, 291, 292, 295, 296, 298, 301, 305, 306, 308, 324, 327, 330, 340, 343, 351, 352, 366, 369, 371, 375, 379, 381, 383, 392, 398, 400, 419, 422, 423, 425, 432, 444, 454, 456, 460, 478, 485, 490, 491, 499]
     # 42
     #wrong_list = [100, 101, 103, 104, 105, 110, 119, 120, 128, 138, 145, 154, 164, 168, 172, 176, 196, 198, 204, 205, 209, 210, 217, 219, 222, 229, 235, 238, 239, 240, 242, 248, 264, 266, 282, 284, 285, 286, 292, 295, 296, 298, 301, 303, 308, 309, 324, 328, 340, 351, 352, 358, 369, 381, 383, 392, 400, 401, 405, 409, 419, 421, 422, 425, 430, 432, 439, 444, 456, 460, 466, 478, 481, 485, 489, 491, 494]
