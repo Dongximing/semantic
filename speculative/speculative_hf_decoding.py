@@ -257,7 +257,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 # if the prob of the target model is higher than the prob of the speculative model, we use the speculative model to keep going.
                 # if the prob of the target model is lower than the prob of the speculative model, we use the target model to generate the current part.
                 print(f'prob_target: {prob_target}, prob_spec:{prob_spec} ')
-                if prob_target.item() >= prob_spec.item():
+                if prob_target.item() >= prob_spec.item() or (prob_target.item() >= 0.9 and prob_spec.item() >= 0.9):
                     detail.append({'spe_model':speculative_real_output})
                     correct_spe_number +=1
                     use_target = False
@@ -266,7 +266,6 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                     generated_ids = checking_generated_ids
                     target_output_id = checking_target_ids
                 else:
-
                     # valid_tgt_kv  not change
                     if use_target:
                         generated_ids = target_output_id
@@ -423,6 +422,7 @@ if __name__ == "__main__":
     ds = ds.select(range(args.start_dataset, args.end_dataset))
     problems_and_answers = [{"problem": item["problem"], "answer": item["answer"]} for item in ds]
     for idx, number in enumerate(tqdm(wrong_list, total=len(wrong_list))):
+        number = number -100
         print("doing wrong number:", number)
         dirname = f'spec_{args.dataset}_{number}'
         dir_path = os.path.join(f"{args.data_dir}{args.seed}", dirname)
