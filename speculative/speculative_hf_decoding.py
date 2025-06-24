@@ -252,8 +252,8 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                     prob_spec = model_spec_probe(pooling_hidden_information.float().to(f"cuda:{3}"))
                 # if the prob of the target model is higher than the prob of the speculative model, we use the speculative model to keep going.
                 # if the prob of the target model is lower than the prob of the speculative model, we use the target model to generate the current part.
-
-                if prob_target.item() >= prob_spec.item() or (prob_target.item() >= 0.9 and prob_spec.item() >= 0.9):
+                print(f"prob_target.item() {prob_target.item()} , prob_spec.item() {prob_spec.item()}")
+                if prob_target.item() >= prob_spec.item() or (prob_target.item() >= 0.95 and prob_spec.item() >= 0.95):
                     detail.append({'spe_model':speculative_real_output})
                     correct_spe_number +=1
                     use_target = False
@@ -364,7 +364,7 @@ if __name__ == "__main__":
     model_target_probe = SemanticEntropyProbTarget(5120, 256)
     model_target_probe.load_state_dict(torch.load(f'{args.target_probe}.pt'))
     model_target_probe = model_target_probe.to('cuda:3')
-    wrong_list = [ 126, 128, 138, 139, 142, 150, 152, 154, 164, 166, 168, 176, 180, 198, 204,  214, 217, 219, 237,  240, 248, 251,  282, 284, 286, 291, 295, 296, 299, 301, 306, 308, 309, 317, 324, 327, 338, 341, 349,  352, 355, 369, 381, 383, 392, 400, 403, 416, 419, 422, 425, 432, 444, 453, 456, 460, 464, 469, 470, 473, 478, 481, 483, 485, 490, 491, 493]
+    wrong_list = [ 101,101,126, 128, 138, 139, 142, 150, 152, 154, 164, 166, 168, 176, 180, 198, 204,  214, 217, 219, 237,  240, 248, 251,  282, 284, 286, 291, 295, 296, 299, 301, 306, 308, 309, 317, 324, 327, 338, 341, 349,  352, 355, 369, 381, 383, 392, 400, 403, 416, 419, 422, 425, 432, 444, 453, 456, 460, 464, 469, 470, 473, 478, 481, 483, 485, 490, 491, 493]
     model_spec_probe = SemanticEntropyProbSpec(1536, 256)
     model_spec_probe.load_state_dict(torch.load(f'{args.speculative_probe}.pt'))
     model_spec_probe = model_spec_probe.to('cuda:3')
