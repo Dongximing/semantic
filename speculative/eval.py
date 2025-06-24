@@ -45,10 +45,11 @@ if __name__ == '__main__':
             predict = generations[0]['real_answer']
             #print(predict)
             standard = generations[0]['standard_answer']
-            if generations[0]['length_of_output']:
-                number_of_tokens += generations[0]['length_of_output']
+            length = generations[0].get('length_of_output')
+            if length is not None:
+                number_of_tokens += length
             else:
-                number_of_tokens += generations[0]['length_of_real_output']
+                number_of_tokens += generations[0].get('length_of_real_output')
         result = check_math_correctness(standard,predict)
         if result:
             number_correct += 1
