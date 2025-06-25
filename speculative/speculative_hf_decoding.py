@@ -252,7 +252,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                     prob_spec = model_spec_probe(pooling_hidden_information.float().to(f"cuda:{3}"))
                 # if the prob of the target model is higher than the prob of the speculative model, we use the speculative model to keep going.
                 # if the prob of the target model is lower than the prob of the speculative model, we use the target model to generate the current part.
-                print(f"prob_target.item() {prob_target.item()} , prob_spec.item() {prob_spec.item()}")
+                #print(f"prob_target.item() {prob_target.item()} , prob_spec.item() {prob_spec.item()}")
                 if prob_target.item() >= prob_spec.item():
                     detail.append({'spe_model':speculative_real_output})
                     correct_spe_number +=1
