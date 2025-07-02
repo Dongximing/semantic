@@ -351,8 +351,8 @@ if __name__ == "__main__":
     parser.add_argument("--data_dir", type=str,  help="data_dir",default='/data/semantic/speculative/spec_result_aime_qwq_r1_seed_')
     parser.add_argument("--start_dataset", type=int, help="the beginning of the dataset",default=100)
     parser.add_argument("--end_dataset", type=int, help="the end of the dataset",default=500)
-    parser.add_argument("--target_probe", type=str, help="target_probe",default="/data/semantic/training/math-500_output_last_hidden_list_best_probe_mse")#aime_output_last_hidden_list_best_probe_mse
-    parser.add_argument("--speculative_probe", type=str, help="speculative_probe",default="/home/shaowei/training_probe/math-500_output_last_hidden_list_best_probe_mse")
+    parser.add_argument("--target_probe", type=str, help="target_probe",default="/data/semantic/training/aime_output_last_hidden_list_best_probe_mse")#aime_output_last_hidden_list_best_probe_mse
+    parser.add_argument("--speculative_probe", type=str, help="speculative_probe",default="/home/shaowei/training_probe/aime_output_last_hidden_list_best_probe_mse")
     parser.add_argument("--target_temperature", type=float, help="target_temperature",default=0.1)
     parser.add_argument("--speculative_temperature", type=float, help="speculative_temperature",default=0.6)
     parser.add_argument("--max_new_tokens", type=int, help="max_new_tokens",default=14000)
@@ -378,7 +378,7 @@ if __name__ == "__main__":
         args.target_model,
         torch_dtype=torch.float16,
         device_map="auto",
-        max_memory={0: "24GB", 1: "24GB"}
+        max_memory={0: "24GB"}
     )
     target_tokenizer = transformers.AutoTokenizer.from_pretrained(
     args.target_model,
