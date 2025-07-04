@@ -16,7 +16,7 @@ AIME_STOP_TOKENS = [
     ' \n\n', '.\n\n', ':\n\n', '\n\n',
     ')\n\n', '?\n\n', ']\n\n', ').\n\n',
 ]
-NUMBER =3
+NUMBER =0
 def predict(tokenizer, model, input_data, temperature, return_full=False, return_latent=False):
     max_new_tokens = 500
     inputs = tokenizer(input_data, return_tensors="pt").to(f"cuda:{NUMBER}")
@@ -279,5 +279,5 @@ if __name__ == "__main__":
     #/data/ximing/aime
     #/home/cs/staff/shaowei/semantic/deepseek-32b_r1_awq_math
     base_dir= '/data/semantic/speculative/merged_data'
-    inference_model_pickle(task_name="math-500", model=model,base_dir=base_dir, tokenizer=tokenizer,start=75, end=79)
+    inference_model_pickle(task_name="math-500", model=model,base_dir=base_dir, tokenizer=tokenizer,start=70, end=79)
     print("done")
