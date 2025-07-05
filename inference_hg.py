@@ -74,7 +74,7 @@ def inference_model(task_name: str, model, tokenizer):
             input_texts = tokenizer.batch_decode(input_ids, skip_special_tokens=True)
             response = tokenizer.batch_decode(gen_only_ids, skip_special_tokens=True)
 
-            print("Generated:\n", response)
+
 
             result = {
                 "prompt": prompt,
