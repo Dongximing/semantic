@@ -80,17 +80,17 @@ def main():
     parser.add_argument(
         "--data_path",
         type=str,
-        default="/data/ximing/aime",
+        default="/data/semantic/deepseek-32b_r1_awq_math",
     )
     parser.add_argument(
         "--main_model_path",
         type=str,
-        default="Qwen/QwQ-32B-AWQ",
+        default="unsloth/DeepSeek-R1-Distill-Qwen-32B-bnb-4bit",
     )
     parser.add_argument(
         "--task",
         type=str,
-        default="aime",
+        default="math-500",
     )
     args = parser.parse_args()
 
