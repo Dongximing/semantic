@@ -63,7 +63,7 @@ def inference_model(task_name: str, model, tokenizer):
             with torch.inference_mode():
                 outputs = model.generate(
                     **model_inputs,
-                    max_new_tokens=4096,
+                    max_new_tokens=15000,
                     temperature=0.1,
                     return_dict_in_generate=True
                 )
