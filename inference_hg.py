@@ -123,7 +123,7 @@ def main():
     model = AutoModelForCausalLM.from_pretrained(
         args.main_model_path,
         torch_dtype=torch.float16,
-        device_map="cuda:2",
+        device_map="cuda:0",
 
     )
     tokenizer = AutoTokenizer.from_pretrained(args.main_model_path)
