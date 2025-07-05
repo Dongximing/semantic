@@ -75,7 +75,7 @@ def getting_training_examples(pkl_path,method):
 
 def train_probe_regression(
     model, train_loader, val_loader, epochs=50, lr=1e-3,
-    device='cuda', early_stop_rounds=5, save_pred_path=None,method="", dataset_name = ""
+    device='cuda', early_stop_rounds=5, save_pred_path=None,method="", dataset_name = "",model_name =""
 ):
     model.to(device)
     loss_fn = nn.MSELoss()
@@ -128,7 +128,7 @@ def train_probe_regression(
             best_epoch = epoch
             early_stop_counter = 0
             best_preds = preds.copy()
-            torch.save(model.state_dict(), f'{dataset_name}_{method}_best_probe_mse.pt')
+            torch.save(model.state_dict(), f'{model_name}_{dataset_name}_{method}_best_probe_mse.pt')
         else:
             early_stop_counter += 1
             if early_stop_counter >= early_stop_rounds:
@@ -203,7 +203,8 @@ def main(dataset,method,data_dir,model_name):
     model = SemanticEntropyModel(INPUT_DIM, HIDDEN_DIM)
     history = train_probe_regression(
         model, train_loader, val_loader, epochs=50, lr=1e-3,
-        device='cuda', early_stop_rounds=7, save_pred_path=f'{model_name}_{dataset}_{method}_val_pred_results.npz',method=method,dataset_name = dataset
+        device='cuda', early_stop_rounds=7, save_pred_path=f'{model_name}_{dataset}_{method}_val_pred_results.npz',method=method,dataset_name = dataset,
+        model_name = model_name
     )
 
 
@@ -223,7 +224,7 @@ def main(dataset,method,data_dir,model_name):
     test_mae = mean_absolute_error(all_targets, all_preds)
     test_r2 = r2_score(all_targets, all_preds)
     print(f"Test MSE: {test_mse:.4f}, MAE: {test_mae:.4f}, R2: {test_r2:.4f}")
-    np.savez(f'{dataset}_{method}_test_pred_results.npz', pred=all_preds, target=all_targets)
+    np.savez(f'{model_name}_{dataset}_{method}_test_pred_results.npz', pred=all_preds, target=all_targets)
 
 
     val_mse = [h['val_mse'] for h in history]
