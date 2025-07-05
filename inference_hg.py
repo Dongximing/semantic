@@ -19,7 +19,7 @@ def inference_model(task_name: str, model, tokenizer):
     elif task_name == 'aime':
         dataset = load_dataset("AI-MO/aimo-validation-aime")
         dataset = dataset['train']
-        new_dataset = dataset.select(range(30,60)) # 2022 2023
+        new_dataset = dataset.select(range(0,60)) # 2022 2023
         prompts = new_dataset['problem'][:]
         answers = new_dataset['answer'][:]
         start_number = 0
@@ -34,7 +34,7 @@ def inference_model(task_name: str, model, tokenizer):
             file_name = os.path.join(batch_dir_path, f"data-500_{number}.json")
             log_file = os.path.join(batch_dir_path, "log.txt")
         elif task_name == 'aime':
-            batch_dir_name = f"data-500-temp0_{index}"
+            batch_dir_name = f"data-60-temp0_{index}"
             batch_dir_path = os.path.join(result_base_dir, batch_dir_name)
             file_name = os.path.join(batch_dir_path, f"data-60_{index}.json")
             log_file = os.path.join(batch_dir_path, "log.txt")
@@ -117,13 +117,13 @@ def main():
     parser.add_argument(
         "--task",
         type=str,
-        default="math-500",
+        default="aime",
     )
     args = parser.parse_args()
     model = AutoModelForCausalLM.from_pretrained(
         args.main_model_path,
         torch_dtype=torch.float16,
-        device_map="cuda:3",
+        device_map="cuda:2",
 
     )
     tokenizer = AutoTokenizer.from_pretrained(args.main_model_path)
