@@ -332,7 +332,7 @@ def process_file_to_pickle(json_path, out_pkl_path):
 
 def inference_model_pickle(task_name: str = None, model=None, tokenizer=None,
                           base_dir='/data/semantic/deepseek-32b_r1_awq_math',
-                          start=0, end=91, num_generations=20):
+                          start=91, end=95, num_generations=20):
 
 
     for number in tqdm(range(start, end)):
