@@ -261,7 +261,7 @@ def get_semantic_ids(strings_list, model,prefix, strict_entailment=True, tokeniz
 
     return semantic_set_ids
 def process_file_to_pickle(json_path, out_pkl_path):
-    print("-----------")
+
     tokenizer = AutoTokenizer.from_pretrained("microsoft/deberta-v2-xlarge-mnli")
     model = AutoModelForSequenceClassification.from_pretrained(
         "microsoft/deberta-v2-xlarge-mnli").to("cuda:1")
@@ -270,6 +270,7 @@ def process_file_to_pickle(json_path, out_pkl_path):
     with open(json_path, "rb") as f:
         generations = pickle.load(f)
     all_generations = []
+    print("-----------")
     if checking(generations):
         for i in range(0, len(generations), group_size):
 
