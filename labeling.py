@@ -267,10 +267,10 @@ def process_file_to_pickle(json_path, out_pkl_path):
     with open(json_path, "rb") as f:
         generations = pickle.load(f)
     all_generations = []
-
+    print("generations",len(generations))
     if checking(generations):
         print('checking------------------',checking(generations))
-        print('checking------------------', len(generations))
+        #print('checking------------------', len(generations))
         for i in range(0, len(generations), group_size):
             group = generations[i:i + group_size]
 
