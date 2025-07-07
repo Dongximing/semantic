@@ -11,6 +11,6 @@ while kill -0 $TARGET_PID 2>/dev/null; do
 done
 
 echo "Process $TARGET_PID has ended. Running your script..."
-python speculative_hf_decoding.py --seed 298  --dataset aime --start_dataset 0 --end_dataset 30
+python speculative_hf_decoding.py --seed 98  --dataset aime --start_dataset 0 --end_dataset 30
 #python speculative_hf_decoding.py --seed 498  --dataset aime --start_dataset 0 --end_dataset 30
 #python speculative_hf_decoding.py --seed 398  --dataset aime --start_dataset 0 --end_dataset 30
