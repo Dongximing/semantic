@@ -346,9 +346,9 @@ def process_file_to_json(dir_path, target_model, target_tokenizer,speculative_mo
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str,  help="dataset",default='math-500')#math-500
-    parser.add_argument("--target_model", type=str,  help="target_model",default="Qwen/QwQ-32B-AWQ")
+    parser.add_argument("--target_model", type=str,  help="target_model",default="unsloth/DeepSeek-R1-Distill-Qwen-32B-bnb-4bit")
     parser.add_argument("--speculative_model", type=str,  help="speculative_model", default="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
-    parser.add_argument("--data_dir", type=str,  help="data_dir",default='/data/semantic/speculative/spec_result_aime_qwq_r1_seed_')
+    parser.add_argument("--data_dir", type=str,  help="data_dir",default='/data/semantic/speculative/spec_result_math-500_deepseek_r1_seed_')
     parser.add_argument("--start_dataset", type=int, help="the beginning of the dataset",default=100)
     parser.add_argument("--end_dataset", type=int, help="the end of the dataset",default=500)
     parser.add_argument("--target_probe", type=str, help="target_probe",default="/data/semantic/training/aime_output_last_hidden_list_best_probe_mse")#aime_output_last_hidden_list_best_probe_mse
@@ -358,7 +358,7 @@ if __name__ == "__main__":
     parser.add_argument("--max_new_tokens", type=int, help="max_new_tokens",default=14000)
     parser.add_argument("--top_p", type=float, help="top_p",default=0.9)
     parser.add_argument("--top_k", type=int, help="top_k",default=50)
-    parser.add_argument("--seed", type=int, help="seed", default=123123)
+    parser.add_argument("--seed", type=int, help="seed", default=298)
     args = parser.parse_args()
     seed_everything(args.seed)
     model_target_probe = SemanticEntropyProbTarget(5120, 256)
