@@ -64,6 +64,7 @@ def predict(tokenizer, model, input_data, temperature, return_full=False, return
         )
     full_answer = tokenizer.decode(outputs.sequences[0],skip_special_tokens=True)
     real_answer = tokenizer.decode(outputs.sequences[0][initial_length:], skip_special_tokens=True)
+    print(real_answer)
     triggered_stop = stopping_criteria_obj.triggered_stop
     answer = full_answer
     if full_answer.startswith(input_data):
