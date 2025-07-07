@@ -264,7 +264,7 @@ def process_file_to_pickle(json_path, out_pkl_path):
 
     tokenizer = AutoTokenizer.from_pretrained("microsoft/deberta-v2-xlarge-mnli")
     model = AutoModelForSequenceClassification.from_pretrained(
-        "microsoft/deberta-v2-xlarge-mnli").to("cuda:1")
+        "microsoft/deberta-v2-xlarge-mnli").to("cuda:0")
 
     group_size = 21
     with open(json_path, "rb") as f:
