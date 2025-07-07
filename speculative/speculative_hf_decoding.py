@@ -378,7 +378,7 @@ if __name__ == "__main__":
         args.target_model,
         torch_dtype=torch.float16,
         device_map="auto",
-        max_memory={0: "24GB", 3:"24GB"}
+        max_memory={0: "24GB", 1:"24GB"}
     )
     target_tokenizer = transformers.AutoTokenizer.from_pretrained(
     args.target_model,
