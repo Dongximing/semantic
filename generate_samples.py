@@ -17,7 +17,7 @@ AIME_STOP_TOKENS = [
     ' \n\n', '.\n\n', ':\n\n', '\n\n',
     ')\n\n', '?\n\n', ']\n\n', ').\n\n',
 ]
-NUMBER =3
+NUMBER =0
 def predict(tokenizer, model, input_data, temperature, return_full=False, return_latent=False):
     max_new_tokens = 500
     inputs = tokenizer(input_data, return_tensors="pt").to(f"cuda:{NUMBER}")
@@ -267,23 +267,26 @@ def inference_model_pickle(task_name: str, model, tokenizer, base_dir,
 
 
 if __name__ == "__main__":
-    tokenizer = AutoTokenizer.from_pretrained(
-        "unsloth/DeepSeek-R1-Distill-Qwen-32B-bnb-4bit",
-        trust_remote_code=True
-    )
-    model = AutoModelForCausalLM.from_pretrained(
-        "unsloth/DeepSeek-R1-Distill-Qwen-32B-bnb-4bit",
-        torch_dtype=torch.float16,
-        device_map=f"cuda:{NUMBER}"
-    )
+
     parser = argparse.ArgumentParser()
+    parser.add_argument("--model", type=str, default="unsloth/DeepSeek-R1-Distill-Qwen-32B-bnb-4bit")
+    parser.add_argument("--task",type=str,default="math-500")
+    parser.add_argument("--gpu", type=int, default=0)
     parser.add_argument("--start", type=int, help="dataset", default=0)
     parser.add_argument("--end", type=int, help="dataset",default=100) #
     parser.add_argument("--base_dir", type=str, help="dataset", default='/data/semantic/deepseek-1.5b_r1_awq_aime')
     args = parser.parse_args()
+    tokenizer = AutoTokenizer.from_pretrained(
+        args.model,
+        trust_remote_code=True
+    )
+    model = AutoModelForCausalLM.from_pretrained(
+        args.model,
+        torch_dtype=torch.float16,
+        device_map=f"cuda:{args.gpu}",
+    )
     #/home/cs/staff/shaowei/semantic/aime
     #/data/ximing/aime
     #/home/cs/staff/shaowei/semantic/deepseek-32b_r1_awq_math
-    base_dir= args.base_dir
-    inference_model_pickle(task_name="math-500", model=model,base_dir=base_dir, tokenizer=tokenizer,start=args.start, end=args.end)
+    inference_model_pickle(task_name=args.task, model=model,base_dir=args.base_dir, tokenizer=tokenizer,start=args.start, end=args.end)
     print("done")
