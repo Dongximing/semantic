@@ -7,7 +7,8 @@ import numpy as np
 import traceback
 from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
-import sys 
+import sys
+import argparse
 STOP_TOKENS = [
     ' \n\n', '.\n\n', ':\n\n', '\n\n',
     ')\n\n', '?\n\n', ']\n\n', ').\n\n'
@@ -275,9 +276,14 @@ if __name__ == "__main__":
         torch_dtype=torch.float16,
         device_map=f"cuda:{NUMBER}"
     )
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--start", type=int, help="dataset", default=0)
+    parser.add_argument("--end", type=int, help="dataset",default=100) #
+    parser.add_argument("--base_dir", type=str, help="dataset", default='/data/semantic/deepseek-1.5b_r1_awq_aime')
+    args = parser.parse_args()
     #/home/cs/staff/shaowei/semantic/aime
     #/data/ximing/aime
     #/home/cs/staff/shaowei/semantic/deepseek-32b_r1_awq_math
-    base_dir= '/data/semantic/deepseek-1.5b_r1_awq_aime'
-    inference_model_pickle(task_name="math-500", model=model,base_dir=base_dir, tokenizer=tokenizer,start=0, end=60)
+    base_dir= args.base_dir
+    inference_model_pickle(task_name="math-500", model=model,base_dir=base_dir, tokenizer=tokenizer,start=args.start, end=args.end)
     print("done")
