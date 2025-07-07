@@ -64,7 +64,7 @@ def equivalence_prompt(text1, text2, prefix):
 
     return prompt
 def get_deberta_output(text1,text2,model,tokenizer):
-    inputs = tokenizer(text1, text2, return_tensors="pt").to("cuda:1")
+    inputs = tokenizer(text1, text2, return_tensors="pt").to("cuda:0")
     outputs = model(**inputs)
     logits = outputs.logits
     # Deberta-mnli returns `neutral` and `entailment` classes at indices 1 and 2.
