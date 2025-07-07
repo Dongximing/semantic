@@ -117,7 +117,7 @@ def main():
     parser.add_argument(
         "--task",
         type=str,
-        default="math-500",
+        default="aime",
     )
     args = parser.parse_args()
     model = AutoModelForCausalLM.from_pretrained(
