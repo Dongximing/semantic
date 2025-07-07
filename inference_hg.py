@@ -12,10 +12,10 @@ MATH_PROMPT = "\nPlease reason step by step, and put your final answer within \\
 def inference_model(task_name: str, model, tokenizer):
     if task_name == 'math-500':
         df = pd.read_json(f"/home/shaowei/{task_name}/test.jsonl", lines=True)
-        prompts = df['problem'][71:100].tolist()
-        answers = df['answer'][71:100].tolist()
-        start_number = 71
-        result_base_dir = "./deepseek-32b_r1_awq_math"
+        prompts = df['problem'][0:100].tolist()
+        answers = df['answer'][0:100].tolist()
+        start_number = 0
+        result_base_dir = "./new_deepseek-1.5b_r1_awq_math"
     elif task_name == 'aime':
         dataset = load_dataset("AI-MO/aimo-validation-aime")
         dataset = dataset['train']
@@ -23,7 +23,7 @@ def inference_model(task_name: str, model, tokenizer):
         prompts = new_dataset['problem'][:]
         answers = new_dataset['answer'][:]
         start_number = 0
-        result_base_dir = "./deepseek-32b_r1_awq_aime"
+        result_base_dir = "./deepseek-1.5b_r1_awq_aime"
 
     for index, prompt in tqdm(enumerate(prompts), total=len(prompts)):
 
@@ -63,8 +63,8 @@ def inference_model(task_name: str, model, tokenizer):
             with torch.inference_mode():
                 outputs = model.generate(
                     **model_inputs,
-                    max_new_tokens=15000,
-                    temperature=0.1,
+                    max_new_tokens=8192,
+                    temperature=0.6,
                     return_dict_in_generate=True
                 )
 
@@ -80,8 +80,8 @@ def inference_model(task_name: str, model, tokenizer):
                 "prompt": prompt,
                 "answer": answers[index] if index < len(answers) else None,
                 "large_model_output": response[0],
-                "large_model_output_ids": gen_only_ids[0].tolist() if torch.is_tensor(gen_only_ids[0]) else list(gen_only_ids[0]),
-                "large_model_input_ids": input_ids[0].tolist() if torch.is_tensor(input_ids[0]) else list(input_ids[0]),
+                # "large_model_output_ids": gen_only_ids[0].tolist() if torch.is_tensor(gen_only_ids[0]) else list(gen_only_ids[0]),
+                # "large_model_input_ids": input_ids[0].tolist() if torch.is_tensor(input_ids[0]) else list(input_ids[0]),
                 "input_prompt_with_template": input_texts[0]
             }
             with open(file_name, 'w') as f:
@@ -112,7 +112,7 @@ def main():
     parser.add_argument(
         "--main-model-path",
         type=str,
-        default="unsloth/DeepSeek-R1-Distill-Qwen-32B-bnb-4bit",
+        default="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
     )
     parser.add_argument(
         "--task",
@@ -123,11 +123,11 @@ def main():
     model = AutoModelForCausalLM.from_pretrained(
         args.main_model_path,
         torch_dtype=torch.float16,
-        device_map="cuda:1",
+        device_map="cuda:0",
 
     )
     tokenizer = AutoTokenizer.from_pretrained(args.main_model_path)
-    #inference_model(task_name=args.task, model=model, tokenizer=tokenizer)
+    inference_model(task_name=args.task, model=model, tokenizer=tokenizer)
 
 if __name__ == "__main__":
     main()
