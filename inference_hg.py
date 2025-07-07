@@ -23,7 +23,7 @@ def inference_model(task_name: str, model, tokenizer):
         prompts = new_dataset['problem'][:]
         answers = new_dataset['answer'][:]
         start_number = 0
-        result_base_dir = "./deepseek-1.5b_r1_awq_aime"
+        result_base_dir = "./new_deepseek-1.5b_r1_awq_aime"
 
     for index, prompt in tqdm(enumerate(prompts), total=len(prompts)):
 
@@ -117,7 +117,7 @@ def main():
     parser.add_argument(
         "--task",
         type=str,
-        default="aime",
+        default="math-500",
     )
     args = parser.parse_args()
     model = AutoModelForCausalLM.from_pretrained(
