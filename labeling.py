@@ -320,8 +320,8 @@ def process_file_to_pickle(json_path, out_pkl_path):
             #         g['probability_of_deberta'] = label_counts[label] / total
             #     else:
             #         g['probability_of_deberta'] = None
-            #
-            #
+
+
             all_generations.extend(group)
 
         with open(out_pkl_path, "wb") as f:
@@ -339,9 +339,9 @@ def inference_model_pickle(task_name: str = None, model=None, tokenizer=None,
     for number in tqdm(range(start, end)):
         dirname = f'data-500-temp0_{number}'
         dir_path = os.path.join(base_dir, dirname)
-        json_path = os.path.join(dir_path, f'new_generations_with_entropy{number}.pkl')
+        json_path = os.path.join(dir_path, f'new_generations_{number}.pkl')
 
-        out_pkl_path = os.path.join(dir_path, f'new_generations_with_entropy_prob{number}.pkl')
+        out_pkl_path = os.path.join(dir_path, f'new_generations_with_entropy{number}.pkl')
         if not os.path.exists(json_path):
             logger.warning(f"{json_path} does not exist, skipping.")
             continue
