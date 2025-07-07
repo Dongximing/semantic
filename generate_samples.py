@@ -269,12 +269,12 @@ def inference_model_pickle(task_name: str, model, tokenizer, base_dir,
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model", type=str, default="unsloth/DeepSeek-R1-Distill-Qwen-32B-bnb-4bit")
+    parser.add_argument("--model", type=str, default="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
     parser.add_argument("--task",type=str,default="math-500")
     parser.add_argument("--gpu", type=int, default=0)
     parser.add_argument("--start", type=int, help="dataset", default=0)
     parser.add_argument("--end", type=int, help="dataset",default=100) #
-    parser.add_argument("--base_dir", type=str, help="dataset", default='/data/semantic/deepseek-1.5b_r1_awq_aime')
+    parser.add_argument("--base_dir", type=str, help="dataset", default='/home/cs/staff/shaowei/semantic/new_deepseek-1.5b_r1_awq_math')
     args = parser.parse_args()
     tokenizer = AutoTokenizer.from_pretrained(
         args.model,
