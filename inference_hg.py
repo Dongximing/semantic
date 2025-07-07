@@ -80,8 +80,8 @@ def inference_model(task_name: str, model, tokenizer):
                 "prompt": prompt,
                 "answer": answers[index] if index < len(answers) else None,
                 "large_model_output": response[0],
-                # "large_model_output_ids": gen_only_ids[0].tolist() if torch.is_tensor(gen_only_ids[0]) else list(gen_only_ids[0]),
-                # "large_model_input_ids": input_ids[0].tolist() if torch.is_tensor(input_ids[0]) else list(input_ids[0]),
+                "large_model_output_ids": gen_only_ids[0].tolist() if torch.is_tensor(gen_only_ids[0]) else list(gen_only_ids[0]),
+                "large_model_input_ids": input_ids[0].tolist() if torch.is_tensor(input_ids[0]) else list(input_ids[0]),
                 "input_prompt_with_template": input_texts[0]
             }
             with open(file_name, 'w') as f:
