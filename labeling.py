@@ -284,6 +284,7 @@ def process_file_to_pickle(json_path, out_pkl_path):
 
                 if label is not None:
                     labels.append(label)
+            print("labels",labels)
             label_counts = Counter(labels)
             print(label_counts)
             total = len(labels)
