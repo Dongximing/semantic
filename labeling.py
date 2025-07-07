@@ -272,7 +272,7 @@ def process_file_to_pickle(json_path, out_pkl_path):
     all_generations = []
 
     if checking(generations):
-        print("-----------")
+
         for i in range(0, len(generations), group_size):
             group = generations[i:i + group_size]
 
