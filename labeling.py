@@ -275,53 +275,53 @@ def process_file_to_pickle(json_path, out_pkl_path):
 
 
             group = generations[i:i + group_size]
-            answer_lists = [g.get('real_answer') for g in group[1:]]
-
-            valid_answers = [ans for ans in answer_lists if ans is not None]
-
-            if valid_answers:
-
-                cluster_ids = get_semantic_ids(strings_list=valid_answers, model=model,tokenizer=tokenizer,
-                                               prefix=group[0]['most_input_text'],method='deberta')
-            else:
-                cluster_ids = []
-
-            cluster_gpt = []
-            cid = 0
-            for idx, ans in enumerate(answer_lists):
-                if ans is None:
-                    cluster_gpt.append(None)
-                else:
-                    cluster_gpt.append(cluster_ids[cid])
-                    cid += 1
-            if len(valid_answers)>0:
-                group[0]['cluster_assignment_entropy_deberta'] = cluster_assignment_entropy([c for c in cluster_gpt if c is not None])
-            else:
-                group[0]['cluster_assignment_entropy_deberta'] = None
-
-
-
-            for local_idx, g in enumerate(group[1:]):
-                g['clustering-gpt-prompty_deberta'] = cluster_gpt[local_idx]
-            # labels = []
-            # for local_idx, g in enumerate(group[1:]):
-            #     label = g['clustering-gpt-prompty_deberta']
+            # answer_lists = [g.get('real_answer') for g in group[1:]]
             #
-            #     if label is not None:
-            #         labels.append(label)
-            # label_counts = Counter(labels)
-            # print(label_counts)
-            # total = len(labels)
-            # for g in group[1:]:
-            #     label = g['clustering-gpt-prompty_deberta']
+            # valid_answers = [ans for ans in answer_lists if ans is not None]
             #
-            #     if label is not None:
-            #         g['probability_of_deberta'] = label_counts[label] / total
+            # if valid_answers:
+            #
+            #     cluster_ids = get_semantic_ids(strings_list=valid_answers, model=model,tokenizer=tokenizer,
+            #                                    prefix=group[0]['most_input_text'],method='deberta')
+            # else:
+            #     cluster_ids = []
+            #
+            # cluster_gpt = []
+            # cid = 0
+            # for idx, ans in enumerate(answer_lists):
+            #     if ans is None:
+            #         cluster_gpt.append(None)
             #     else:
-            #         g['probability_of_deberta'] = None
+            #         cluster_gpt.append(cluster_ids[cid])
+            #         cid += 1
+            # if len(valid_answers)>0:
+            #     group[0]['cluster_assignment_entropy_deberta'] = cluster_assignment_entropy([c for c in cluster_gpt if c is not None])
+            # else:
+            #     group[0]['cluster_assignment_entropy_deberta'] = None
             #
             #
-            # all_generations.extend(group)
+            #
+            # for local_idx, g in enumerate(group[1:]):
+            #     g['clustering-gpt-prompty_deberta'] = cluster_gpt[local_idx]
+            labels = []
+            for local_idx, g in enumerate(group[1:]):
+                label = g['clustering-gpt-prompty_deberta']
+
+                if label is not None:
+                    labels.append(label)
+            label_counts = Counter(labels)
+            print(label_counts)
+            total = len(labels)
+            for g in group[1:]:
+                label = g['clustering-gpt-prompty_deberta']
+
+                if label is not None:
+                    g['probability_of_deberta'] = label_counts[label] / total
+                else:
+                    g['probability_of_deberta'] = None
+
+
+            all_generations.extend(group)
 
         with open(out_pkl_path, "wb") as f:
             pickle.dump(all_generations, f)
@@ -332,7 +332,7 @@ def process_file_to_pickle(json_path, out_pkl_path):
 
 def inference_model_pickle(task_name: str = None, model=None, tokenizer=None,
                           base_dir='/data/semantic/deepseek-32b_r1_awq_math',
-                          start=50, end=99, num_generations=20):
+                          start=0, end=1, num_generations=20):
 
 
     for number in tqdm(range(start, end)):
