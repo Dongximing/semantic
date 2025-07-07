@@ -277,6 +277,7 @@ def process_file_to_pickle(json_path, out_pkl_path):
             group = generations[i:i + group_size]
 
             labels = []
+            print('------------------')
             print('group',group)
             for local_idx, g in enumerate(group[1:]):
                 label = g['clustering-gpt-prompty_deberta']
