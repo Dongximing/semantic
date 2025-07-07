@@ -123,11 +123,11 @@ def main():
     model = AutoModelForCausalLM.from_pretrained(
         args.main_model_path,
         torch_dtype=torch.float16,
-        device_map="cuda:0",
+        device_map="cuda:1",
 
     )
     tokenizer = AutoTokenizer.from_pretrained(args.main_model_path)
-    inference_model(task_name=args.task, model=model, tokenizer=tokenizer)
+    #inference_model(task_name=args.task, model=model, tokenizer=tokenizer)
 
 if __name__ == "__main__":
     main()
