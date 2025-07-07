@@ -247,9 +247,9 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 # print('******** checking valid_tgt_kv',valid_tgt_kv[0][0].shape[2])
                 # check the entropy of the target model and speculative model.
                 with torch.no_grad():
-                    prob_target = model_target_probe(target_pooling_hidden_information.float().to(f"cuda:{3}"))
+                    prob_target = model_target_probe(target_pooling_hidden_information.float().to(f"cuda:{1}"))
                 with torch.no_grad():
-                    prob_spec = model_spec_probe(pooling_hidden_information.float().to(f"cuda:{3}"))
+                    prob_spec = model_spec_probe(pooling_hidden_information.float().to(f"cuda:{1}"))
                 # if the prob of the target model is higher than the prob of the speculative model, we use the speculative model to keep going.
                 # if the prob of the target model is lower than the prob of the speculative model, we use the target model to generate the current part.
                 #print(f"prob_target.item() {prob_target.item()} , prob_spec.item() {prob_spec.item()}")
@@ -363,7 +363,7 @@ if __name__ == "__main__":
     seed_everything(args.seed)
     model_target_probe = SemanticEntropyProbTarget(5120, 256)
     model_target_probe.load_state_dict(torch.load(f'{args.target_probe}.pt'))
-    model_target_probe = model_target_probe.to('cuda:3')
+    model_target_probe = model_target_probe.to('cuda:1')
     #wrong_list = [ 240, 248, 251,  282, 286, 295, 296, 299, 301, 306, 308, 309, 317, 327, 338, 341, 349,  352, 355, 369, 381, 392, 400, 403, 416, 422, 425, 432, 444, 460, 464, 469, 470, 473, 478, 481, 483, 485, 490, 493]
     #123
     #wrong_list = [100, 101, 109, 110, 119, 120,  137, 138, 145, 154, 164, 165, 166, 168, 176,  189, 197,  204,  219, 221, 228,  239, 240, 242, 246, 248, 264, 279,  286, 288, 302, 306, 308, 309, 317, 324, 332, 340, 349,  352, 359, 365, 369, 372, 380, 381, 382,  385, 392, 400, 403, 419, 421, 422, 425,444, 448, 456, 460, 466, 475, 478, 481,486, 490, 494, 497]
@@ -371,7 +371,7 @@ if __name__ == "__main__":
     #wrong_list =  [100, 101, 103, 104, 105, 110, 119, 120, 128, 138, 145, 154, 164, 168, 176, 196, 204, 209, 217, 219, 238, 239, 240, 242, 248, 264, 282, 285, 286, 292, 295, 296, 301, 303, 308, 309, 324, 340,  352, 358, 369, 381, 392, 400, 401, 405, 409, 421, 422, 425, 432, 439, 444, 460, 466, 478, 481, 485, 489, 491, 494]
     model_spec_probe = SemanticEntropyProbSpec(1536, 256)
     model_spec_probe.load_state_dict(torch.load(f'{args.speculative_probe}.pt'))
-    model_spec_probe = model_spec_probe.to('cuda:3')
+    model_spec_probe = model_spec_probe.to('cuda:1')
 
 
     target_model = transformers.AutoModelForCausalLM.from_pretrained(
