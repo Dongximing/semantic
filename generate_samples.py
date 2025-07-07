@@ -247,8 +247,10 @@ def inference_model_pickle(task_name: str, model, tokenizer, base_dir,
                            start=31, end=50, num_generations=20):
 
     for number in tqdm(range(start, end)):
-
-        dirname = f'data-500-temp0_{number}'
+        if task_name == "aime":
+            dirname = f'data-60-temp0_{number}'
+        elif task_name == "math-500":
+            dirname = f'data-500-temp0_{number}'
         dir_path = os.path.join(base_dir, dirname)
         json_path = os.path.join(dir_path, f'seg_by_stop_{number}.json')
         out_pkl_path = os.path.join(dir_path, f'new_generations_{number}.pkl')
@@ -271,11 +273,11 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", type=str, default="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
-    parser.add_argument("--task",type=str,default="math-500")
+    parser.add_argument("--task",type=str,default="aime")
     parser.add_argument("--gpu", type=int, default=0)
     parser.add_argument("--start", type=int, help="dataset", default=0)
-    parser.add_argument("--end", type=int, help="dataset",default=100) #
-    parser.add_argument("--base_dir", type=str, help="dataset", default='/home/cs/staff/shaowei/semantic/new_deepseek-1.5b_r1_awq_math')
+    parser.add_argument("--end", type=int, help="dataset",default=60) #
+    parser.add_argument("--base_dir", type=str, help="dataset", default='/home/cs/staff/shaowei/semantic/new_deepseek-1.5b_r1_awq_aime')
     args = parser.parse_args()
     tokenizer = AutoTokenizer.from_pretrained(
         args.model,

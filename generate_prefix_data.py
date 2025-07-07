@@ -53,7 +53,7 @@ def inference_model(task_name: str, model, tokenizer):
     base_dir = '/home/cs/staff/shaowei/semantic/new_deepseek-1.5b_r1_awq_math'
     # base_dir = '/home/shaowei/hf/math-result_left'
     for dirname in os.listdir(base_dir):
-        if dirname.startswith('data-500-temp0_'):
+        if dirname.startswith('data'):
             number = dirname.split('_')[-1]
             dir_path = os.path.join(base_dir, dirname)
             if task_name == 'aime':
@@ -71,4 +71,4 @@ if __name__ == "__main__":
         "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
         trust_remote_code=True
     )
-    inference_model("math-500", None, tokenizer)
+    inference_model("aime", None, tokenizer)
