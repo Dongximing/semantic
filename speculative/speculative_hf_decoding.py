@@ -389,7 +389,7 @@ if __name__ == "__main__":
     speculative_model = transformers.AutoModelForCausalLM.from_pretrained(
         args.speculative_model,
         torch_dtype=torch.float16,
-        device_map="cuda:0"
+        device_map="cuda:1"
 
     )
 
