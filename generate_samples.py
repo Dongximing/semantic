@@ -273,7 +273,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", type=str, default="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
-    parser.add_argument("--task",type=str,default="aime")
+    parser.add_argument("--task",type=str,default="math-500")
     parser.add_argument("--gpu", type=int, default=0)
     parser.add_argument("--start", type=int, help="dataset", default=21)
     parser.add_argument("--end", type=int, help="dataset",default=50) #
