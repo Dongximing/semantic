@@ -199,7 +199,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 else:
                     return False
 
-
+        speculative_real_output = ''
 
         while checking_is_finish(generated_ids,max_new_tokens,use_target):
             # we start at the target model.
@@ -213,7 +213,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 if use_target:
                     target_output_id = generated_ids
                     real_target_output = target_tokenizer.decode(generated_ids[0,previous_original_target_text_len:],skip_special_tokens=True)
-                    detail.append({'target_model':real_target_output})
+                    detail.append({'target_model':real_target_output,'why_is_not_good':speculative_real_output})
                     speculative_tokenizer_input = speculative_tokenizer(real_target_output, return_tensors="pt")['input_ids'].to(speculative_model.device)
                     generated_ids = torch.cat([start_speculative_text_inputs,speculative_tokenizer_input], dim=-1)
                 small_input_ids = generated_ids
@@ -262,6 +262,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                     generated_ids = checking_generated_ids
                     target_output_id = checking_target_ids
                 else:
+
                     # valid_tgt_kv  not change
                     if use_target:
                         generated_ids = target_output_id
