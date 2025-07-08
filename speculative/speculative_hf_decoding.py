@@ -138,12 +138,13 @@ def generate_with_partial_kv(
     if checking:
 
         output_last_hidden_list_big = big_hidden[-1].cpu()
-        #print("output_last_hidden_list_big.shape",output_last_hidden_list_big.shape)
+        print("output_last_hidden_list_big.shape",output_last_hidden_list_big.shape)
         output_last_hidden_list =output_last_hidden_list_big.squeeze(0)
         output_last_hidden_list = output_last_hidden_list.mean(dim=0, keepdim=True)
     else:
         output_last_hidden_list = torch.stack([layer[-1][:, -1, :] for layer in hidden]).cpu()
         output_last_hidden_list = output_last_hidden_list.squeeze(1)  # [len ,D]
+        print("output_last_hidden_list.shape", output_last_hidden_list.shape)
         output_last_hidden_list = output_last_hidden_list.mean(dim=0, keepdim=True)  # [1,D]
     if checking:
         # print('checking_past_key_values',checking_past_key_values[0][0].shape[2])
