@@ -257,7 +257,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 #print(f"prob_target.item() {prob_target.item()} , prob_spec.item() {prob_spec.item()}")
                 prob_target = prob_target.item()
                 prob_spec = prob_spec.item()
-                if prob_target.item() >= prob_spec.item():
+                if prob_target >= prob_spec:
                     detail.append({'spe_model':speculative_real_output})
                     correct_spe_number +=1
                     use_target = False
