@@ -138,13 +138,13 @@ def generate_with_partial_kv(
     if checking:
 
         output_last_hidden_list_big = big_hidden[-1].cpu()
-        print("output_last_hidden_list_big.shape",output_last_hidden_list_big.shape)
+        #print("output_last_hidden_list_big.shape",output_last_hidden_list_big.shape)
         output_last_hidden_list =output_last_hidden_list_big.squeeze(0)
         output_last_hidden_list = output_last_hidden_list.mean(dim=0, keepdim=True)
     else:
         output_last_hidden_list = torch.stack([layer[-1][:, -1, :] for layer in hidden]).cpu()
         output_last_hidden_list = output_last_hidden_list.squeeze(1)  # [len ,D]
-        print("output_last_hidden_list.shape", output_last_hidden_list.shape)
+        #print("output_last_hidden_list.shape", output_last_hidden_list.shape)
         output_last_hidden_list = output_last_hidden_list.mean(dim=0, keepdim=True)  # [1,D]
     if checking:
         # print('checking_past_key_values',checking_past_key_values[0][0].shape[2])
@@ -229,7 +229,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                     max_new_tokens=SPECULATIVE_OUTPUT_LENGTH, temperature=0.6, top_k=50, top_p=0.95,checking=False
                 )
                 speculative_real_output = speculative_tokenizer.decode(checking_generated_ids[0,small_input_ids.shape[1]:])
-                print("checking_generated_ids[0,small_input_ids.shape[1]:]\n",checking_generated_ids[0,small_input_ids.shape[1]:])
+                #print("checking_generated_ids[0,small_input_ids.shape[1]:]\n",checking_generated_ids[0,small_input_ids.shape[1]:])
                 special_token_id = 151646
                 target_tokenizer_input = target_tokenizer(speculative_real_output, return_tensors="pt")['input_ids']
                 if target_tokenizer_input[0, 0].item() == special_token_id:
@@ -238,7 +238,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 target_tokenizer_input = target_tokenizer_input.to(
                     target_model.device)
 
-                print('target_tokenizer_input\n',target_tokenizer_input)
+                #print('target_tokenizer_input\n',target_tokenizer_input)
                 # big model checking
                 # if we use the target model at last generation, we directly use 'target_output_id' and 'target_tokenizer_input'
                 # if not, we use last the checking_target_ids and 'target_tokenizer_input'
