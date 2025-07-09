@@ -21,7 +21,7 @@ if __name__ == '__main__':
     parser.add_argument('--seed', type=int, default=42)
     args = parser.parse_args()
 
-
+    time = 0
     number_correct = 0
     number_of_tokens = 0
     total_number = args.end - args.start
@@ -42,6 +42,7 @@ if __name__ == '__main__':
             #print('generations',generations)
             predict = generations[0]['full_answer']
             #print(predict)
+            time += generations[0]['execution_time']
             standard = generations[0]['answer']
             number_of_tokens += generations[0]['tokens_full_answer']
         result = check_math_correctness(standard,predict)
@@ -53,6 +54,7 @@ if __name__ == '__main__':
     print("Number of tokens: ", number_of_tokens/total_number)
     print(f'Number_correct: {number_correct}')
     print(f'Total: {total_number}')
+    print(f'average execution time: {time/total_number}')
 
 
 
