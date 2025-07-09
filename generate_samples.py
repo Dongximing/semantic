@@ -274,10 +274,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", type=str, default="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
     parser.add_argument("--task",type=str,default="aime")
-    parser.add_argument("--gpu", type=int, default=2)
+    parser.add_argument("--gpu", type=int, default=0)
     parser.add_argument("--start", type=int, help="dataset", default=21)
     parser.add_argument("--end", type=int, help="dataset",default=60) #
-    parser.add_argument("--base_dir", type=str, help="dataset", default='/data/semenatic')
+    parser.add_argument("--base_dir", type=str, help="dataset", default='/home/cs/staff/shaowei/semantic/new_deepseek-1.5b_r1_awq_aime')
     args = parser.parse_args()
     tokenizer = AutoTokenizer.from_pretrained(
         args.model,
