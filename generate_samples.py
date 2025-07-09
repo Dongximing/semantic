@@ -61,6 +61,7 @@ def predict(tokenizer, model, input_data, temperature, return_full=False, return
             top_p=0.9,
             do_sample=True,
             stopping_criteria=stopping_criteria,
+            pad_token_id=tokenizer.eos_token_id,
         )
     full_answer = tokenizer.decode(outputs.sequences[0],skip_special_tokens=True)
     real_answer = tokenizer.decode(outputs.sequences[0][initial_length:], skip_special_tokens=True)
@@ -108,7 +109,7 @@ def predict(tokenizer, model, input_data, temperature, return_full=False, return
         last_hidden_state, sec_last_hidden_state, last_input_token_state,
         last_token_embedding, sec_last_token_embedding, last_tok_bef_gen_embedding,output_last_hidden_list
     )
-    print('real_answer',real_answer)
+    #print('real_answer',real_answer)
     return (real_answer,answer, log_likelihoods, probs, ppl, triggered_stop ,hidden_states)
 
 
