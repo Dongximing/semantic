@@ -49,7 +49,7 @@ if __name__ == '__main__':
             #print(predict)
             standard = generations[0]['standard_answer']
             length = generations[0].get('length_of_output')
-            time += generations[0].get('execution_time')
+            time += int(generations[0].get('execution_time'))
             spe_step += generations[0].get('correct_spe_number')
             target_step += generations[0].get('try_correct_num')
             if length is not None:
