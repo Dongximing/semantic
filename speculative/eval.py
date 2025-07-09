@@ -49,6 +49,7 @@ if __name__ == '__main__':
             #print(predict)
             standard = generations[0]['standard_answer']
             length = generations[0].get('length_of_output')
+            print(float(generations[0].get('execution_time').rstrip('s')))
             time += float(generations[0].get('execution_time').rstrip('s'))
 
             spe_step += generations[0].get('correct_spe_number')
