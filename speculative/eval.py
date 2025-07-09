@@ -39,6 +39,9 @@ if __name__ == '__main__':
         if not os.path.exists(json_path):
             print(f"[Warning] {json_path} does not exist, skipping...")
             continue
+        time = 0
+        spe_step = 0
+        target_step = 0
         with open(json_path, "r", encoding="utf-8") as f:
             generations = json.load(f)
             #print('generations',generations)
@@ -46,6 +49,9 @@ if __name__ == '__main__':
             #print(predict)
             standard = generations[0]['standard_answer']
             length = generations[0].get('length_of_output')
+            time += generations[0].get('execution_time')
+            spe_step += generations[0].get('correct_spe_number')
+            target_step += generations[0].get('try_correct_num')
             if length is not None:
                 number_of_tokens += length
             else:
@@ -58,6 +64,9 @@ if __name__ == '__main__':
             print(f'Error in {dirname}')
     print(f'Accuracy: {number_correct / total_number} in {args.dataset}')
     print("Number of tokens: ", number_of_tokens/total_number)
+    print("average spe step: ", spe_step/(spe_step+target_step))
+    print("average target step: ", target_step / (spe_step + target_step))
+    print("average execution time: ", time/total_number)
     print(f'Number_correct: {number_correct}')
     print(f'Total: {total_number}')
     print(f"wrong_list: {wrong_list}")
