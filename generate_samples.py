@@ -287,6 +287,7 @@ if __name__ == "__main__":
         torch_dtype=torch.float16,
         device_map=f"cuda:{args.gpu}",
     )
+    tokenizer.pad_token_id = tokenizer.eos_token_id
     #/home/cs/staff/shaowei/semantic/aime
     #/data/ximing/aime
     #/home/cs/staff/shaowei/semantic/deepseek-32b_r1_awq_math
