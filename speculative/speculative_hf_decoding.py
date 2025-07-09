@@ -216,7 +216,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 if use_target:
                     target_output_id = generated_ids
                     real_target_output = target_tokenizer.decode(generated_ids[0,previous_original_target_text_len:],skip_special_tokens=True)
-                    detail.append({'target_model':real_target_output,'why_is_not_good':speculative_real_output,"score_target":prob_target,"score_spec":prob_spec})
+                    detail.append({'target_model':real_target_output,'why_is_not_good':speculative_real_output,"score_target":round(prob_target, 2),"score_spec":round(prob_target, 2)})
                     speculative_tokenizer_input = speculative_tokenizer(real_target_output, return_tensors="pt")['input_ids'].to(speculative_model.device)
                     generated_ids = torch.cat([start_speculative_text_inputs,speculative_tokenizer_input], dim=-1)
                 small_input_ids = generated_ids
@@ -266,7 +266,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 #print(f"prob_target.item() {prob_target.item()} , prob_spec.item() {prob_spec.item()}")
                 prob_target = prob_target.item()
                 prob_spec = prob_spec.item()
-                if prob_target >= prob_spec:
+                if round(prob_target, 2) >= round(prob_spec, 2):
                     detail.append({'spe_model':speculative_real_output})
                     correct_spe_number +=1
                     use_target = False
