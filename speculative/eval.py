@@ -27,6 +27,9 @@ if __name__ == '__main__':
     number_of_tokens = 0
     total_number = args.end - args.start
     wrong_list =  []
+    time = 0
+    spe_step = 0
+    target_step = 0
 
     for idx, number in enumerate(tqdm(range(args.start, args.end))):
 
@@ -39,9 +42,7 @@ if __name__ == '__main__':
         if not os.path.exists(json_path):
             print(f"[Warning] {json_path} does not exist, skipping...")
             continue
-        time = 0
-        spe_step = 0
-        target_step = 0
+
         with open(json_path, "r", encoding="utf-8") as f:
             generations = json.load(f)
             #print('generations',generations)
