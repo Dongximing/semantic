@@ -50,6 +50,7 @@ if __name__ == '__main__':
             standard = generations[0]['standard_answer']
             length = generations[0].get('length_of_output')
             time += float(generations[0].get('execution_time').rstrip('s'))
+
             spe_step += generations[0].get('correct_spe_number')
             target_step += generations[0].get('try_correct_num')
             if length is not None:
@@ -62,6 +63,7 @@ if __name__ == '__main__':
         else:
             wrong_list.append(number)
             print(f'Error in {dirname}')
+    print(f"total time: {time}")
     print(f'Accuracy: {number_correct / total_number} in {args.dataset}')
     print("Number of tokens: ", number_of_tokens/total_number)
     print("average spe step: ", spe_step/(spe_step+target_step))
