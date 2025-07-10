@@ -25,13 +25,16 @@ class ProbeDataset(torch.utils.data.Dataset):
         return self.X[idx], self.Y[idx]
 
 class SemanticEntropyModel(nn.Module):
-    def __init__(self, input_dim, hidden_dim):
+    def __init__(self, input_dim, hidden_dim, dropout=0.3):
         super().__init__()
         self.fc1 = nn.Linear(input_dim, hidden_dim)
+        self.dropout = nn.Dropout(dropout)
         self.fc2 = nn.Linear(hidden_dim, 1)
+
     def forward(self, x):
         h = F.relu(self.fc1(x))
-        out = torch.sigmoid(self.fc2(h))  # 输出概率
+        h = self.dropout(h)
+        out = torch.sigmoid(self.fc2(h))
         return out.squeeze(-1)
 
 
