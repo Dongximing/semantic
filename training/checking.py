@@ -34,9 +34,9 @@ if __name__ == '__main__':
     for idx, number in enumerate(tqdm(range(args.start, args.end))):
 
         if args.dataset == 'math-500':
-            dirname = f'spec_{args.dataset}_{number}'
+            dirname = f'data-500-temp0_{number}'
         elif args.dataset == 'aime':
-            dirname = f'spec_{args.dataset}_{number}'
+            dirname = f'data-500-temp0_{number}'
         dir_path = os.path.join(args.eval_path, dirname)
         json_path = os.path.join(dir_path, f"data-500_{number}.json")
         if not os.path.exists(json_path):
