@@ -128,7 +128,7 @@ def train_probe_regression(
             best_epoch = epoch
             early_stop_counter = 0
             best_preds = preds.copy()
-            torch.save(model.state_dict(), f'{model_name}_{dataset_name}_{method}_best_probe_mse.pt')
+            torch.save(model.state_dict(), f'new_{model_name}_{dataset_name}_{method}_best_probe_mse.pt')
         else:
             early_stop_counter += 1
             if early_stop_counter >= early_stop_rounds:
@@ -175,8 +175,12 @@ def main(dataset,method,data_dir,model_name):
     start = 0
     end = 100
     X, Y = [], []
+    skip_numbers = [1, 9, 10, 17, 18, 19, 21, 26, 30, 32, 36, 41, 43, 62, 64, 71, 80, 82, 88, 94, 96, 97]
+
     base_dir = data_dir
     for number in tqdm(range(start, end)):
+        if number in skip_numbers:
+            continue
         dirname = f'data-500-temp0_{number}'
         dir_path = os.path.join(base_dir, dirname)
         pkl_path = os.path.join(dir_path, f'new_generations_with_entropy_prob{number}.pkl')
@@ -203,12 +207,12 @@ def main(dataset,method,data_dir,model_name):
     model = SemanticEntropyModel(INPUT_DIM, HIDDEN_DIM)
     history = train_probe_regression(
         model, train_loader, val_loader, epochs=50, lr=1e-3,
-        device='cuda', early_stop_rounds=7, save_pred_path=f'{model_name}_{dataset}_{method}_val_pred_results.npz',method=method,dataset_name = dataset,
+        device='cuda', early_stop_rounds=7, save_pred_path=f'new_{model_name}_{dataset}_{method}_val_pred_results.npz',method=method,dataset_name = dataset,
         model_name = model_name
     )
 
 
-    model.load_state_dict(torch.load(f'{model_name}_{dataset}_{method}_best_probe_mse.pt'))
+    model.load_state_dict(torch.load(f'new_{model_name}_{dataset}_{method}_best_probe_mse.pt'))
     model.eval()
     all_preds, all_targets = [], []
     with torch.no_grad():
@@ -224,7 +228,7 @@ def main(dataset,method,data_dir,model_name):
     test_mae = mean_absolute_error(all_targets, all_preds)
     test_r2 = r2_score(all_targets, all_preds)
     print(f"Test MSE: {test_mse:.4f}, MAE: {test_mae:.4f}, R2: {test_r2:.4f}")
-    np.savez(f'{model_name}_{dataset}_{method}_test_pred_results.npz', pred=all_preds, target=all_targets)
+    np.savez(f'new_{model_name}_{dataset}_{method}_test_pred_results.npz', pred=all_preds, target=all_targets)
 
 
     val_mse = [h['val_mse'] for h in history]
@@ -235,8 +239,8 @@ def main(dataset,method,data_dir,model_name):
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.legend()
-    plt.title(f'{model_name}_{dataset}_{method}_Validation Loss Curve')
-    plt.savefig(f'{model_name}_{dataset}_{method}_validation_loss_curve.png',dpi=200,bbox_inches='tight')
+    plt.title(f'new_{model_name}_{dataset}_{method}_Validation Loss Curve')
+    plt.savefig(f'new_{model_name}_{dataset}_{method}_validation_loss_curve.png',dpi=200,bbox_inches='tight')
     plt.show()
 #/data/ximing/aime
 if __name__ == "__main__":
