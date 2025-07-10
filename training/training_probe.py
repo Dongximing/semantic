@@ -11,6 +11,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from tqdm import tqdm
 import argparse
+import sys
 INPUT_DIM = 5120
 HIDDEN_DIM = 256
 
@@ -194,6 +195,7 @@ def main(dataset,method,data_dir,model_name):
         X.extend(x)
         Y.extend(y)
     print("X",len(X))
+    sys.exit()
     X_train, X_val, X_test, y_train, y_val, y_test = create_Xs_and_ys(X, Y)
     train_set = ProbeDataset(X_train, y_train)
     val_set = ProbeDataset(X_val, y_val)
