@@ -55,10 +55,10 @@ if __name__ == '__main__':
             number_correct += 1
         else:
             wrong_list.append(number)
-            print(f'Error in {dirname}')
-            print("*" * 50)
-            print('standard',standard)
-            print("*"*50)
-            print('predict',predict)
+            # print(f'Error in {dirname}')
+            # print("*" * 50)
+            # print('standard',standard)
+            # print("*"*50)
+            # print('predict',predict)
 
     print(wrong_list)
