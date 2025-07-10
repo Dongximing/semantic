@@ -175,7 +175,8 @@ def main(dataset,method,data_dir,model_name):
     start = 0
     end = 100
     X, Y = [], []
-    skip_numbers = [1, 9, 10, 17, 18, 19, 21, 26, 30, 32, 36, 41, 43, 62, 64, 71, 80, 82, 88, 94, 96, 97]
+    #skip_numbers = [1, 9, 10, 17, 18, 19, 21, 26, 30, 32, 36, 41, 43, 62, 64, 71, 80, 82, 88, 94, 96, 97]
+    skip_numbers = [1, 9, 11, 17, 18, 19, 21, 25, 26, 41, 43, 50, 51, 63, 64, 66, 71, 80, 82, 88, 94, 96, 97]
 
     base_dir = data_dir
     for number in tqdm(range(start, end)):
