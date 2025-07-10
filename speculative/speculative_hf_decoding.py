@@ -174,6 +174,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
         start_target_model_inputs = target_tokenizer(target_text, return_tensors="pt").to(target_model.device)
         generated_ids = start_target_model_inputs['input_ids']
         target_prompt_len = start_target_model_inputs["input_ids"].shape[1]
+        original_len = target_prompt_len
         start_speculative_text_inputs = target_tokenizer(speculative_text, return_tensors="pt")['input_ids'].to(speculative_model.device)
         original_target_text_len = start_target_model_inputs["input_ids"].shape[1]
         # there are kv caches in both the target model and speculative model.
@@ -304,18 +305,18 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 )
 
                 # if inferencing the model stops at the first time
-                if target_tokenizer.eos_token_id in generated_ids[0, target_prompt_len:] or 151649 in generated_ids[0, target_prompt_len:] :
+                if target_tokenizer.eos_token_id in generated_ids[0, target_prompt_len:]  :
                     generated_text = target_tokenizer.decode(generated_ids[0, :], skip_special_tokens=True)
                     #print('target_tokenizer.eos_token_id in the generated_text',target_tokenizer.eos_token_id)
                     break
 
-            if speculative_tokenizer.eos_token_id in generated_ids[0, target_prompt_len:] or 151649 in generated_ids[0, target_prompt_len:] :
+            if speculative_tokenizer.eos_token_id in generated_ids[0, target_prompt_len:]:
                 break
             generated_text = speculative_tokenizer.decode(generated_ids[0, :], skip_special_tokens=True)
             length_of_output = generated_ids.shape[1]
 
 
-        return generated_text, try_correct_num,correct_spe_number,detail,length_of_output
+        return generated_text, try_correct_num,correct_spe_number,detail,length_of_output-original_len
 
 
 
