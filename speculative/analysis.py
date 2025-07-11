@@ -42,6 +42,8 @@ if __name__ == '__main__':
                     count += 1
     print('length_target',length_target/count)
     print('length_spe',length_spe/count)
+    print('try_correct_num_rate',try_correct_num/(correct_spe_number+try_correct_num))
+    print('correct_spe_number_rate', correct_spe_number / (correct_spe_number + try_correct_num))
 
 
 
