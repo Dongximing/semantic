@@ -274,7 +274,7 @@ if __name__ == "__main__":
     parser.add_argument("--start", type=int, help="dataset", default=400)
     parser.add_argument("--end", type=int, help="dataset", default=877)  #
     parser.add_argument("--base_dir", type=str, help="dataset",
-                        default='/home/cs/staff/shaowei/semantic/training_limo_s1/data_s1')
+                        default='/home/cs/staff/shaowei/semantic/training_limo_s1/data_s1_100')
     args = parser.parse_args()
     tokenizer = AutoTokenizer.from_pretrained(
         args.model,
