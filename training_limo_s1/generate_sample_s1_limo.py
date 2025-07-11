@@ -57,13 +57,17 @@ def inference_model():
         segments = collect_stop_segments(answer_token_id[1:], AIME_STOP_TOKENS_ID)
         for seg_ids, stop_token_id, stop_idx in segments:
             stop_token_text = tokenizer.decode([stop_token_id])
-            text = tokenizer.decode(question_token_id[1:].tolist() + seg_ids.tolist())
+            # seg_ids 和 stop_token_id 都有可能是tensor
+            seg_ids_list = seg_ids.tolist() if isinstance(seg_ids, torch.Tensor) else list(seg_ids)
+            stop_token_id_int = stop_token_id.item() if isinstance(stop_token_id, torch.Tensor) else int(stop_token_id)
+            stop_token_idx_int = stop_idx.item() if isinstance(stop_idx, torch.Tensor) else int(stop_idx)
+            text = tokenizer.decode(question_token_id[1:].tolist() + seg_ids_list)
             out_segments.append({
-                "token_ids": ",".join(map(str, seg_ids)),
+                "token_ids": ",".join(map(str, seg_ids_list)),
                 "text": text,
-                "stop_token_id": stop_token_id,
+                "stop_token_id": stop_token_id_int,
                 "stop_token_text": stop_token_text,
-                "stop_token_idx": stop_idx
+                "stop_token_idx": stop_token_idx_int
             })
 
         # 每个样本一个子目录
