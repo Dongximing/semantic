@@ -14,7 +14,7 @@ if __name__ == '__main__':
     length_target = 0
     length_spe = 0
     count = 0
-    tokenizer = AutoTokenizer.from_pretrained('unsloth/DeepSeek-R1-Distill-Qwen-32B-bnb-4bit')
+    tokenizer = AutoTokenizer.from_pretrained('deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B')
     for idx, number in enumerate(tqdm(range(args.start, args.end))):
 
         if args.dataset == 'math-500':
