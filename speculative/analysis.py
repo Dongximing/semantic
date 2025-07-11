@@ -4,8 +4,6 @@ import os
 from tqdm import tqdm
 from transformers import AutoTokenizer
 
-from baseline.eval_length import length
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--start', type=int, default=100)
