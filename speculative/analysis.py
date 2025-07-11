@@ -14,6 +14,8 @@ if __name__ == '__main__':
     length_target = 0
     length_spe = 0
     count = 0
+    try_correct_num = 0
+    correct_spe_number = 0
     tokenizer = AutoTokenizer.from_pretrained('deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B')
     for idx, number in enumerate(tqdm(range(args.start, args.end))):
 
@@ -30,7 +32,8 @@ if __name__ == '__main__':
 
         with open(json_path, "r", encoding="utf-8") as f:
             generations = json.load(f)
-
+            try_correct_num += generations[0]['try_correct_num']
+            correct_spe_number += generations[0]['correct_spe_number']
             detail = generations[0]['detail']
             for d in detail:
                 if  'why_is_not_good' in d:
