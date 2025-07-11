@@ -19,7 +19,7 @@ if __name__ == '__main__':
     #/home/cs/staff/shaowei/semantic
     parser.add_argument('--seed', type=int, default=42)
     args = parser.parse_args()
-    seed_everything(args.seed)
+
 
     number_correct = 0
     number_of_tokens = 0
