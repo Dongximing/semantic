@@ -32,7 +32,7 @@ if __name__ == '__main__':
             generations = json.load(f)
 
             detail = generations[0]['detail']
-            for d in tqdm(detail):
+            for d in detail:
                 if  'why_is_not_good' in d:
                     length_target += tokenizer(d['target_model'], return_tensors="pt")['input_ids'].shape[1]
                     length_spe += tokenizer(d['why_is_not_good'], return_tensors="pt")['input_ids'].shape[1]
