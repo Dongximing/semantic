@@ -7,7 +7,7 @@ import os
 import datetime
 from datasets import load_dataset
 from tqdm import tqdm
-
+import sys
 MATH_PROMPT = "\nPlease reason step by step, and put your final answer within \\boxed{}."
 
 
@@ -36,6 +36,8 @@ def inference_model():
         answer_token_id = tokenizer(dataset['solution'], return_tensors="pt")['input_ids'][0]
         total_id = torch.cat([question_token_id, answer_token_id],dim=-1)
         print("total answer:\n", tokenizer.decode(total_id,remove_special_tokens=True))
+        sys.exit()
+
 
 
 
