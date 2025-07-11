@@ -57,7 +57,7 @@ def inference_model():
         segments = collect_stop_segments(answer_token_id[1:], AIME_STOP_TOKENS_ID)
         for seg_ids, stop_token_id, stop_idx in segments:
             stop_token_text = tokenizer.decode([stop_token_id])
-            text = tokenizer.decode(question_token_id[1:] + seg_ids)
+            text = tokenizer.decode(question_token_id[1:].unsqueeze(0) + seg_ids)
             out_segments.append({
                 "token_ids": ",".join(map(str, seg_ids)),
                 "text": text,
