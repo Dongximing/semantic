@@ -1,6 +1,4 @@
-
 from paser import *
-from utils import *
 import os
 import json
 from tqdm import tqdm
