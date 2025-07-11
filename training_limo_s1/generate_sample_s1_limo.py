@@ -35,7 +35,7 @@ def inference_model():
         question_token_id = tokenizer(formatted_input, return_tensors="pt",split_special_tokens=True)['input_ids'][0]
 
         answer_token_id = tokenizer(dataset['solution'], return_tensors="pt",)['input_ids'][0]
-        total_id = torch.cat([question_token_id[:,1:], answer_token_id[:,1:]],dim=-1)
+        total_id = torch.cat([question_token_id[1:], answer_token_id[1:]],dim=-1)
         print("total answer:\n", tokenizer.decode(total_id,remove_special_tokens=True))
         sys.exit()
 
