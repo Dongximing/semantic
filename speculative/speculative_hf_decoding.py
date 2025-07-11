@@ -14,8 +14,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import copy
 from utils import seed_everything
-BEGIN_TOKEN_NUM = 200
-SPECULATIVE_OUTPUT_LENGTH = 200
+BEGIN_TOKEN_NUM = 500
+SPECULATIVE_OUTPUT_LENGTH = 500
 MATH_PROMPT = "\nPlease reason step by step, and put your final answer within \\boxed{}."
 TARGET_model= 0
 SPEC_model = 1
