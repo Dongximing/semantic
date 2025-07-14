@@ -188,7 +188,7 @@ def main(dataset,method,data_dir,model_name):
         #     continue
         dirname = f'data-60-temp0_{number}'
         dir_path = os.path.join(base_dir, dirname)
-        pkl_path = os.path.join(dir_path, f'valid_new_generations_with_entropy_prob{number}.pkl')
+        pkl_path = os.path.join(dir_path, f'new_generations_with_entropy_prob{number}.pkl')
         if not os.path.exists(pkl_path):
             print(f"File {pkl_path} does not exist!")
             continue
