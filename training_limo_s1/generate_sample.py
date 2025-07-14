@@ -244,7 +244,7 @@ def process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_genera
 
 # wail /home/cs/staff/shaowei/hf/math-result_left
 # quail /data/ximing/math-result_left
-def inference_model_pickle(task_name: str, model, tokenizer, base_dir,
+def inference_model_pickle( model, tokenizer, base_dir,
                            start=31, end=50, num_generations=20):
     for number in tqdm(range(start, end)):
 
@@ -288,6 +288,6 @@ if __name__ == "__main__":
     # /home/cs/staff/shaowei/semantic/aime
     # /data/ximing/aime
     # /home/cs/staff/shaowei/semantic/deepseek-32b_r1_awq_math
-    inference_model_pickle(task_name=args.task, model=model, base_dir=args.base_dir, tokenizer=tokenizer,
+    inference_model_pickle( model=model, base_dir=args.base_dir, tokenizer=tokenizer,
                            start=args.start, end=args.end)
     print("done")
