@@ -332,16 +332,16 @@ def process_file_to_pickle(json_path, out_pkl_path):
 
 
 def inference_model_pickle(task_name: str = None, model=None, tokenizer=None,
-                          base_dir='/home/cs/staff/shaowei/semantic/new_deepseek-1.5b_r1_awq_math',
-                          start=0, end=100, num_generations=20):
+                          base_dir='/home/cs/staff/shaowei/semantic/training_limo_s1/data_s1_100',
+                          start=0, end=877, num_generations=20):
 
 
     for number in tqdm(range(start, end)):
         dirname = f'data-500-temp0_{number}'
         dir_path = os.path.join(base_dir, dirname)
-        json_path = os.path.join(dir_path, f'new_generations_with_entropy{number}.pkl')
+        json_path = os.path.join(dir_path, f'new_generations{number}.pkl')
 
-        out_pkl_path = os.path.join(dir_path, f'new_generations_with_entropy_prob{number}.pkl')
+        out_pkl_path = os.path.join(dir_path, f'new_generations_with_entropy{number}.pkl')
         if not os.path.exists(json_path):
             logger.warning(f"{json_path} does not exist, skipping.")
             continue
