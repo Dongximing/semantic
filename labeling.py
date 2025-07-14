@@ -337,8 +337,10 @@ def inference_model_pickle(task_name: str = None, model=None, tokenizer=None,
                           base_dir='/home/cs/staff/shaowei/semantic/new_deepseek-1.5b_r1_awq_aime',
                           start=0, end=60, num_generations=20):
 
-
+    wrong = [0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19, 20, 21, 22, 24, 25, 26, 28, 29, 30, 31, 32, 33, 34, 35, 36, 39, 40, 41, 42, 43, 44, 46, 47, 48, 49, 50, 51, 52, 53, 56, 57, 58, 59]
     for number in tqdm(range(start, end)):
+        if number in wrong:
+            continue
         dirname = f'data-60-temp0_{number}'
         dir_path = os.path.join(base_dir, dirname)
         json_path = os.path.join(dir_path, f'new_generations_{number}.pkl')
