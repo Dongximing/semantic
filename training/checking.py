@@ -36,9 +36,9 @@ if __name__ == '__main__':
         if args.dataset == 'math-500':
             dirname = f'data-500-temp0_{number}'
         elif args.dataset == 'aime':
-            dirname = f'data-500-temp0_{number}'
+            dirname = f'data-60-temp0_{number}'
         dir_path = os.path.join(args.eval_path, dirname)
-        json_path = os.path.join(dir_path, f"data-500_{number}.json")
+        json_path = os.path.join(dir_path, f"data-60_{number}.json")
         if not os.path.exists(json_path):
             print(f"[Warning] {json_path} does not exist, skipping...")
             continue
