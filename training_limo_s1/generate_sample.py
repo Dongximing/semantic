@@ -18,7 +18,7 @@ AIME_STOP_TOKENS = [
     ' \n\n', '.\n\n', ':\n\n', '\n\n',
     ')\n\n', '?\n\n', ']\n\n', ').\n\n',
 ]
-NUMBER = 0
+NUMBER = 1
 
 
 def predict(tokenizer, model, input_data, temperature, return_full=False, return_latent=False):
@@ -269,7 +269,6 @@ def inference_model_pickle(task_name: str, model, tokenizer, base_dir,
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", type=str, default="unsloth/DeepSeek-R1-Distill-Qwen-32B-bnb-4bit")
-    parser.add_argument("--task", type=str, default="aime")
     parser.add_argument("--gpu", type=int, default=0)
     parser.add_argument("--start", type=int, help="dataset", default=0)
     parser.add_argument("--end", type=int, help="dataset", default=400)  #
