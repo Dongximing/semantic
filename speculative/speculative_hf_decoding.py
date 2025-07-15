@@ -32,16 +32,21 @@ class SemanticEntropyProbTarget(nn.Module):
         out = torch.sigmoid(self.fc2(h))
         return out.squeeze(-1)
 
+
 class SemanticEntropyProbSpec(nn.Module):
-    def __init__(self, input_dim, hidden_dim):
+    def __init__(self, input_dim, hidden_dim=512, dropout=0.3):
         super().__init__()
         self.fc1 = nn.Linear(input_dim, hidden_dim)
-        self.fc2 = nn.Linear(hidden_dim, 1)
+        self.fc2 = nn.Linear(hidden_dim, 256)
+        self.dropout = nn.Dropout(dropout)
+        self.fc3 = nn.Linear(256, 1)
+
     def forward(self, x):
         h = F.relu(self.fc1(x))
-        out = torch.sigmoid(self.fc2(h))
+        h = F.relu(self.fc2(h))
+        h = self.dropout(h)
+        out = torch.sigmoid(self.fc3(h))
         return out.squeeze(-1)
-
 
 class StoppingCriteriaSub(StoppingCriteria):
     def __init__(self, stops, tokenizer, initial_length=None):
@@ -379,6 +384,7 @@ if __name__ == "__main__":
     model_target_probe = SemanticEntropyProbTarget(5120, 256)
     model_target_probe.load_state_dict(torch.load(f'{args.target_probe}.pt'))
     model_target_probe = model_target_probe.to('cuda:1')
+    model_target_probe.eval()
     #wrong_list = [ 240, 248, 251,  282, 286, 295, 296, 299, 301, 306, 308, 309, 317, 327, 338, 341, 349,  352, 355, 369, 381, 392, 400, 403, 416, 422, 425, 432, 444, 460, 464, 469, 470, 473, 478, 481, 483, 485, 490, 493]
     #123
     #wrong_list = [100, 101, 109, 110, 119, 120,  137, 138, 145, 154, 164, 165, 166, 168, 176,  189, 197,  204,  219, 221, 228,  239, 240, 242, 246, 248, 264, 279,  286, 288, 302, 306, 308, 309, 317, 324, 332, 340, 349,  352, 359, 365, 369, 372, 380, 381, 382,  385, 392, 400, 403, 419, 421, 422, 425,444, 448, 456, 460, 466, 475, 478, 481,486, 490, 494, 497]
@@ -387,7 +393,7 @@ if __name__ == "__main__":
     model_spec_probe = SemanticEntropyProbSpec(1536, 256)
     model_spec_probe.load_state_dict(torch.load(f'{args.speculative_probe}.pt'))
     model_spec_probe = model_spec_probe.to('cuda:1')
-
+    model_spec_probe.eval()
 
     target_model = transformers.AutoModelForCausalLM.from_pretrained(
         args.target_model,
