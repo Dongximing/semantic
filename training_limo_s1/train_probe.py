@@ -28,9 +28,9 @@ class SemanticEntropyModel(nn.Module):
     def __init__(self, input_dim, hidden_dim=512, dropout=0.3):
         super().__init__()
         self.fc1 = nn.Linear(input_dim, hidden_dim)
-        self.fc2 = nn.Linear(hidden_dim, hidden_dim)
+        self.fc2 = nn.Linear(hidden_dim, 256)
         self.dropout = nn.Dropout(dropout)
-        self.fc3 = nn.Linear(hidden_dim, 1)
+        self.fc3 = nn.Linear(256, 1)
 
     def forward(self, x):
         h = F.relu(self.fc1(x))
@@ -214,8 +214,8 @@ def main(dataset,method,data_dir,model_name):
     HIDDEN_DIM = 512
     model = SemanticEntropyModel(INPUT_DIM, HIDDEN_DIM)
     history = train_probe_regression(
-        model, train_loader, val_loader, epochs=50, lr=1e-3,
-        device='cuda', early_stop_rounds=7, save_pred_path=f's1_valid_new_{model_name}_{dataset}_{method}_val_pred_results.npz',method=method,dataset_name = dataset,
+        model, train_loader, val_loader, epochs=100, lr=1e-3,
+        device='cuda', early_stop_rounds=10, save_pred_path=f's1_valid_new_{model_name}_{dataset}_{method}_val_pred_results.npz',method=method,dataset_name = dataset,
         model_name = model_name
     )
 
