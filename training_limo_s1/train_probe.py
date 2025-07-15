@@ -80,8 +80,8 @@ def getting_training_examples(pkl_path,method):
 
 
 def train_probe_regression(
-    model, train_loader, val_loader, epochs=50, lr=1e-3,
-    device='cuda', early_stop_rounds=5, save_pred_path=None,method="", dataset_name = "",model_name =""
+    model, train_loader, val_loader, epochs=100, lr=1e-3,
+    device='cuda', early_stop_rounds=10, save_pred_path=None,method="", dataset_name = "",model_name =""
 ):
     model.to(device)
     loss_fn = nn.MSELoss()
@@ -205,7 +205,7 @@ def main(dataset,method,data_dir,model_name):
     train_set = ProbeDataset(X_train, y_train)
     val_set = ProbeDataset(X_val, y_val)
     test_set = ProbeDataset(X_test, y_test)
-    train_loader = DataLoader(train_set, batch_size=128, shuffle=True)
+    train_loader = DataLoader(train_set, batch_size=64, shuffle=True)
     val_loader = DataLoader(val_set, batch_size=256)
     test_loader = DataLoader(test_set, batch_size=256)
 
