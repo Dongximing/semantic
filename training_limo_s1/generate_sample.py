@@ -18,12 +18,12 @@ AIME_STOP_TOKENS = [
     ' \n\n', '.\n\n', ':\n\n', '\n\n',
     ')\n\n', '?\n\n', ']\n\n', ').\n\n',
 ]
-NUMBER = 1
 
 
-def predict(tokenizer, model, input_data, temperature, return_full=False, return_latent=False):
+
+def predict(tokenizer, model, input_data, temperature, return_full=False, return_latent=False,gpu=0):
     max_new_tokens = 500
-    inputs = tokenizer(input_data, return_tensors="pt").to(f"cuda:{NUMBER}")
+    inputs = tokenizer(input_data, return_tensors="pt").to(f"cuda:{gpu}")
     initial_length = len(inputs['input_ids'][0])
     STOP = None
     stopping_criteria = None
@@ -116,7 +116,7 @@ def predict(tokenizer, model, input_data, temperature, return_full=False, return
     return (real_answer, answer, log_likelihoods, probs, ppl, triggered_stop, hidden_states)
 
 
-def process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_generations):
+def process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_generations,gpu):
     with open(json_path, 'r', encoding='utf-8') as f:
         alldata = json.load(f)
     all_generations = []
@@ -141,13 +141,13 @@ def process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_genera
                         real_answer, predicted_answer, log_likelihoods, probs, ppl, triggered_stop,
                         (last_hidden_state, sec_last_hidden_state, last_input_token_state,
                          embedding, emb_last_before_gen, emb_before_eos, output_last_hidden_list)
-                    ) = predict(tokenizer, model, input_text, temperature=0.1, return_full=False, return_latent=True)
+                    ) = predict(tokenizer, model, input_text, temperature=0.1, return_full=False, return_latent=True,gpu=gpu)
                 else:
                     (
                         real_answer, predicted_answer, log_likelihoods, probs, ppl, triggered_stop,
                         (last_hidden_state, sec_last_hidden_state, last_input_token_state,
                          embedding, emb_last_before_gen, emb_before_eos, output_last_hidden_list)
-                    ) = predict(tokenizer, model, input_text, temperature=0.6, return_full=False, return_latent=True)
+                    ) = predict(tokenizer, model, input_text, temperature=0.6, return_full=False, return_latent=True,gpu=gpu)
 
                 log_entry.update({
                     "status": "success",
@@ -245,7 +245,7 @@ def process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_genera
 # wail /home/cs/staff/shaowei/hf/math-result_left
 # quail /data/ximing/math-result_left
 def inference_model_pickle( model, tokenizer, base_dir,
-                           start=31, end=50, num_generations=20):
+                           start=31, end=50, num_generations=20,gpu=0):
     for number in tqdm(range(start, end)):
 
         dirname = f'data-877_{number}'
@@ -261,7 +261,7 @@ def inference_model_pickle( model, tokenizer, base_dir,
             continue
 
         print(f"[Info] Processing file: {json_path}")
-        process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_generations)
+        process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_generations,gpu)
 
     print("[Info] Processing completed.")
 
@@ -289,5 +289,5 @@ if __name__ == "__main__":
     # /data/ximing/aime
     # /home/cs/staff/shaowei/semantic/deepseek-32b_r1_awq_math
     inference_model_pickle( model=model, base_dir=args.base_dir, tokenizer=tokenizer,
-                           start=args.start, end=args.end)
+                           start=args.start, end=args.end,gpu=args.gpu)
     print("done")
