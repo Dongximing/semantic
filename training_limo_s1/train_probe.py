@@ -211,7 +211,7 @@ def main(dataset,method,data_dir,model_name):
 
     # 模型与训练
     INPUT_DIM = X_train.shape[1]
-    HIDDEN_DIM = 256
+    HIDDEN_DIM = 512
     model = SemanticEntropyModel(INPUT_DIM, HIDDEN_DIM)
     history = train_probe_regression(
         model, train_loader, val_loader, epochs=50, lr=1e-3,
