@@ -285,9 +285,9 @@ def process_file_to_pickle(json_path, out_pkl_path):
 
             if valid_answers:
 
-                cluster_ids_openai = get_semantic_ids(strings_list=valid_answers, model=model,tokenizer=tokenizer,
-                                               prefix=group[0]['most_input_text'],method='openai')
-                print('cluster_ids_openai',cluster_ids_openai)
+                # cluster_ids_openai = get_semantic_ids(strings_list=valid_answers, model=model,tokenizer=tokenizer,
+                #                                prefix=group[0]['most_input_text'],method='openai')
+                # print('cluster_ids_openai',cluster_ids_openai)
                 cluster_ids = get_semantic_ids(strings_list=valid_answers, model=model, tokenizer=tokenizer,
                                                prefix=group[0]['most_input_text'], method='deberta')
                 print('cluster_ids',cluster_ids)

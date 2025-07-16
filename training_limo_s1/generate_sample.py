@@ -269,8 +269,8 @@ def inference_model_pickle( model, tokenizer, base_dir,
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", type=str, default="unsloth/DeepSeek-R1-Distill-Qwen-32B-bnb-4bit")
-    parser.add_argument("--gpu", type=int, default=0)
-    parser.add_argument("--start", type=int, help="dataset", default=400)
+    parser.add_argument("--gpu", type=int, default=1)
+    parser.add_argument("--start", type=int, help="dataset", default=700)
     parser.add_argument("--end", type=int, help="dataset", default=877)  #
     parser.add_argument("--base_dir", type=str, help="dataset",
                         default='/data/semantic/training_limo_s1/data_s1_100_big')
