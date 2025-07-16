@@ -61,9 +61,9 @@ def equivalence_prompt(text1, text2, prefix):
     prompt  = "Here are two possible generation:\n"
     prompt += f"Possible Generation 1: {text1}\nPossible Generation 2: {text2}\n"
     prompt += "Does Possible Generation 1 semantically entail Possible Generation 2? Only respond with entailment, contradiction, or neutral."""
-    print('\n\n\n\n')
-    print(prompt)
-    print('\n\n\n\n')
+    # print('\n\n\n\n')
+    # print(prompt)
+    # print('\n\n\n\n')
     return prompt
 def get_deberta_output(text1,text2,model,tokenizer):
     inputs = tokenizer(text1, text2, return_tensors="pt").to("cuda:0")
@@ -91,7 +91,7 @@ def get_openai_output(text1,text2,prefix):
         temperature=0.1,
     )
     response = output.choices[0].message.content
-    print("response",response)
+    # print("response",response)
     binary_response = response.lower()
     if 'entailment' in binary_response:
         return 2
