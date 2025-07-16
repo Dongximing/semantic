@@ -329,8 +329,8 @@ def process_file_to_pickle(json_path, out_pkl_path):
 
             all_generations.extend(group)
 
-        with open(out_pkl_path, "wb") as f:
-            pickle.dump(all_generations, f)
+        # with open(out_pkl_path, "wb") as f:
+        #     pickle.dump(all_generations, f)
 
 
 
@@ -355,6 +355,7 @@ def inference_model_pickle(task_name: str = None, model=None, tokenizer=None,
         # if os.path.exists(out_pkl_path):
         #     logger.warning(f"{out_pkl_path} already exists, skipping.")
         #     continue
+        out_pkl_path = None
         process_file_to_pickle(json_path, out_pkl_path)
 
 if __name__ == "__main__":
