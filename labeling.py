@@ -283,8 +283,12 @@ def process_file_to_pickle(json_path, out_pkl_path):
 
             if valid_answers:
 
-                cluster_ids = get_semantic_ids(strings_list=valid_answers, model=model,tokenizer=tokenizer,
-                                               prefix=group[0]['most_input_text'],method='deberta')
+                cluster_ids_openai = get_semantic_ids(strings_list=valid_answers, model=model,tokenizer=tokenizer,
+                                               prefix=group[0]['most_input_text'],method='openai')
+                print('cluster_ids_openai',cluster_ids_openai)
+                cluster_ids = get_semantic_ids(strings_list=valid_answers, model=model, tokenizer=tokenizer,
+                                               prefix=group[0]['most_input_text'], method='deberta')
+                print('cluster_ids',cluster_ids)
             else:
                 cluster_ids = []
 
@@ -297,8 +301,8 @@ def process_file_to_pickle(json_path, out_pkl_path):
                     cluster_gpt.append(cluster_ids[cid])
                     cid += 1
             if len(valid_answers)>0:
-                print('label',cluster_assignment_entropy([c for c in cluster_gpt if c is not None]))
-                #group[0]['cluster_assignment_entropy_deberta'] = cluster_assignment_entropy([c for c in cluster_gpt if c is not None])
+                #print('label',cluster_assignment_entropy([c for c in cluster_gpt if c is not None]))
+                group[0]['cluster_assignment_entropy_deberta'] = cluster_assignment_entropy([c for c in cluster_gpt if c is not None])
             else:
                 group[0]['cluster_assignment_entropy_deberta'] = None
 
