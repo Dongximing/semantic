@@ -390,6 +390,15 @@ if __name__ == "__main__":
     #wrong_list = [100, 101, 109, 110, 119, 120,  137, 138, 145, 154, 164, 165, 166, 168, 176,  189, 197,  204,  219, 221, 228,  239, 240, 242, 246, 248, 264, 279,  286, 288, 302, 306, 308, 309, 317, 324, 332, 340, 349,  352, 359, 365, 369, 372, 380, 381, 382,  385, 392, 400, 403, 419, 421, 422, 425,444, 448, 456, 460, 466, 475, 478, 481,486, 490, 494, 497]
     # 42
     #wrong_list =  [100, 101, 103, 104, 105, 110, 119, 120, 128, 138, 145, 154, 164, 168, 176, 196, 204, 209, 217, 219, 238, 239, 240, 242, 248, 264, 282, 285, 286, 292, 295, 296, 301, 303, 308, 309, 324, 340,  352, 358, 369, 381, 392, 400, 401, 405, 409, 421, 422, 425, 432, 439, 444, 460, 466, 478, 481, 485, 489, 491, 494]
+    if args.seed  == 181:
+        wrong_list = [4, 5, 7, 8, 17, 18, 22]
+    elif args.seed == 1981:
+        wrong_list = [4, 12, 14, 15, 17, 18, 23, 26]
+    elif args.seed == 2981:
+        wrong_list = [4, 5, 12, 14, 15, 23, 26]
+    elif args.seed == 2981:
+        wrong_list = [5, 6, 15, 17, 18, 22, 23]
+
     model_spec_probe = SemanticEntropyProbSpec(1536, 512)
     model_spec_probe.load_state_dict(torch.load(f'{args.speculative_probe}.pt'))
     model_spec_probe = model_spec_probe.to('cuda:1')
@@ -430,20 +439,20 @@ if __name__ == "__main__":
 
     ds = ds.select(range(args.start_dataset, args.end_dataset))
     problems_and_answers = [{"problem": item["problem"], "answer": item["answer"]} for item in ds]
-    # for idx, number in enumerate(tqdm(wrong_list, total=len(wrong_list))):
-    #
-    #     print("doing wrong number:", number)
-    #     dirname = f'spec_{args.dataset}_{number}'
-    #     dir_path = os.path.join(f"{args.data_dir}{args.seed}", dirname)
-    #     number = number - 100
-    #     problem = problems_and_answers[number]['problem']
-    #     print(f"{number}: {problem}")
-    #     answer = problems_and_answers[number]['answer']
-    #     process_file_to_json(dir_path, target_model, target_tokenizer,speculative_model, speculative_tokenizer, problem,answer,args.target_temperature,args.speculative_temperature,args.max_new_tokens,model_target_probe,model_spec_probe)
+    for idx, number in enumerate(tqdm(wrong_list, total=len(wrong_list))):
 
-    for idx, number in enumerate(tqdm(range(args.start_dataset, args.end_dataset))):
+        print("doing wrong number:", number)
         dirname = f'spec_{args.dataset}_{number}'
         dir_path = os.path.join(f"{args.data_dir}{args.seed}", dirname)
-        problem = problems_and_answers[idx]['problem']
-        answer = problems_and_answers[idx]['answer']
+        number = number
+        problem = problems_and_answers[number]['problem']
+        print(f"{number}: {problem}")
+        answer = problems_and_answers[number]['answer']
         process_file_to_json(dir_path, target_model, target_tokenizer,speculative_model, speculative_tokenizer, problem,answer,args.target_temperature,args.speculative_temperature,args.max_new_tokens,model_target_probe,model_spec_probe)
+
+    # for idx, number in enumerate(tqdm(range(args.start_dataset, args.end_dataset))):
+    #     dirname = f'spec_{args.dataset}_{number}'
+    #     dir_path = os.path.join(f"{args.data_dir}{args.seed}", dirname)
+    #     problem = problems_and_answers[idx]['problem']
+    #     answer = problems_and_answers[idx]['answer']
+    #     process_file_to_json(dir_path, target_model, target_tokenizer,speculative_model, speculative_tokenizer, problem,answer,args.target_temperature,args.speculative_temperature,args.max_new_tokens,model_target_probe,model_spec_probe)
