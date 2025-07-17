@@ -18,5 +18,5 @@ echo "Process $TARGET_PID has ended. Running your script..."
 
 
 
-python speculative_hf_decoding.py --seed 198  --dataset aime --start_dataset 10 --end_dataset 30
-python speculative_hf_decoding.py --seed 398  --dataset aime --start_dataset 0 --end_dataset 30
+python speculative_hf_decoding.py --seed 18  --dataset aime --start_dataset 0 --end_dataset 30
+python speculative_hf_decoding.py --seed 30  --dataset aime --start_dataset 0 --end_dataset 30
