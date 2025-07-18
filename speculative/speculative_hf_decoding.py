@@ -277,7 +277,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
 
                 prob_target = prob_target.item()
                 prob_spec = prob_spec.item()
-                print(f"prob_target.item() {prob_target} , prob_spec.item() {prob_spec}")
+                #print(f"prob_target.item() {prob_target} , prob_spec.item() {prob_spec}")
                 if speculative_accept(prob_target, prob_spec):
                     detail.append({'spe_model':speculative_real_output})
                     correct_spe_number +=1
