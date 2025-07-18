@@ -415,7 +415,7 @@ if __name__ == "__main__":
     # elif args.seed == 2981:
     #     wrong_list = [5, 6, 15, 17, 18, 22, 23]
 
-    model_spec_probe = SemanticEntropyProbSpec(1536, 512)
+    model_spec_probe = SemanticEntropyProbSpec(1536, 256)
     model_spec_probe.load_state_dict(torch.load(f'{args.speculative_probe}.pt'))
     model_spec_probe = model_spec_probe.to('cuda:1')
     model_spec_probe.eval()
