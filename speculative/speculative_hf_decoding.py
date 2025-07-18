@@ -20,8 +20,15 @@ SPEC_model = 1
 TARGET_probe = 2
 SPEC_probe = 3
 
-def speculative_accept(target_pro, spec_probe):
-    ratio = target_pro / spec_probe if spec_probe > 0 else 0
+def speculative_accept(qi, pi, threshold_min=0.7):
+    """
+    qi: float, target model (Mq) 的概率
+    pi: float, draft model (Mp) 的概率
+    threshold_min: float, qi/pi 的最小接受阈值（比如0.7）
+    """
+    ratio = qi / pi if pi > 0 else 0
+    if ratio < threshold_min:
+        return False   # ratio 太低，直接 reject
     threshold = min(1.0, ratio)
     r = random.uniform(0, 1)
     return r < threshold
@@ -48,20 +55,20 @@ class SemanticEntropyProbSpec(nn.Module):
         return out.squeeze(-1)
 
 
-# class SemanticEntropyProbSpec(nn.Module):
-#     def __init__(self, input_dim, hidden_dim=512, dropout=0.3):
-#         super().__init__()
-#         self.fc1 = nn.Linear(input_dim, hidden_dim)
-#         self.fc2 = nn.Linear(hidden_dim, 256)
-#         self.dropout = nn.Dropout(dropout)
-#         self.fc3 = nn.Linear(256, 1)
-#
-#     def forward(self, x):
-#         h = F.relu(self.fc1(x))
-#         h = F.relu(self.fc2(h))
-#         h = self.dropout(h)
-#         out = torch.sigmoid(self.fc3(h))
-#         return out.squeeze(-1)
+class SemanticEntropyProbSpec(nn.Module):
+    def __init__(self, input_dim, hidden_dim=512, dropout=0.3):
+        super().__init__()
+        self.fc1 = nn.Linear(input_dim, hidden_dim)
+        self.fc2 = nn.Linear(hidden_dim, 256)
+        self.dropout = nn.Dropout(dropout)
+        self.fc3 = nn.Linear(256, 1)
+
+    def forward(self, x):
+        h = F.relu(self.fc1(x))
+        h = F.relu(self.fc2(h))
+        h = self.dropout(h)
+        out = torch.sigmoid(self.fc3(h))
+        return out.squeeze(-1)
 
 class StoppingCriteriaSub(StoppingCriteria):
     def __init__(self, stops, tokenizer, initial_length=None):
@@ -388,7 +395,7 @@ if __name__ == "__main__":
     parser.add_argument("--start_dataset", type=int, help="the beginning of the dataset",default=0)
     parser.add_argument("--end_dataset", type=int, help="the end of the dataset",default=30)
     parser.add_argument("--target_probe", type=str, help="target_probe",default="/data/semantic/training/valid_deepseek32b_aime_output_last_hidden_list_best_probe_mse")#aime_output_last_hidden_list_best_probe_mse
-    parser.add_argument("--speculative_probe", type=str, help="speculative_probe",default="/home/shaowei/new_probe/valid_new_deepseekr11.5b_aime_output_last_hidden_list_best_probe_mse")
+    parser.add_argument("--speculative_probe", type=str, help="speculative_probe",default="/home/shaowei/new_probe/s1_valid_new_deepseekr11.5b_s1_output_last_hidden_list_best_probe_mse")
     parser.add_argument("--target_temperature", type=float, help="target_temperature",default=0.1)
     parser.add_argument("--speculative_temperature", type=float, help="speculative_temperature",default=0.6)
     parser.add_argument("--max_new_tokens", type=int, help="max_new_tokens",default=14000)
@@ -397,7 +404,7 @@ if __name__ == "__main__":
     parser.add_argument("--seed", type=int, help="seed", default=298)
     args = parser.parse_args()
     seed_everything(args.seed)
-    model_target_probe = SemanticEntropyProbTarget(5120, 256)
+    model_target_probe = SemanticEntropyProbTarget(5120, 512)
     model_target_probe.load_state_dict(torch.load(f'{args.target_probe}.pt'))
     model_target_probe = model_target_probe.to('cuda:1')
     model_target_probe.eval()
