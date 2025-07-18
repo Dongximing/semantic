@@ -37,21 +37,31 @@ class SemanticEntropyProbTarget(nn.Module):
         out = torch.sigmoid(self.fc2(h))
         return out.squeeze(-1)
 
-
 class SemanticEntropyProbSpec(nn.Module):
-    def __init__(self, input_dim, hidden_dim=512, dropout=0.3):
+    def __init__(self, input_dim, hidden_dim):
         super().__init__()
         self.fc1 = nn.Linear(input_dim, hidden_dim)
-        self.fc2 = nn.Linear(hidden_dim, 256)
-        self.dropout = nn.Dropout(dropout)
-        self.fc3 = nn.Linear(256, 1)
-
+        self.fc2 = nn.Linear(hidden_dim, 1)
     def forward(self, x):
         h = F.relu(self.fc1(x))
-        h = F.relu(self.fc2(h))
-        h = self.dropout(h)
-        out = torch.sigmoid(self.fc3(h))
+        out = torch.sigmoid(self.fc2(h))
         return out.squeeze(-1)
+
+
+# class SemanticEntropyProbSpec(nn.Module):
+#     def __init__(self, input_dim, hidden_dim=512, dropout=0.3):
+#         super().__init__()
+#         self.fc1 = nn.Linear(input_dim, hidden_dim)
+#         self.fc2 = nn.Linear(hidden_dim, 256)
+#         self.dropout = nn.Dropout(dropout)
+#         self.fc3 = nn.Linear(256, 1)
+#
+#     def forward(self, x):
+#         h = F.relu(self.fc1(x))
+#         h = F.relu(self.fc2(h))
+#         h = self.dropout(h)
+#         out = torch.sigmoid(self.fc3(h))
+#         return out.squeeze(-1)
 
 class StoppingCriteriaSub(StoppingCriteria):
     def __init__(self, stops, tokenizer, initial_length=None):
