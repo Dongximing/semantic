@@ -44,15 +44,15 @@ class SemanticEntropyProbTarget(nn.Module):
         out = torch.sigmoid(self.fc2(h))
         return out.squeeze(-1)
 
-class SemanticEntropyProbSpec(nn.Module):
-    def __init__(self, input_dim, hidden_dim):
-        super().__init__()
-        self.fc1 = nn.Linear(input_dim, hidden_dim)
-        self.fc2 = nn.Linear(hidden_dim, 1)
-    def forward(self, x):
-        h = F.relu(self.fc1(x))
-        out = torch.sigmoid(self.fc2(h))
-        return out.squeeze(-1)
+# class SemanticEntropyProbSpec(nn.Module):
+#     def __init__(self, input_dim, hidden_dim):
+#         super().__init__()
+#         self.fc1 = nn.Linear(input_dim, hidden_dim)
+#         self.fc2 = nn.Linear(hidden_dim, 1)
+#     def forward(self, x):
+#         h = F.relu(self.fc1(x))
+#         out = torch.sigmoid(self.fc2(h))
+#         return out.squeeze(-1)
 
 
 class SemanticEntropyProbSpec(nn.Module):
@@ -404,7 +404,7 @@ if __name__ == "__main__":
     parser.add_argument("--seed", type=int, help="seed", default=298)
     args = parser.parse_args()
     seed_everything(args.seed)
-    model_target_probe = SemanticEntropyProbTarget(5120, 512)
+    model_target_probe = SemanticEntropyProbTarget(5120, 256)
     model_target_probe.load_state_dict(torch.load(f'{args.target_probe}.pt'))
     model_target_probe = model_target_probe.to('cuda:1')
     model_target_probe.eval()
@@ -422,7 +422,7 @@ if __name__ == "__main__":
     # elif args.seed == 2981:
     #     wrong_list = [5, 6, 15, 17, 18, 22, 23]
 
-    model_spec_probe = SemanticEntropyProbSpec(1536, 256)
+    model_spec_probe = SemanticEntropyProbSpec(1536, 512)
     model_spec_probe.load_state_dict(torch.load(f'{args.speculative_probe}.pt'))
     model_spec_probe = model_spec_probe.to('cuda:1')
     model_spec_probe.eval()
