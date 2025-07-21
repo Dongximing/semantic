@@ -124,6 +124,8 @@ if __name__ == "__main__":
     )
     if args.model =="deepseek-ai/DeepSeek-R1-Distill-Qwen-32B":
       model_name = "DeepSeek-R1-Distill-Qwen-32B"
+    if args.model =="unsloth/DeepSeek-R1-Distill-Qwen-32B-bnb-4bit":
+      model_name = "DeepSeek-R1-Distill-Qwen-32B-bnb-4bit"
     elif args.model == "Qwen/QwQ-32B-AWQ":
       model_name ="QwQ-32B-AWQ"
     elif args.model == "Qwen/QwQ-32B":
@@ -132,7 +134,7 @@ if __name__ == "__main__":
         model_name ="DeepSeek-R1-Distill-Qwen-1.5B"
     elif args.model == "unsloth/DeepSeek-R1-Distill-Qwen-1.5B-unsloth-bnb-4bit":
         model_name ="DeepSeek-R1-Distill-Qwen-1.5B-unsloth-bnb-4bit"
-    wrong_list = [21, 25, 27, 28, 29]
+    wrong_list = [29]
     base_dir = f'test_{model_name}_{args.dataset}_seed{args.seed}/'
     for idx, number in enumerate(tqdm(wrong_list, total=len(wrong_list))):
 
