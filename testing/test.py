@@ -134,7 +134,7 @@ if __name__ == "__main__":
         model_name ="DeepSeek-R1-Distill-Qwen-1.5B"
     elif args.model == "unsloth/DeepSeek-R1-Distill-Qwen-1.5B-unsloth-bnb-4bit":
         model_name ="DeepSeek-R1-Distill-Qwen-1.5B-unsloth-bnb-4bit"
-    wrong_list = [29]
+    wrong_list = [0]
     base_dir = f'test_{model_name}_{args.dataset}_seed{args.seed}/'
     for idx, number in enumerate(tqdm(wrong_list, total=len(wrong_list))):
 
