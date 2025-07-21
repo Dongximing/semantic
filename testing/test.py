@@ -120,7 +120,7 @@ if __name__ == "__main__":
     model = AutoModelForCausalLM.from_pretrained(
         pretrained_model_name_or_path=args.model,
         torch_dtype=torch.float16,
-        device_map="auto"
+        device_map="cuda:0"
     )
     if args.model =="deepseek-ai/DeepSeek-R1-Distill-Qwen-32B":
       model_name = "DeepSeek-R1-Distill-Qwen-32B"
