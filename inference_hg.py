@@ -15,7 +15,7 @@ def inference_model(task_name: str, model, tokenizer):
         prompts = df['problem'][0:100].tolist()
         answers = df['answer'][0:100].tolist()
         start_number = 0
-        result_base_dir = "./new_deepseek-1.5b_r1_awq_math"
+        result_base_dir = "./qwq32b_math"
     elif task_name == 'aime':
         dataset = load_dataset("AI-MO/aimo-validation-aime")
         dataset = dataset['train']
@@ -23,7 +23,7 @@ def inference_model(task_name: str, model, tokenizer):
         prompts = new_dataset['problem'][:]
         answers = new_dataset['answer'][:]
         start_number = 0
-        result_base_dir = "./new_deepseek-1.5b_r1_awq_aime"
+        result_base_dir = "./qwq32b_aime"
 
     for index, prompt in tqdm(enumerate(prompts), total=len(prompts)):
 
@@ -112,7 +112,7 @@ def main():
     parser.add_argument(
         "--main-model-path",
         type=str,
-        default="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
+        default="Qwen/QwQ-32B-AWQ",
     )
     parser.add_argument(
         "--task",
@@ -123,7 +123,7 @@ def main():
     model = AutoModelForCausalLM.from_pretrained(
         args.main_model_path,
         torch_dtype=torch.float16,
-        device_map="cuda:0",
+        device_map="auto",
 
     )
     tokenizer = AutoTokenizer.from_pretrained(args.main_model_path)
