@@ -44,31 +44,31 @@ class SemanticEntropyProbTarget(nn.Module):
         out = torch.sigmoid(self.fc2(h))
         return out.squeeze(-1)
 
-# class SemanticEntropyProbSpec(nn.Module):
-#     def __init__(self, input_dim, hidden_dim):
-#         super().__init__()
-#         self.fc1 = nn.Linear(input_dim, hidden_dim)
-#         self.fc2 = nn.Linear(hidden_dim, 1)
-#     def forward(self, x):
-#         h = F.relu(self.fc1(x))
-#         out = torch.sigmoid(self.fc2(h))
-#         return out.squeeze(-1)
-
-
 class SemanticEntropyProbSpec(nn.Module):
-    def __init__(self, input_dim, hidden_dim=512, dropout=0.3):
+    def __init__(self, input_dim, hidden_dim):
         super().__init__()
         self.fc1 = nn.Linear(input_dim, hidden_dim)
-        self.fc2 = nn.Linear(hidden_dim, 256)
-        self.dropout = nn.Dropout(dropout)
-        self.fc3 = nn.Linear(256, 1)
-
+        self.fc2 = nn.Linear(hidden_dim, 1)
     def forward(self, x):
         h = F.relu(self.fc1(x))
-        h = F.relu(self.fc2(h))
-        h = self.dropout(h)
-        out = torch.sigmoid(self.fc3(h))
+        out = torch.sigmoid(self.fc2(h))
         return out.squeeze(-1)
+
+
+# class SemanticEntropyProbSpec(nn.Module):
+#     def __init__(self, input_dim, hidden_dim=512, dropout=0.3):
+#         super().__init__()
+#         self.fc1 = nn.Linear(input_dim, hidden_dim)
+#         self.fc2 = nn.Linear(hidden_dim, 256)
+#         self.dropout = nn.Dropout(dropout)
+#         self.fc3 = nn.Linear(256, 1)
+#
+#     def forward(self, x):
+#         h = F.relu(self.fc1(x))
+#         h = F.relu(self.fc2(h))
+#         h = self.dropout(h)
+#         out = torch.sigmoid(self.fc3(h))
+#         return out.squeeze(-1)
 
 class StoppingCriteriaSub(StoppingCriteria):
     def __init__(self, stops, tokenizer, initial_length=None):
@@ -421,7 +421,7 @@ if __name__ == "__main__":
     #     wrong_list = [1, 2, 3, 4, 5, 10, 12, 13, 14, 15, 17, 18, 20, 21, 22, 25, 27, 28]
 
 
-    model_spec_probe = SemanticEntropyProbSpec(1536, 512)
+    model_spec_probe = SemanticEntropyProbSpec(1536, 256)
     model_spec_probe.load_state_dict(torch.load(f'{args.speculative_probe}.pt'))
     model_spec_probe = model_spec_probe.to('cuda:1')
     model_spec_probe.eval()
