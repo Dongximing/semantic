@@ -108,11 +108,19 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str, help="dataset", default='aime')  # math-500
     parser.add_argument("--seed", type=int, help="seed", default=123)
-    parser.add_argument("--model", type=str, help="model", default="Qwen/QwQ-32B-AWQ")
+    parser.add_argument("--model", type=str, help="model", default="")
     parser.add_argument("--start", type=int, help="start", default=4)
     parser.add_argument("--end", type=int, help="end", default=30)
     args = parser.parse_args()
     seed_everything(args.seed)
+    if args.model == "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B":
+        model_name = "DeepSeek-R1-Distill-Qwen-32B"
+    if args.model == "unsloth/DeepSeek-R1-Distill-Qwen-32B-bnb-4bit":
+        model_name = "DeepSeek-R1-Distill-Qwen-32B-bnb-4bit"
+    elif args.model == "Qwen/QwQ-32B-AWQ":
+        model_name = "QwQ-32B-AWQ"
+    elif args.model == "Qwen/QwQ-32B":
+        model_name = "QwQ-32B"
     tokenizer = AutoTokenizer.from_pretrained(
         pretrained_model_name_or_path=args.model,
         trust_remote_code=True
@@ -123,7 +131,7 @@ if __name__ == "__main__":
         device_map="auto"
     )
 
-    base_dir = f'/home/cs/staff/shaowei/semantic/baseline/32B_qwq_baseline_{args.dataset}_seed{args.seed}/'
+    base_dir = f'/data/semantic/baseline/{model_name}_{args.dataset}_seed{args.seed}/'
     inference_model_pickle(
         task_name=args.dataset,
         model=model,
