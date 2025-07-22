@@ -112,7 +112,7 @@ def main():
     parser.add_argument(
         "--main-model-path",
         type=str,
-        default="Qwen/QwQ-32B-AWQ",
+        default="Qwen/QwQ-32B",
     )
     parser.add_argument(
         "--task",
