@@ -120,8 +120,8 @@ def process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_genera
     all_generations = []
   
     log_file = out_pkl_path.replace('.pkl', '.log')
-    n = int(len(alldata)*0.6)
-    data = alldata[:n]
+    n = int(len(alldata))
+    data = alldata[:n-1]
     print(len(data))
 
     for index, element in enumerate(data):
@@ -272,12 +272,12 @@ def inference_model_pickle(task_name: str, model, tokenizer, base_dir,
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model", type=str, default="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
+    parser.add_argument("--model", type=str, default="Qwen/QwQ-32B")
     parser.add_argument("--task",type=str,default="aime")
     parser.add_argument("--gpu", type=int, default=0)
-    parser.add_argument("--start", type=int, help="dataset", default=21)
+    parser.add_argument("--start", type=int, help="dataset", default=0)
     parser.add_argument("--end", type=int, help="dataset",default=60) #
-    parser.add_argument("--base_dir", type=str, help="dataset", default='/home/cs/staff/shaowei/semantic/new_deepseek-1.5b_r1_awq_aime')
+    parser.add_argument("--base_dir", type=str, help="dataset", default='/data/semantic/qwq32b_aime')
     args = parser.parse_args()
     tokenizer = AutoTokenizer.from_pretrained(
         args.model,
@@ -286,7 +286,7 @@ if __name__ == "__main__":
     model = AutoModelForCausalLM.from_pretrained(
         args.model,
         torch_dtype=torch.float16,
-        device_map=f"cuda:{args.gpu}",
+        device_map="auto",
     )
     tokenizer.pad_token_id = tokenizer.eos_token_id
     #/home/cs/staff/shaowei/semantic/aime

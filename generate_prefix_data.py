@@ -14,9 +14,9 @@ from collections import Counter
 
 AIME_STOP_TOKENS = [
     ' \n\n', '.\n\n', ':\n\n', '\n\n',
-    ')\n\n', '?\n\n', ']\n\n', ').\n\n',
+    ')\n\n', '?\n\n', ']\n\n', ').\n\n',' Wait','Wait'
 ]
-AIME_STOP_TOKENS_ID = [4710,382,1447,271,692,1939,2533,3593]
+AIME_STOP_TOKENS_ID = [4710,382,1447,271,692,1939,2533,3593,13824,14190]
 
 def collect_stop_segments(token_ids, stop_ids):
     
@@ -50,7 +50,7 @@ def process_file(json_path, out_json_path, tokenizer):
     print(f"Saved {out_json_path} with {len(out_segments)} segments.")
 
 def inference_model(task_name: str, model, tokenizer):
-    base_dir = '/home/cs/staff/shaowei/semantic/new_deepseek-1.5b_r1_awq_aime'
+    base_dir = '/data/semantic/qwq32b_aime'
     # base_dir = '/home/shaowei/hf/math-result_left'
     for dirname in os.listdir(base_dir):
         if dirname.startswith('data'):
@@ -68,7 +68,7 @@ def inference_model(task_name: str, model, tokenizer):
 
 if __name__ == "__main__":
     tokenizer = AutoTokenizer.from_pretrained(
-        "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
+        "Qwen/QwQ-32B",
         trust_remote_code=True
     )
     inference_model("aime", None, tokenizer)
