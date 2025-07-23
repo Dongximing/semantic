@@ -15,9 +15,9 @@ def check_math_correctness(ref, generation):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--start', type=int, default=0)
-    parser.add_argument('--end', type=int, default=100)
-    parser.add_argument('--dataset', type=str, default='math-500')
-    parser.add_argument('--eval_path', type=str, default='/data/semantic/deepseek-32b_r1_awq_math')
+    parser.add_argument('--end', type=int, default=60)
+    parser.add_argument('--dataset', type=str, default='aime')
+    parser.add_argument('--eval_path', type=str, default='/data/semantic/qwq32b_aime')
     #/home/cs/staff/shaowei/semantic
     parser.add_argument('--seed', type=int, default=42)
     args = parser.parse_args()
