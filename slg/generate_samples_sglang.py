@@ -10,7 +10,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 import sys
 import argparse
 
-from baseline.eval_length import real_answer
+
 
 STOP_TOKENS = [
     ' \n\n', '.\n\n', ':\n\n', '\n\n',
