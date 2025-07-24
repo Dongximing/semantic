@@ -25,9 +25,9 @@ def main():
     )
 
     sampling_params = {
-        "temperature": 0.8,
+        "temperature": 0.6,
         "top_p": 0.95,
-        "max_new_tokens": 20,
+        "max_new_tokens": 10000,
     }
 
     outputs = llm.generate(
