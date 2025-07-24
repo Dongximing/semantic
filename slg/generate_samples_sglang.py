@@ -10,7 +10,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 import sys
 import argparse
 
-
+import sglang as sgl
 
 STOP_TOKENS = [
     ' \n\n', '.\n\n', ':\n\n', '\n\n',
@@ -214,6 +214,11 @@ if __name__ == "__main__":
     # /home/cs/staff/shaowei/semantic/aime
     # /data/ximing/aime
     # /home/cs/staff/shaowei/semantic/deepseek-32b_r1_awq_math
-    inference_model_pickle(task_name=args.task, model=args.model, base_dir=args.base_dir,
+    llm = sgl.Engine(
+        model_path=args.model,
+        tp_size=4,
+        enable_return_hidden_states=True,
+    )
+    inference_model_pickle(task_name=args.task, model=llm, base_dir=args.base_dir,
                            start=args.start, end=args.end)
     print("done")
