@@ -19,7 +19,7 @@ def main():
     ]
     # Create an LLM.
     llm = sgl.Engine(
-        model_path="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
+        model_path="Qwen/QwQ-32B",
         enable_return_hidden_states=True,
     )
 
@@ -54,6 +54,7 @@ def main():
                 for i in output["meta_info"]["hidden_states"]
             ]
         )
+        print(hidden_states)
         print(hidden_states.size())
         # print()
 
