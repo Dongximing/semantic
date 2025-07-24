@@ -15,7 +15,7 @@ import sglang as sgl
 
 def main():
     prompts = [
-        "How many positive whole-number divisors does 196 have?\nPlease reason step by step, and put your final answer within \\boxed{}.",
+        "How many positive whole-number divisors does 196 have?\nPlease reason step by step, and put your final answer within \\boxed{}.<think>",
     ]
     # Create an LLM.
     llm = sgl.Engine(
