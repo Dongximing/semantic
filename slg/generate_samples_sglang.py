@@ -35,20 +35,21 @@ def predict(model, input_data,temperature):
     outputs = model.generate(
         input_data, sampling_params=sampling_params, return_hidden_states=True
     )
-    for prompt, output in zip(input_data, outputs):
-        for i in range(len(output["meta_info"]["hidden_states"])):
-            output["meta_info"]["hidden_states"][i] = torch.tensor(
-                output["meta_info"]["hidden_states"][i], dtype=torch.bfloat16
-            )
-            Completion_tokens = output['meta_info']['completion_tokens']
-            hidden_states = torch.cat(
-                [
-                    i.unsqueeze(0) if len(i.shape) == 1 else i
-                    for i in output["meta_info"]["hidden_states"]
-                ]
-            )
-            real_answer = output['text']
-            hidden_states = hidden_states[-Completion_tokens:,:] #len *hidden
+    prompt = input_data[0]
+    output =  outputs[0]
+    for i in range(len(output["meta_info"]["hidden_states"])):
+        output["meta_info"]["hidden_states"][i] = torch.tensor(
+            output["meta_info"]["hidden_states"][i], dtype=torch.bfloat16
+        )
+        Completion_tokens = output['meta_info']['completion_tokens']
+        hidden_states = torch.cat(
+            [
+                i.unsqueeze(0) if len(i.shape) == 1 else i
+                for i in output["meta_info"]["hidden_states"]
+            ]
+        )
+    real_answer = output['text']
+    hidden_states = hidden_states[-Completion_tokens:,:] #len *hidden
 
 
 
