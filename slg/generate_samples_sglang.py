@@ -85,81 +85,81 @@ def process_file_to_pickle(json_path, out_pkl_path, model, num_generations):
                 "generation_index": i,
                 "input_text_preview": input_text[:80] + ("..." if len(input_text) > 80 else ""),
             }
-            # try:
-            if i == 0:
-                (
-                    most_real_answer,
-                    ( most_last_token_hidden,most_sec_last_input,most_last_tok_bef_gen_input,most_output_hidden_states)
-                ) = predict(model, input_text,temperature=0.1)
-            else:
-                (
-                    real_answer,
-                    ( last_token_hidden,sec_last_input,last_tok_bef_gen_input,output_hidden_states)
-                ) = predict(model,input_text,temperature=0.6)
+            try:
+                if i == 0:
+                    (
+                        most_real_answer,
+                        ( most_last_token_hidden,most_sec_last_input,most_last_tok_bef_gen_input,most_output_hidden_states)
+                    ) = predict(model, input_text,temperature=0.1)
+                else:
+                    (
+                        real_answer,
+                        ( last_token_hidden,sec_last_input,last_tok_bef_gen_input,output_hidden_states)
+                    ) = predict(model,input_text,temperature=0.6)
 
 
-            if i == 0:
-                all_generations.append({
-                    "most_input_text": input_text,
-                    'most_real_answer': most_real_answer,
-                    "most_last_hidden_state": most_last_token_hidden.cpu(),
-                    "most_sec_last_hidden_state": most_sec_last_input.cpu(),
-                    "most_last_input_token_state": most_last_tok_bef_gen_input.cpu(),
-                    "most_output_last_hidden_list": most_output_hidden_states.cpu(),
+                if i == 0:
+                    all_generations.append({
+                        "most_input_text": input_text,
+                        'most_real_answer': most_real_answer,
+                        "most_last_hidden_state": most_last_token_hidden.cpu(),
+                        "most_sec_last_hidden_state": most_sec_last_input.cpu(),
+                        "most_last_input_token_state": most_last_tok_bef_gen_input.cpu(),
+                        "most_output_last_hidden_list": most_output_hidden_states.cpu(),
 
-                    "most_generation_index": -1,
-                    "most_sample_index": index,
+                        "most_generation_index": -1,
+                        "most_sample_index": index,
+                    })
+                else:
+
+                    all_generations.append({
+                        "input_text": input_text,
+                        'real_answer': real_answer,
+                        "last_hidden_state": last_token_hidden.cpu(),
+                        "sec_last_hidden_state": sec_last_input.cpu(),
+                        "last_input_token_state": last_tok_bef_gen_input.cpu(),
+                        "output_last_hidden_list": output_hidden_states.cpu(),
+                        "generation_index": i - 1,
+                        "sample_index": index,
+                    })
+            except Exception as e:
+                log_entry.update({
+                    "status": "error",
+                    "error_msg": str(e),
+                    "traceback": traceback.format_exc()
                 })
-            else:
-
-                all_generations.append({
-                    "input_text": input_text,
-                    'real_answer': real_answer,
-                    "last_hidden_state": last_token_hidden.cpu(),
-                    "sec_last_hidden_state": sec_last_input.cpu(),
-                    "last_input_token_state": last_tok_bef_gen_input.cpu(),
-                    "output_last_hidden_list": output_hidden_states.cpu(),
-                    "generation_index": i - 1,
-                    "sample_index": index,
-                })
-            # except Exception as e:
-            #     log_entry.update({
-            #         "status": "error",
-            #         "error_msg": str(e),
-            #         "traceback": traceback.format_exc()
-            #     })
-            #     if i == 0:
-            #         all_generations.append({
-            #             "most_input_text": input_text,
-            #             "most_real_answer": None,
-            #             "most_predicted_answer": None,
-            #             "most_output_last_hidden_list": None,
-            #             "most_ppl": None,
-            #             "most_log_likelihoods": None,
-            #             "most_embedding": None,
-            #             "most_last_hidden_state": None,
-            #             "most_sec_last_hidden_state": None,
-            #             "most_last_input_token_state": None,
-            #             "most_generation_index": -1,
-            #             "most_sample_index": index,
-            #             'triggered_stop': None
-            #         })
-            #     else:
-            #         all_generations.append({
-            #             "input_text": input_text,
-            #             "real_answer": None,
-            #             "predicted_answer": None,
-            #             "output_last_hidden_list": None,
-            #             "ppl": None,
-            #             "log_likelihoods": None,
-            #             "embedding": None,
-            #             "last_hidden_state": None,
-            #             "sec_last_hidden_state": None,
-            #             "last_input_token_state": None,
-            #             "generation_index": i - 1,
-            #             "sample_index": index,
-            #             'triggered_stop': None
-            #         })
+                if i == 0:
+                    all_generations.append({
+                        "most_input_text": input_text,
+                        "most_real_answer": None,
+                        "most_predicted_answer": None,
+                        "most_output_last_hidden_list": None,
+                        "most_ppl": None,
+                        "most_log_likelihoods": None,
+                        "most_embedding": None,
+                        "most_last_hidden_state": None,
+                        "most_sec_last_hidden_state": None,
+                        "most_last_input_token_state": None,
+                        "most_generation_index": -1,
+                        "most_sample_index": index,
+                        'triggered_stop': None
+                    })
+                else:
+                    all_generations.append({
+                        "input_text": input_text,
+                        "real_answer": None,
+                        "predicted_answer": None,
+                        "output_last_hidden_list": None,
+                        "ppl": None,
+                        "log_likelihoods": None,
+                        "embedding": None,
+                        "last_hidden_state": None,
+                        "sec_last_hidden_state": None,
+                        "last_input_token_state": None,
+                        "generation_index": i - 1,
+                        "sample_index": index,
+                        'triggered_stop': None
+                    })
 
             with open(log_file, "a", encoding="utf-8") as lf:
                 lf.write(json.dumps(log_entry, ensure_ascii=False) + "\n")
@@ -204,7 +204,7 @@ if __name__ == "__main__":
     parser.add_argument("--model", type=str, default="Qwen/QwQ-32B")
     parser.add_argument("--task", type=str, default="aime")
     parser.add_argument("--gpu", type=int, default=0)
-    parser.add_argument("--start", type=int, help="dataset", default=4)
+    parser.add_argument("--start", type=int, help="dataset", default=0)
     parser.add_argument("--end", type=int, help="dataset", default=60)  #
     parser.add_argument("--base_dir", type=str, help="dataset", default='/data/semantic/qwq32b_aime')
     args = parser.parse_args()
