@@ -67,7 +67,7 @@ def predict(model, input_data,temperature):
     return (real_answer, hidden_states)
 
 
-def process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_generations):
+def process_file_to_pickle(json_path, out_pkl_path, model, num_generations):
     with open(json_path, 'r', encoding='utf-8') as f:
         alldata = json.load(f)
     all_generations = []
@@ -172,7 +172,7 @@ def process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_genera
 
 # wail /home/cs/staff/shaowei/hf/math-result_left
 # quail /data/ximing/math-result_left
-def inference_model_pickle(task_name: str, model, tokenizer, base_dir,
+def inference_model_pickle(task_name: str, model, base_dir,
                            start=31, end=50, num_generations=20):
     numbers = [4, 5, 2, 6, 11, 12, 13, 18, 20, 21, 25, 26, 29, 30, 33, 35, 38, 44, 46, 47, 49, 50, 51, 56, 57, 59]
 
@@ -195,7 +195,7 @@ def inference_model_pickle(task_name: str, model, tokenizer, base_dir,
             continue
 
         print(f"[Info] Processing file: {json_path}")
-        process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_generations)
+        process_file_to_pickle(json_path, out_pkl_path, model, num_generations)
 
     print("[Info] Processing completed.")
 
@@ -209,19 +209,10 @@ if __name__ == "__main__":
     parser.add_argument("--end", type=int, help="dataset", default=60)  #
     parser.add_argument("--base_dir", type=str, help="dataset", default='/data/semantic/qwq32b_aime')
     args = parser.parse_args()
-    tokenizer = AutoTokenizer.from_pretrained(
-        args.model,
-        trust_remote_code=True
-    )
-    model = AutoModelForCausalLM.from_pretrained(
-        args.model,
-        torch_dtype=torch.float16,
-        device_map="auto",
-    )
-    tokenizer.pad_token_id = tokenizer.eos_token_id
+
     # /home/cs/staff/shaowei/semantic/aime
     # /data/ximing/aime
     # /home/cs/staff/shaowei/semantic/deepseek-32b_r1_awq_math
-    inference_model_pickle(task_name=args.task, model=model, base_dir=args.base_dir, tokenizer=tokenizer,
+    inference_model_pickle(task_name=args.task, model=args.model, base_dir=args.base_dir,
                            start=args.start, end=args.end)
     print("done")
