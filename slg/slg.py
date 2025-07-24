@@ -21,7 +21,7 @@ def main():
     llm = sgl.Engine(
         model_path="Qwen/QwQ-32B",
         tp_size=4,
-
+        enable_return_hidden_states=True,
     )
 
     sampling_params = {
