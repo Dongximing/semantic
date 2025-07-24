@@ -28,7 +28,7 @@ def main():
         "temperature": 0.6,
         "top_p": 0.95,
         "max_new_tokens": 10000,
-        "stop":["\n\n", "?\n\n"],
+        "stop":[" \n\n", "?\n\n"],
        # "include_stop_str_in_output": True
     }
 
