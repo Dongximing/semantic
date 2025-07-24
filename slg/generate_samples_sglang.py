@@ -33,7 +33,7 @@ def predict(model, input_data,temperature):
         "no_stop_trim": True
     }
     outputs = model.generate(
-        input_data, sampling_params=sampling_params,
+        input_data, sampling_params=sampling_params, return_hidden_states=True
     )
     for prompt, output in zip(input_data, outputs):
         for i in range(len(output["meta_info"]["hidden_states"])):
