@@ -19,8 +19,8 @@ def main():
     ]
     # Create an LLM.
     llm = sgl.Engine(
-        model_path="Qwen/QwQ-32B",
-        tp_size=4,
+        model_path="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
+        tp_size=1,
         enable_return_hidden_states=True,
     )
 
@@ -28,7 +28,7 @@ def main():
         "temperature": 0.6,
         "top_p": 0.95,
         "max_new_tokens": 10000,
-        "stop_token_ids":[4710,382,1447,271,692,1939,2533,3593,13824,14190],
+        #"stop_token_ids":[4710,382,1447,271,692,1939,2533,3593,13824,14190],
         "no_stop_trim": True
     }
 

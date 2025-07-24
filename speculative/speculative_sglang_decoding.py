@@ -1,7 +1,7 @@
 import transformers
 import random
 import argparse
-import json 
+import json
 import os
 import time
 from tqdm import tqdm
@@ -14,7 +14,7 @@ import copy
 from utils import seed_everything
 BEGIN_TOKEN_NUM = 500
 SPECULATIVE_OUTPUT_LENGTH = 500
-MATH_PROMPT = "\nPlease reason step by step, and put your final answer within \\boxed{}."
+MATH_PROMPT = "\nPlease reason step by step, and put your final answer within \\boxed{}.<think>"
 TARGET_model= 0
 SPEC_model = 1
 TARGET_probe = 2
