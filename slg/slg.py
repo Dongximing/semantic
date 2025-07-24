@@ -33,7 +33,7 @@ def main():
     }
 
     outputs = llm.generate(
-        prompts, sampling_params=sampling_params, enable_return_hidden_states=True,
+        prompts, sampling_params=sampling_params,return_hidden_states=True
     )
 
     llm.shutdown()
