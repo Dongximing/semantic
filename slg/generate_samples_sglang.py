@@ -62,7 +62,7 @@ def predict(model, input_data,temperature):
         last_token_hidden,sec_last_input,last_tok_bef_gen_input,output_hidden_states
     )
     print('real_answer',real_answer)
-    print(last_token_hidden.size())
+    print(output_hidden_states.size())
     return (real_answer, hidden_states)
 
 
