@@ -37,6 +37,7 @@ def main():
     )
 
     llm.shutdown()
+    print(outputs)
 
     for prompt, output in zip(prompts, outputs):
         for i in range(len(output["meta_info"]["hidden_states"])):
