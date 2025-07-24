@@ -10,6 +10,8 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 import sys
 import argparse
 
+from baseline.eval_length import real_answer
+
 STOP_TOKENS = [
     ' \n\n', '.\n\n', ':\n\n', '\n\n',
     ')\n\n', '?\n\n', ']\n\n', ').\n\n'
@@ -21,11 +23,10 @@ AIME_STOP_TOKENS = [
 NUMBER = 0
 
 
-def predict(tokenizer, model, input_data, temperature, return_full=False, return_latent=False):
-    max_new_tokens = 500
+def predict(model, input_data,temperature):
     input_data = [input_data]
     sampling_params = {
-        "temperature": 0.6,
+        "temperature": temperature,
         "top_p": 0.95,
         "max_new_tokens": 500,
         "stop_token_ids":[4710,382,1447,271,692,1939,2533,3593,13824,14190],
@@ -39,46 +40,28 @@ def predict(tokenizer, model, input_data, temperature, return_full=False, return
             output["meta_info"]["hidden_states"][i] = torch.tensor(
                 output["meta_info"]["hidden_states"][i], dtype=torch.bfloat16
             )
+            Completion_tokens = output['meta_info']['completion_tokens']
             hidden_states = torch.cat(
                 [
                     i.unsqueeze(0) if len(i.shape) == 1 else i
                     for i in output["meta_info"]["hidden_states"]
                 ]
             )
+            real_answer = output['text']
+            hidden_states = hidden_states[-Completion_tokens:,:] #len *hidden
 
 
 
-    last_input = hidden[-1]
-    last_token_embedding = torch.stack([layer[:, -1, :] for layer in last_input]).cpu()
-    sec_last_input = hidden[-2]
-    sec_last_token_embedding = torch.stack([layer[:, -1, :] for layer in sec_last_input]).cpu()
-    last_tok_bef_gen_input = hidden[0]
-    last_tok_bef_gen_embedding = torch.stack([layer[:, -1, :] for layer in last_tok_bef_gen_input]).cpu()
-    output_last_hidden_list = torch.stack([layer[-1][:, -1, :] for layer in hidden]).cpu()
 
-    last_output = hidden[-1]
-    last_output = last_output[-1]
-    last_hidden_state = last_output[:, -1, :].cpu()
 
-    sec_last_input = hidden[-2]
-    sec_last_input = sec_last_input[-1]
-    sec_last_hidden_state = sec_last_input[:, -1, :].cpu()
+    last_token_hidden = hidden_states[-1]
+    sec_last_input = hidden_states[-2]
+    last_tok_bef_gen_input = hidden_states[0]
+    output_hidden_states = hidden_states
 
-    last_input_token = hidden[0]
-    last_input_token = last_input_token[-1]
-    last_input_token_state = last_input_token[:, -1, :].cpu()
-
-    # token log likelihood, probs, ppl
-    transition_scores = model.compute_transition_scores(
-        outputs.sequences, outputs.scores, normalize_logits=True)
-    log_likelihoods = [score.item() for score in transition_scores[0]]
-    probs = [np.exp(x) for x in transition_scores[0].tolist()]
-    mean_neg_logprob = -np.mean(transition_scores[0].cpu().numpy())
-    ppl = np.exp(mean_neg_logprob)
 
     hidden_states = (
-        last_hidden_state, sec_last_hidden_state, last_input_token_state,
-        last_token_embedding, sec_last_token_embedding, last_tok_bef_gen_embedding, output_last_hidden_list
+        last_token_hidden,sec_last_input,last_tok_bef_gen_input,output_hidden_states
     )
     # print('real_answer',real_answer)
     return (real_answer, hidden_states)
@@ -106,62 +89,39 @@ def process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_genera
             try:
                 if i == 0:
                     (
-                        real_answer, predicted_answer, log_likelihoods, probs, ppl, triggered_stop,
-                        (last_hidden_state, sec_last_hidden_state, last_input_token_state,
-                         embedding, emb_last_before_gen, emb_before_eos, output_last_hidden_list)
-                    ) = predict(tokenizer, model, input_text, temperature=0.1, return_full=False, return_latent=True)
+                        most_real_answer,
+                        ( most_last_token_hidden,most_sec_last_input,most_last_tok_bef_gen_input,most_output_hidden_states)
+                    ) = predict(model, input_text,temperature=0.1)
                 else:
                     (
-                        real_answer, predicted_answer, log_likelihoods, probs, ppl, triggered_stop,
-                        (last_hidden_state, sec_last_hidden_state, last_input_token_state,
-                         embedding, emb_last_before_gen, emb_before_eos, output_last_hidden_list)
-                    ) = predict(tokenizer, model, input_text, temperature=0.6, return_full=False, return_latent=True)
+                        real_answer,
+                        ( last_token_hidden,sec_last_input,last_tok_bef_gen_input,output_hidden_states)
+                    ) = predict(model,input_text,temperature=0.6)
 
-                log_entry.update({
-                    "status": "success",
-                    "predicted_answer_preview": str(predicted_answer)[:80] + (
-                        "..." if predicted_answer and len(predicted_answer) > 80 else ""),
-                    "ppl": float(ppl) if ppl is not None else None,
-                    "log_likelihoods_len": len(log_likelihoods) if log_likelihoods is not None else 0,
-                })
+
                 if i == 0:
                     all_generations.append({
                         "most_input_text": input_text,
-                        'most_real_answer': real_answer,
-                        "most_predicted_answer": predicted_answer,
-                        "most_last_hidden_state": last_hidden_state.cpu(),
-                        "most_sec_last_hidden_state": sec_last_hidden_state.cpu(),
-                        "most_last_input_token_state": last_input_token_state.cpu(),
-                        "most_output_last_hidden_list": output_last_hidden_list.cpu(),
-                        "most_ppl": ppl,
-                        "most_log_likelihoods": log_likelihoods,
-                        "most_probs": probs,
-                        "most_embedding": embedding.cpu(),
-                        "most_emb_last_before_gen": emb_last_before_gen.cpu(),
-                        "most_emb_before_eos": emb_before_eos,
+                        'most_real_answer': most_real_answer,
+                        "most_last_hidden_state": most_last_token_hidden.cpu(),
+                        "most_sec_last_hidden_state": most_sec_last_input.cpu(),
+                        "most_last_input_token_state": most_last_tok_bef_gen_input.cpu(),
+                        "most_output_last_hidden_list": most_output_hidden_states.cpu(),
+
                         "most_generation_index": -1,
                         "most_sample_index": index,
-                        'triggered_stop': triggered_stop
                     })
                 else:
 
                     all_generations.append({
                         "input_text": input_text,
                         'real_answer': real_answer,
-                        "predicted_answer": predicted_answer,
-                        "last_hidden_state": last_hidden_state.cpu(),
-                        "sec_last_hidden_state": sec_last_hidden_state.cpu(),
-                        "last_input_token_state": last_input_token_state.cpu(),
-                        "output_last_hidden_list": output_last_hidden_list.cpu(),
-                        "ppl": ppl,
-                        "log_likelihoods": log_likelihoods,
-                        "probs": probs,
-                        "embedding": embedding.cpu(),
-                        "emb_last_before_gen": emb_last_before_gen.cpu(),
-                        "emb_before_eos": emb_before_eos,
+                        "last_hidden_state": last_token_hidden.cpu(),
+                        "sec_last_hidden_state": sec_last_input.cpu(),
+                        "last_input_token_state": last_tok_bef_gen_input.cpu(),
+                        "output_last_hidden_list": output_hidden_states.cpu(),
                         "generation_index": i - 1,
                         "sample_index": index,
-                        'triggered_stop': triggered_stop
                     })
             except Exception as e:
                 log_entry.update({
