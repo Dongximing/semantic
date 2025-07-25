@@ -7,6 +7,7 @@ import pickle
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import argparse
 from sklearn.metrics.pairwise import cosine_distances
 from sklearn.metrics import silhouette_score
 from collections import Counter
@@ -104,111 +105,6 @@ def get_openai_output(text1,text2,prefix):
         return 1
     return binary_response
 
-def labeling_data(generations, output_dir):
-    group_size = 20
-    all_stats = []
-
-    for group_idx, group_start in enumerate(range(0, len(generations), group_size)):
-        group = generations[group_start:group_start + group_size]
-        valid_idxs = [i for i, g in enumerate(group) if g.get('real_answer_embedding') is not None]
-        none_count = group_size - len(valid_idxs)
-        embeddings = [group[i]['real_answer_embedding'] for i in valid_idxs]
-        group_stats = {
-            'group_idx': group_idx,
-            'start': group_start,
-            'none_count': none_count,
-            'total': len(group),
-        }
-
-        logger.info(f"\n=== Group {group_idx} (from index {group_start}) ===")
-        logger.info(f"Number of None embeddings in this group: {none_count}")
-
-        # Clustering
-        if len(embeddings) >= 2:
-            emb_arr = np.array(embeddings)
-            dist_mat = cosine_distances(emb_arr)
-            cluster= hdbscan.HDBSCAN(
-                metric="precomputed",
-                min_cluster_size=2,
-                prediction_data=True
-            )
-            labels = cluster.fit_predict(dist_mat)
-            label_counts = Counter(labels)
-            logger.info(f"Cluster label counts: {dict(label_counts)}")
-            group_stats['label_counts'] = dict(label_counts)
-
-            mask = labels != -1
-            if mask.sum() > 1 and len(set(labels[mask])) > 1:
-                sil = silhouette_score(dist_mat[mask][:, mask], labels[mask], metric="precomputed")
-                logger.info(f"Silhouette score (without noise): {sil:.3f}")
-                group_stats['silhouette'] = sil
-            else:
-                logger.info("Silhouette score: Not enough non-noise clusters to evaluate.")
-                group_stats['silhouette'] = None
-        elif len(embeddings) == 1:
-            labels = np.array([0])
-            label_counts = Counter(labels)
-            logger.info("Only 1 valid embedding, assigned to label=0.")
-            group_stats['label_counts'] = dict(label_counts)
-            group_stats['silhouette'] = None
-        else:
-            labels = []
-            label_counts = {}
-            logger.info("No valid embeddings in this group. Skipping clustering.")
-            group_stats['label_counts'] = dict(label_counts)
-            group_stats['silhouette'] = None
-
-        # Write back cluster_id
-        for idx, g in enumerate(group):
-            if g.get('real_answer_embedding') is not None:
-                idx_in_valid = valid_idxs.index(idx)
-                g['real_answer_cluster_id'] = int(labels[idx_in_valid]) if len(labels) > 0 else None
-            else:
-                g['real_answer_cluster_id'] = None
-
-        all_stats.append(group_stats)
-
-        # Visualization and saving
-        n_valid = len(embeddings)
-        if n_valid >= 2:
-            emb_arr = np.array(embeddings)
-            if n_valid >= 5:
-                perp = min(30, max(2, n_valid // 3))
-                proj = TSNE(n_components=2, perplexity=perp, random_state=42).fit_transform(emb_arr)
-                viz_title = f"t-SNE (perplexity={perp})"
-            else:
-                from sklearn.decomposition import PCA
-                proj = PCA(n_components=2, random_state=42).fit_transform(emb_arr)
-                viz_title = "PCA"
-
-            plt.figure(figsize=(6, 5))
-            scatter = plt.scatter(proj[:, 0], proj[:, 1], c=labels, cmap='tab10', s=60, edgecolors='k')
-            for x, y, lbl in zip(proj[:, 0], proj[:, 1], labels):
-                plt.text(x, y, str(lbl), fontsize=10, ha='center', va='center',
-                         bbox=dict(facecolor='white', edgecolor='none', alpha=0.6, boxstyle='round,pad=0.15'))
-            plt.title(f"Group {group_idx} Embedding Cluster Visualization\n{viz_title}")
-            plt.xlabel('Component 1')
-            plt.ylabel('Component 2')
-            plt.colorbar(scatter, label='Cluster ID')
-            plt.tight_layout()
-            fig_path = os.path.join(output_dir, f"group_{group_idx}_cluster_viz.png")
-            plt.savefig(fig_path)
-            plt.close()
-            logger.info(f"Saved plot to {fig_path}")
-        else:
-            logger.info("Fewer than 2 valid embeddings, skipping visualization.")
-
-    # Save clustering results to pickle
-    pickle_path = os.path.join(output_dir, "generations_with_cluster_id.pkl")
-    with open(pickle_path, "wb") as f:
-        pickle.dump(generations, f)
-
-    # Save statistics to CSV
-    df = pd.DataFrame(all_stats)
-    csv_path = os.path.join(output_dir, "group_cluster_stats.csv")
-    df.to_csv(csv_path, index=False)
-    logger.info(f"\nGroup statistics saved to {csv_path}")
-    logger.info(f"Cluster IDs written back and saved to {pickle_path}")
 def get_semantic_ids(strings_list, model,prefix, strict_entailment=True, tokenizer=None, method = 'deberta'):
     """Group list of predictions into semantic meaning."""
 
@@ -278,19 +174,20 @@ def process_file_to_pickle(json_path, out_pkl_path):
 
             group = generations[i:i + group_size]
             answer_lists = [g.get('real_answer') for g in group[1:]]
-            print('answer_lists', answer_lists)
+
 
 
             valid_answers = [ans for ans in answer_lists if ans is not None]
 
             if valid_answers:
+                logger.info(f'answer_lists: \n\n\n\n{answer_lists}\n\n\n\n')
 
                 # cluster_ids_openai = get_semantic_ids(strings_list=valid_answers, model=model,tokenizer=tokenizer,
                 #                                prefix=group[0]['most_input_text'],method='openai')
                 # print('cluster_ids_openai',cluster_ids_openai)
                 cluster_ids = get_semantic_ids(strings_list=valid_answers, model=model, tokenizer=tokenizer,
                                                prefix=group[0]['most_input_text'], method='deberta')
-                print('cluster_ids',cluster_ids)
+                logger.info(f'cluster_ids: \n\n\n\n{cluster_ids}\n\n\n\n')
             else:
                 cluster_ids = []
 
@@ -335,34 +232,39 @@ def process_file_to_pickle(json_path, out_pkl_path):
 
             all_generations.extend(group)
 
-        # with open(out_pkl_path, "wb") as f:
-        #     pickle.dump(all_generations, f)
+        with open(out_pkl_path, "wb") as f:
+            pickle.dump(all_generations, f)
 
 
 
 
 
-def inference_model_pickle(task_name: str = None, model=None, tokenizer=None,
+def inference_model_pickle(
                           base_dir='/home/cs/staff/shaowei/semantic/training_limo_s1/data_s1_100',
-                          start=0, end=877, num_generations=20):
+                          start=0, end=877):
 
-    #wrong = [0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19, 20, 21, 22, 24, 25, 26, 28, 29, 30, 31, 32, 33, 34, 35, 36, 39, 40, 41, 42, 43, 44, 46, 47, 48, 49, 50, 51, 52, 53, 56, 57, 58, 59]
+    wrong = [4, 5, 2, 6, 11, 12, 13, 18, 20, 21, 25, 26, 29, 30, 33, 35, 38, 44, 46, 47, 49, 50, 51, 56, 57, 59]
     for number in tqdm(range(start, end)):
-        # if number in wrong:
-        #     continue
-        dirname = f'data-877_{number}'
+        if number in wrong:
+            continue
+        dirname = f'data-60_{number}'
         dir_path = os.path.join(base_dir, dirname)
         json_path = os.path.join(dir_path, f'new_generations_{number}.pkl')
 
-        # out_pkl_path = os.path.join(dir_path, f'new_generations_with_entropy_prob{number}.pkl')
-        # if not os.path.exists(json_path):
-        #     logger.warning(f"{json_path} does not exist, skipping.")
-        #     continue
-        # if os.path.exists(out_pkl_path):
-        #     logger.warning(f"{out_pkl_path} already exists, skipping.")
-        #     continue
-        out_pkl_path = None
+        out_pkl_path = os.path.join(dir_path, f'new_generations_with_entropy{number}.pkl')
+        if not os.path.exists(json_path):
+            logger.warning(f"{json_path} does not exist, skipping.")
+            continue
+        if os.path.exists(out_pkl_path):
+            logger.warning(f"{out_pkl_path} already exists, skipping.")
+            continue
+
         process_file_to_pickle(json_path, out_pkl_path)
 
 if __name__ == "__main__":
-    inference_model_pickle()
+    argparse = argparse.ArgumentParser()
+    argparse.add_argument('--base_dir', type=str, default='/home/cs/staff/shaowei/semantic/qwq-merge')
+    argparse.add_argument('--start', type=int, default=0)
+    argparse.add_argument('--end', type=int, default=60)
+    args = argparse.parse_args()
+    inference_model_pickle(base_dir=args.base_dir, start=args.start, end=args.end)
