@@ -247,7 +247,7 @@ def inference_model_pickle(
     for number in tqdm(range(start, end)):
         if number in wrong:
             continue
-        dirname = f'data-60-temp_{number}'
+        dirname = f'data-60-temp0_{number}'
         dir_path = os.path.join(base_dir, dirname)
         json_path = os.path.join(dir_path, f'new_generations_{number}.pkl')
 
