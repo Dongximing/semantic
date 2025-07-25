@@ -32,6 +32,8 @@ embeddings = model.encode(outputs, normalize_embeddings=True)
 # 2. 计算相似度（AP 需要输入 similarity matrix）
 similarity_matrix = cosine_similarity(embeddings)
 
+print(similarity_matrix)
+
 # 3. 聚类（preference 默认是中位数，也可以调节使分组数量更多/更少）
 ap = AffinityPropagation(affinity='precomputed', random_state=42)
 labels = ap.fit_predict(similarity_matrix)
