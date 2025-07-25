@@ -16,7 +16,7 @@ from openai import OpenAI
 from tqdm import tqdm
 from semantic_entropy import cluster_assignment_entropy, predictive_entropy
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
-CLIENT = OpenAI(api_key=os.environ['OPENAI_API_KEY'])
+#CLIENT = OpenAI(api_key=os.environ['OPENAI_API_KEY'])
 
 from tenacity import (retry, stop_after_attempt,  # for exponential backoff
                       wait_random_exponential)
