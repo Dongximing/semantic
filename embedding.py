@@ -3,7 +3,27 @@ from sklearn.cluster import AffinityPropagation
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 
-outputs = [' but for s=4, which is 1 mod3, the count should be 9? Wait', " but s=4, which is s≡1 mod3, so R(s)=1, count(s)=9. So that's correct.\n\n", ' but earlier for s=4 (which is s≡1 mod3), count(s)=9, so correct.\n\n', " but when s=4, R(s)=1, count(s)=9, so that's okay.\n\n", ', but for s=4, which is s=4, R(s)=1, so count(s)=9. So that matches.\n\n', " but for s=4, which is s≡1 mod3, R(s)=1, so count(s)=9. So that's correct.\n\n", ' but for s=4, which is s≡1 mod3, R(s)=1, count was 9. Correct.\n\n', ' but s=4, which is 1 mod3 (since 4 mod3=1). Wait', ' but earlier for s=4 (which is s≡1 mod3), count(s)=9, so that matches.\n\n', " but earlier for s=4 which is 1 mod3, count(s)=9. So that's correct.\n\n", ' but s=4 is in first residue class (R=1), count(s)=9. Correct.\n\n', ' but for s=4, which is s≡1 mod3, count(s)=9. Correct.\n\n', ' but for s=4, R(s)=1, count(s)=9, so same.\n\n', ', but s=4 is in the first residue again (since s=4 mod3=1). The count was 9, which matches.\n\n', ' but s=4, which is in the first position of the cycle (since s=4≡1 mod3), so count(s)=9, which matches.\n\n', ' but for s=4, which is 1 mod3 (since s=4=3*1+1), so R(s)=1, so count(s)=9. So that matches.\n\n', ' but s=4, which is s≡1 mod3, so count(s)=9. Correct.\n\n', ' but earlier for s=4, which is 1 mod3, count(s)=9, so this is correct.\n\n', ' but s=4 is also s≡1 mod3, so count(s)=9, which matches.\n\n', ' but for s=4, which is s=4≡1 mod3, so R(s)=1. Then count(s)=9, which matches.\n\n']  # 你的模型输出
+outputs = ['333 squared is (300 + 33)^2 = 300² + 2*300*33 + 33² = 90000 + 19800 + 1089 = 90000 + 19800 is 109800, plus 1089 is 110,889.\n\n',
+"First, 333 squared: 333*333. Let's compute 300² + 2*300*33 + 33² = 90000 + 19800 + 1089 = 90000 + 19800 is 109800, plus 1089 is 110,889. Wait",
+"First, 333 squared: 333*333. Let's compute 300² + 2*300*33 + 33² = 90000 + 19800 + 1089 = 90000 + 19800 is 109800, plus 1089 is 110,889.\n\n",
+"333 squared: 333*333. Let's compute 300² + 2*300*33 + 33² = 90000 + 19800 + 1089 = 90000 + 19800 = 109800; 109800 + 1089 = 110,889.\n\n",
+'333 squared is (300 + 33)^2 = 300² + 2*300*33 + 33² = 90000 + 19800 + 1089 = 90000 + 19800 is 109800, plus 1089 is 110,889.\n\n',
+'333 squared: 333*333. Let me compute 300² + 2*300*33 + 33² = 90000 + 19800 + 1089 = 90000 + 19800 is 109800 + 1089 is 110,889.\n\n',
+ 'First, 333 squared: 333*333. Let me compute 300² + 2*300*33 + 33² = 90000 + 19800 + 1089 = 90000 + 19800 = 109800; 109800 + 1089 = 110,889.\n\n',
+ '333 squared: 333*333. Let me compute 300² + 2*300*33 + 33² = 90000 + 19800 + 1089 = 90000 + 19800 = 109800; 109800 + 1089 = 110,889.\n\n',
+ "333² is 333*333. Let's compute 300² + 2*300*33 + 33² = 90000 + 19800 + 1089 = 90000 + 19800 is 109800, plus 1089 is 110,889.\n\n",
+ "333 squared: 333 * 333. Let's compute 300² + 2*300*33 + 33² = 90000 + 19800 + 1089 = 90000 + 19800 is 109800, plus 1089 is 110,889.\n\n",
+ 'First, 333 squared: 333 * 333. Let me compute 300² + 2*300*33 + 33² = 90000 + 19800 + 1089 = 90000 + 19800 is 109800, plus 1089 is 110,889. Wait',
+ 'First, 333 squared: 333*333. Let me compute 300² + 2*300*33 + 33² = 90000 + 19800 + 1089 = 90000 + 19800 is 109800, plus 1089 is 110,889.\n\n',
+ '333 squared: 333*333. Let me compute 300² + 2*300*33 + 33² = 90000 + 19800 + 1089 = 90000 + 19800 = 109800; 109800 + 1089 = 110,889. Wait',
+  "333 squared: 333*333. Let's compute 300² + 2*300*33 + 33² = 90000 + 19800 + 1089 = 90000+19800=109800; 109800 +1089=110,889. Wait",
+  '333 squared is 333*333. Let me compute 300² + 2*300*33 + 33² = 90000 + 19800 + 1089 = 90000 + 19800 = 109800; 109800 + 1089 = 110,889.\n\n',
+  '333 squared: 333*333. Let me compute 300² + 2*300*33 + 33² = 90000 + 19800 + 1089 = 90000 + 19800 = 109800; 109800 + 1089 = 110,889. Wait',
+  '333 squared: 333*333. Let me compute 300² + 2*300*33 + 33² = 90000 + 19800 + 1089 = 90000 + 19800 is 109800, plus 1089 is 110,889. Wait',
+  "First, 333 squared: 333 * 333. Let's compute 300² + 2*300*33 + 33² = 90000 + 19800 + 1089 = 90000 + 19800 is 109800, plus 1089 is 110,889. Wait",
+  '333 squared is 333*333. Let me compute that:\n\n',
+   '333² = (300 + 33)^2 = 300² + 2*300*33 + 33² = 90000 + 19800 + 1089 = 90000 + 19800 is 109800, plus 1089 is 110,889.\n\n']
+
 
 # 1. 获取 embedding
 model = SentenceTransformer('Alibaba-NLP/gte-Qwen2-1.5B-instruct')
