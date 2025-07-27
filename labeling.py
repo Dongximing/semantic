@@ -207,8 +207,8 @@ def process_file_to_pickle(json_path, out_pkl_path):
 
 
 
-            for local_idx, g in enumerate(group[1:]):
-                g['clustering-gpt-prompty_deberta'] = cluster_gpt[local_idx]
+            # for local_idx, g in enumerate(group[1:]):
+            #     g['clustering-gpt-prompty_deberta'] = cluster_gpt[local_idx]
 
 
             labels = []
