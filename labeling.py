@@ -211,23 +211,23 @@ def process_file_to_pickle(json_path, out_pkl_path):
                 g['clustering-gpt-prompty_deberta'] = cluster_gpt[local_idx]
 
 
-            # labels = []
-            # for local_idx, g in enumerate(group[1:]):
-            #     label = g['clustering-gpt-prompty_deberta']
-            #
-            #     if label is not None:
-            #         labels.append(label)
-            # print(labels)
-            # label_counts = Counter(labels)
-            # print(label_counts)
-            # total = len(labels)
-            # for g in group[1:]:
-            #     label = g['clustering-gpt-prompty_deberta']
-            #
-            #     if label is not None:
-            #         g['probability_of_deberta'] = label_counts[label] / total
-            #     else:
-            #         g['probability_of_deberta'] = None
+            labels = []
+            for local_idx, g in enumerate(group[1:]):
+                label = g['clustering-gpt-prompty_deberta']
+
+                if label is not None:
+                    labels.append(label)
+            print(labels)
+            label_counts = Counter(labels)
+            print(label_counts)
+            total = len(labels)
+            for g in group[1:]:
+                label = g['clustering-gpt-prompty_deberta']
+
+                if label is not None:
+                    g['probability_of_deberta'] = label_counts[label] / total
+                else:
+                    g['probability_of_deberta'] = None
 
 
             all_generations.extend(group)
@@ -249,9 +249,9 @@ def inference_model_pickle(
             continue
         dirname = f'data-60-temp0_{number}'
         dir_path = os.path.join(base_dir, dirname)
-        json_path = os.path.join(dir_path, f'new_generations_{number}.pkl')
+        json_path = os.path.join(dir_path, f'new_generations_entropy{number}.pkl')
 
-        out_pkl_path = os.path.join(dir_path, f'new_generations_with_entropy{number}.pkl')
+        out_pkl_path = os.path.join(dir_path, f'new_generations_with_entropy_prob{number}.pkl')
         if not os.path.exists(json_path):
             logger.warning(f"{json_path} does not exist, skipping.")
             continue

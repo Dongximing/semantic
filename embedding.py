@@ -1,45 +1,39 @@
-from sentence_transformers import SentenceTransformer
+
 from sklearn.cluster import AffinityPropagation
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
-
-outputs = ['333 squared is (300 + 33)^2 = 300² + 2*300*33 + 33² = 90000 + 19800 + 1089 = 90000 + 19800 is 109800, plus 1089 is 110,889.\n\n',
-"First, 333 squared: 333*333. Let's compute 300² + 2*300*33 + 33² = 90000 + 19800 + 1089 = 90000 + 19800 is 109800, plus 1089 is 110,889. Wait",
-"First, 333 squared: 333*333. Let's compute 300² + 2*300*33 + 33² = 90000 + 19800 + 1089 = 90000 + 19800 is 109800, plus 1089 is 110,889.\n\n",
-"333 squared: 333*333. Let's compute 300² + 2*300*33 + 33² = 90000 + 19800 + 1089 = 90000 + 19800 = 109800; 109800 + 1089 = 110,889.\n\n",
-'333 squared is (300 + 33)^2 = 300² + 2*300*33 + 33² = 90000 + 19800 + 1089 = 90000 + 19800 is 109800, plus 1089 is 110,889.\n\n',
-'333 squared: 333*333. Let me compute 300² + 2*300*33 + 33² = 90000 + 19800 + 1089 = 90000 + 19800 is 109800 + 1089 is 110,889.\n\n',
- 'First, 333 squared: 333*333. Let me compute 300² + 2*300*33 + 33² = 90000 + 19800 + 1089 = 90000 + 19800 = 109800; 109800 + 1089 = 110,889.\n\n',
- '333 squared: 333*333. Let me compute 300² + 2*300*33 + 33² = 90000 + 19800 + 1089 = 90000 + 19800 = 109800; 109800 + 1089 = 110,889.\n\n',
- "333² is 333*333. Let's compute 300² + 2*300*33 + 33² = 90000 + 19800 + 1089 = 90000 + 19800 is 109800, plus 1089 is 110,889.\n\n",
- "333 squared: 333 * 333. Let's compute 300² + 2*300*33 + 33² = 90000 + 19800 + 1089 = 90000 + 19800 is 109800, plus 1089 is 110,889.\n\n",
- 'First, 333 squared: 333 * 333. Let me compute 300² + 2*300*33 + 33² = 90000 + 19800 + 1089 = 90000 + 19800 is 109800, plus 1089 is 110,889. Wait',
- 'First, 333 squared: 333*333. Let me compute 300² + 2*300*33 + 33² = 90000 + 19800 + 1089 = 90000 + 19800 is 109800, plus 1089 is 110,889.\n\n',
- '333 squared: 333*333. Let me compute 300² + 2*300*33 + 33² = 90000 + 19800 + 1089 = 90000 + 19800 = 109800; 109800 + 1089 = 110,889. Wait',
-  "333 squared: 333*333. Let's compute 300² + 2*300*33 + 33² = 90000 + 19800 + 1089 = 90000+19800=109800; 109800 +1089=110,889. Wait",
-  '333 squared is 333*333. Let me compute 300² + 2*300*33 + 33² = 90000 + 19800 + 1089 = 90000 + 19800 = 109800; 109800 + 1089 = 110,889.\n\n',
-  '333 squared: 333*333. Let me compute 300² + 2*300*33 + 33² = 90000 + 19800 + 1089 = 90000 + 19800 = 109800; 109800 + 1089 = 110,889. Wait',
-  '333 squared: 333*333. Let me compute 300² + 2*300*33 + 33² = 90000 + 19800 + 1089 = 90000 + 19800 is 109800, plus 1089 is 110,889. Wait',
-  "First, 333 squared: 333 * 333. Let's compute 300² + 2*300*33 + 33² = 90000 + 19800 + 1089 = 90000 + 19800 is 109800, plus 1089 is 110,889. Wait",
-  '333 squared is 333*333. Let me compute that:\n\n',
-   '333² = (300 + 33)^2 = 300² + 2*300*33 + 33² = 90000 + 19800 + 1089 = 90000 + 19800 is 109800, plus 1089 is 110,889.\n\n']
-
+import hdbscan
+from umap import UMAP
+import matplotlib.pyplot as plt
+outputs = ['lower= -1 -1= -2\n\n', 'lower= -1 -1= -2\n\n', 'lower= -1 -1= -2\n\n', 'lower= -1 -1= -2\n\n', 'lower= -1 -1= -2\n\n', 'lower= -1 -1= -2\n\n', 'lower= -1 -1= -2\n\n', 'lower= -1 -1= -2\n\n', 'lower= -1 -1= -2\n\n', 'lower= -1 -1= -2\n\n', 'lower= -1 -1= -2\n\n', 'lower= -1 -1=-2\n\n', 'lower= -1 -1= -2\n\n', 'lower= -1 -1= -2\n\n', 'lower= -1 -1=-2\n\n', 'lower= -1 -1= -2\n\n', 'lower= -1 -1= -2\n\n', 'lower= -1 -1= -2\n\n', 'lower= -1 -1= -2\n\n', 'lower= -1 -1= -2\n\n']
 
 # 1. 获取 embedding
-model = SentenceTransformer('Alibaba-NLP/gte-Qwen2-1.5B-instruct')
-embeddings = model.encode(outputs, normalize_embeddings=True)
-
+# model = SentenceTransformer('Alibaba-NLP/gte-Qwen2-1.5B-instruct')
+# embeddings = model.encode(outputs, normalize_embeddings=True)\
+import openai
 # 2. 计算相似度（AP 需要输入 similarity matrix）
-similarity_matrix = cosine_similarity(embeddings)
+def get_openai_embeddings(texts, model="text-embedding-3-small"):
+    # 官方接口支持批量，但有长度限制
+    response = openai.embeddings.create(input=texts, model=model)
+    embeddings = [item.embedding for item in response.data]
+    return embeddings
 
-print(similarity_matrix)
+import umap.umap_ as umap
+embeddings = get_openai_embeddings(outputs)
+plt.figure(figsize=(8, 6))
+sim_matrix = cosine_similarity(embeddings)
+im = plt.imshow(sim_matrix, cmap='hot', interpolation='nearest')
+plt.colorbar(im, label='Cosine Similarity')
 
-# 3. 聚类（preference 默认是中位数，也可以调节使分组数量更多/更少）
-ap = AffinityPropagation(affinity='precomputed', random_state=42)
-labels = ap.fit_predict(similarity_matrix)
+plt.title("Embedding Cosine Similarity Heatmap")
+plt.xlabel("Output Index")
+plt.ylabel("Output Index")
 
-# 4. 查看分组
-for idx, (output, label) in enumerate(zip(outputs, labels)):
-    print(f"[{idx:2}] Cluster {label}: {output.strip()[:60]}...")
+# 可选：加xy轴标签
+plt.xticks(range(len(outputs)), range(len(outputs)))
+plt.yticks(range(len(outputs)), range(len(outputs)))
 
-print("AP自动聚类标签：", list(labels))
+plt.tight_layout()
+plt.show()
+
+
