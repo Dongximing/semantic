@@ -249,7 +249,7 @@ def inference_model_pickle(
             continue
         dirname = f'data-60-temp0_{number}'
         dir_path = os.path.join(base_dir, dirname)
-        json_path = os.path.join(dir_path, f'new_generations_entropy{number}.pkl')
+        json_path = os.path.join(dir_path, f'new_generations_with_entropy{number}.pkl')
 
         out_pkl_path = os.path.join(dir_path, f'new_generations_with_entropy_prob{number}.pkl')
         if not os.path.exists(json_path):
