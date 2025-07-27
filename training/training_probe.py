@@ -177,15 +177,15 @@ def create_Xs_and_ys(datasets, scores, val_test_splits=[0.2, 0.1], random_state=
 def main(dataset,method,data_dir,model_name):
 
     start = 0
-    end = 100
+    end = 60
     X, Y = [], []
     #skip_numbers = [1, 9, 10, 17, 18, 19, 21, 26, 30, 32, 36, 41, 43, 62, 64, 71, 80, 82, 88, 94, 96, 97]
     #skip_numbers = [1, 9, 11, 17, 18, 19, 21, 25, 26, 41, 43, 50, 51, 63, 64, 66, 71, 80, 82, 88, 94, 96, 97]
-
+    skip_numbers = [4, 5, 2, 6, 11, 12, 13, 18, 20, 21, 25, 26, 29, 30, 33, 35, 38, 44, 46, 47, 49, 50, 51, 56, 57, 59]
     base_dir = data_dir
     for number in tqdm(range(start, end)):
-        # if number in skip_numbers:
-        #     continue
+        if number in skip_numbers:
+            continue
         dirname = f'data-60-temp0_{number}'
         dir_path = os.path.join(base_dir, dirname)
         pkl_path = os.path.join(dir_path, f'new_generations_with_entropy_prob{number}.pkl')
@@ -209,7 +209,7 @@ def main(dataset,method,data_dir,model_name):
 
     # 模型与训练
     INPUT_DIM = X_train.shape[1]
-    HIDDEN_DIM = 256
+    HIDDEN_DIM = 512
     model = SemanticEntropyModel(INPUT_DIM, HIDDEN_DIM)
     history = train_probe_regression(
         model, train_loader, val_loader, epochs=50, lr=1e-3,
@@ -255,7 +255,7 @@ if __name__ == "__main__":
     parser.add_argument("--dataset", type=str, required=True, help="dataset")
     parser.add_argument("--model", type=str, required=True, help="model")
     parser.add_argument("--method", type=str, required=True, help="method for X")
-    parser.add_argument("--data_dir", type=str, required=True, help="method for X")
+    parser.add_argument("--data_dir", type=str, required=True, help="method for X",default='/home/cs/staff/shaowei/semantic/qwq-merge')
     args = parser.parse_args()
     main(args.dataset,args.method,args.data_dir,args.model)
 
