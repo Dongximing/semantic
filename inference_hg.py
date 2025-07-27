@@ -11,7 +11,7 @@ MATH_PROMPT = "\nPlease reason step by step, and put your final answer within \\
 
 def inference_model(task_name: str, model, tokenizer):
     if task_name == 'math-500':
-        df = pd.read_json(f"/home/cs/staff/shaowei/{task_name}/test.jsonl", lines=True)
+        df = pd.read_json(f"/home/shaowei/test.jsonl", lines=True)
         prompts = df['problem'][0:100].tolist()
         answers = df['answer'][0:100].tolist()
         start_number = 0
@@ -117,7 +117,7 @@ def main():
     parser.add_argument(
         "--task",
         type=str,
-        default="aime",
+        default="math-500",
     )
     args = parser.parse_args()
     model = AutoModelForCausalLM.from_pretrained(
