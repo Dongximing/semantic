@@ -391,7 +391,7 @@ if __name__ == "__main__":
     parser.add_argument("--start_dataset", type=int, help="the beginning of the dataset",default=0)
     parser.add_argument("--end_dataset", type=int, help="the end of the dataset",default=30)
     parser.add_argument("--target_probe", type=str, help="target_probe",default="/data/semantic/training/valid_new_full_size_qwq_32b_aime_output_last_hidden_list_best_probe_mse")#aime_output_last_hidden_list_best_probe_mse
-    parser.add_argument("--speculative_probe", type=str, help="speculative_probe",default="/home/shaowei/new_probe/new_deepseekr11.5b_math-500_output_last_hidden_list_best_probe_mse")
+    parser.add_argument("--speculative_probe", type=str, help="speculative_probe",default="/home/shaowei/new_probe/valid_new_deepseekr11.5b_aime_output_last_hidden_list_best_probe_mse")
     parser.add_argument("--target_temperature", type=float, help="target_temperature",default=0.1)
     parser.add_argument("--speculative_temperature", type=float, help="speculative_temperature",default=0.6)
     parser.add_argument("--max_new_tokens", type=int, help="max_new_tokens",default=14000)
@@ -400,7 +400,7 @@ if __name__ == "__main__":
     parser.add_argument("--seed", type=int, help="seed", default=298)
     args = parser.parse_args()
     seed_everything(args.seed)
-    model_target_probe = SemanticEntropyProbTarget(5120, 256)
+    model_target_probe = SemanticEntropyProbTarget(5120, 512)
     model_target_probe.load_state_dict(torch.load(f'{args.target_probe}.pt'))
     model_target_probe = model_target_probe.to('cuda:1')
     model_target_probe.eval()
@@ -426,7 +426,7 @@ if __name__ == "__main__":
         args.target_model,
         torch_dtype=torch.float16,
         device_map="auto",
-        max_memory={0: "24GB", 1:"24GB",2:"24GB"}
+        max_memory={0: "22GB", 1:"22GB",2:"22GB",3:"22GB"}
     )
     target_tokenizer = transformers.AutoTokenizer.from_pretrained(
     args.target_model,
@@ -437,7 +437,9 @@ if __name__ == "__main__":
     speculative_model = transformers.AutoModelForCausalLM.from_pretrained(
         args.speculative_model,
         torch_dtype=torch.float16,
-        device_map="cuda:0"
+        device_map="auto",
+        max_memory={0: "22GB", 1: "2GB", 2: "2GB", 3: "2GB"}
+
 
     )
 
