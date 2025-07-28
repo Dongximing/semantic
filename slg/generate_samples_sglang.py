@@ -176,8 +176,8 @@ def inference_model_pickle(task_name: str, model, base_dir,
     numbers = [4, 5, 2, 6, 11, 12, 13, 18, 20, 21, 25, 26, 29, 30, 33, 35, 38, 44, 46, 47, 49, 50, 51, 56, 57, 59]
 
     for number in tqdm(range(start, end)):
-        if number in numbers:
-            continue
+        # if number in numbers:
+        #     continue
         if task_name == "aime":
             dirname = f'data-60-temp0_{number}'
         elif task_name == "math-500":
@@ -202,11 +202,11 @@ def inference_model_pickle(task_name: str, model, base_dir,
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", type=str, default="Qwen/QwQ-32B")
-    parser.add_argument("--task", type=str, default="aime")
+    parser.add_argument("--task", type=str, default="math-500")
     parser.add_argument("--gpu", type=int, default=0)
-    parser.add_argument("--start", type=int, help="dataset", default=9)
+    parser.add_argument("--start", type=int, help="dataset", default=0)
     parser.add_argument("--end", type=int, help="dataset", default=60)  #
-    parser.add_argument("--base_dir", type=str, help="dataset", default='/data/semantic/qwq32b_aime')
+    parser.add_argument("--base_dir", type=str, help="dataset", default='/data/semantic/qwq32b_math')
     args = parser.parse_args()
 
     # /home/cs/staff/shaowei/semantic/aime

@@ -10,4 +10,5 @@ while kill -0 $TARGET_PID 2>/dev/null; do
 done
 
 echo "Process $TARGET_PID has ended. Running your script..."
-python labeling.py --start 0 --end 58
+python generate_prefix_data.py
+python slg/generate_samples_sglang.py
