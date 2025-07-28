@@ -178,6 +178,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                         for i in speculative_output["meta_info"]["hidden_states"]
                     ]
                 )
+                pooling_hidden_information = pooling_hidden_information.mean(dim=0, keepdim=True)
 
 
 
@@ -206,9 +207,11 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                     ]
                 )
 
-                target_pooling_hidden_information = hidden_states[target_tokenizer_input_len:-1, :]  # len *hidden
+                target_pooling_hidden_information = hidden_states[-target_tokenizer_input_len-1:-1, :]
+                print('target_pooling_hidden_information shape\n', target_pooling_hidden_information.shape)
+                target_pooling_hidden_information = target_pooling_hidden_information.mean(dim=0, keepdim=True) # len *hidden
                 print('target_tokenizer_input_len',target_tokenizer_input_len)
-                print('target_pooling_hidden_information shape\n',target_pooling_hidden_information.shape)
+
 
                 with torch.no_grad():
                     prob_target = model_target_probe(target_pooling_hidden_information.float().to(f"cuda:{1}"))
