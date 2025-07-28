@@ -204,7 +204,7 @@ if __name__ == "__main__":
     parser.add_argument("--model", type=str, default="Qwen/QwQ-32B")
     parser.add_argument("--task", type=str, default="math-500")
     parser.add_argument("--gpu", type=int, default=0)
-    parser.add_argument("--start", type=int, help="dataset", default=0)
+    parser.add_argument("--start", type=int, help="dataset", default=11)
     parser.add_argument("--end", type=int, help="dataset", default=100)  #
     parser.add_argument("--base_dir", type=str, help="dataset", default='/data/semantic/qwq32b_math')
     args = parser.parse_args()
@@ -214,7 +214,7 @@ if __name__ == "__main__":
     # /home/cs/staff/shaowei/semantic/deepseek-32b_r1_awq_math
     llm = sgl.Engine(
         model_path=args.model,
-        tp_size=4,
+        tp_size=3,
         enable_return_hidden_states=True,
     )
     inference_model_pickle(task_name=args.task, model=llm, base_dir=args.base_dir,

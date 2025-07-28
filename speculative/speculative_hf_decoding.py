@@ -385,12 +385,12 @@ def process_file_to_json(dir_path, target_model, target_tokenizer,speculative_mo
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str,  help="dataset",default='aime')#math-500
-    parser.add_argument("--target_model", type=str,  help="target_model",default="unsloth/DeepSeek-R1-Distill-Qwen-32B-bnb-4bit")
+    parser.add_argument("--target_model", type=str,  help="target_model",default="Qwen/QwQ-32B")
     parser.add_argument("--speculative_model", type=str,  help="speculative_model", default="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
-    parser.add_argument("--data_dir", type=str,  help="data_dir",default='/data/semantic/speculative/new_spec_result_math-500_deepseek_r132_deepseek1.5seed_')
+    parser.add_argument("--data_dir", type=str,  help="data_dir",default='/data/semantic/speculative/new_spec_result_math-500_QwQ-32B_full_size_deepseek1.5seed_')
     parser.add_argument("--start_dataset", type=int, help="the beginning of the dataset",default=0)
     parser.add_argument("--end_dataset", type=int, help="the end of the dataset",default=30)
-    parser.add_argument("--target_probe", type=str, help="target_probe",default="/data/semantic/training/valid_deepseek32b_aime_output_last_hidden_list_best_probe_mse")#aime_output_last_hidden_list_best_probe_mse
+    parser.add_argument("--target_probe", type=str, help="target_probe",default="/data/semantic/training/valid_new_full_size_qwq_32b_aime_output_last_hidden_list_best_probe_mse")#aime_output_last_hidden_list_best_probe_mse
     parser.add_argument("--speculative_probe", type=str, help="speculative_probe",default="/home/shaowei/new_probe/new_deepseekr11.5b_math-500_output_last_hidden_list_best_probe_mse")
     parser.add_argument("--target_temperature", type=float, help="target_temperature",default=0.1)
     parser.add_argument("--speculative_temperature", type=float, help="speculative_temperature",default=0.6)
@@ -426,7 +426,7 @@ if __name__ == "__main__":
         args.target_model,
         torch_dtype=torch.float16,
         device_map="auto",
-        max_memory={0: "24GB", 1:"24GB"}
+        max_memory={0: "24GB", 1:"24GB",2:"24GB"}
     )
     target_tokenizer = transformers.AutoTokenizer.from_pretrained(
     args.target_model,
