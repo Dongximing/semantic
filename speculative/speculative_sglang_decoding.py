@@ -158,7 +158,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                     real_target_output = target_real_output
                     detail.append({'target_model':real_target_output,'why_is_not_good':speculative_real_output,"score_target":round(prob_target, 2),"score_spec":round(prob_spec, 2)})
 
-                    print('small model input\n',speculative_tokenizer.decode(speculative_text[0]))
+                    print('small model input\n',speculative_text)
 
 
                ## small model generation
