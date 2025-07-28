@@ -214,7 +214,7 @@ if __name__ == "__main__":
     # /home/cs/staff/shaowei/semantic/deepseek-32b_r1_awq_math
     llm = sgl.Engine(
         model_path=args.model,
-        tp_size=3,
+        tp_size=4,
         enable_return_hidden_states=True,
     )
     inference_model_pickle(task_name=args.task, model=llm, base_dir=args.base_dir,
