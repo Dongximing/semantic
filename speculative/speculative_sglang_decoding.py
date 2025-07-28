@@ -130,12 +130,12 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
         def checking_is_finish(generated_ids, max_new_tokens, use_target):
 
             if use_target:
-                if generated_ids.shape[1] - original_target_text_len < max_new_tokens:
+                if (target_tokenizer.encode(generated_ids)['input_ids']).shape[1]- original_target_text_len < max_new_tokens:
                     return True
                 else:
                     return False
             else:
-                if generated_ids.shape[1] - original_target_text_len < max_new_tokens:
+                if (speculative_tokenizer.encode(generated_ids)['input_ids']).shape[1]- original_target_text_len < max_new_tokens:
                     return True
                 else:
                     return False
@@ -146,7 +146,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
         target_real_output = ''
         generated_text = target_text
 
-        while checking_is_finish(generated_ids,max_new_tokens,use_target):
+        while checking_is_finish(generated_text,max_new_tokens,use_target):
             # we start at the target model.
             if begin:
                 change_tokens = BEGIN_TOKEN_NUM
@@ -261,7 +261,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                     #print('target_tokenizer.eos_token_id in the generated_text',target_tokenizer.eos_token_id)
                     break
 
-            if speculative_tokenizer.eos_token_id in generated_ids[0, target_prompt_len:]:
+            if speculative_tokenizer.eos_token_id in target_tokenizer.encode(generated_text):
                 break
             length_of_output = generated_ids.shape[1]
 
