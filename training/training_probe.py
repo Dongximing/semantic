@@ -183,7 +183,7 @@ def main(dataset,method,data_dir,model_name):
     #skip_numbers = [1, 9, 11, 17, 18, 19, 21, 25, 26, 41, 43, 50, 51, 63, 64, 66, 71, 80, 82, 88, 94, 96, 97]
     skip_numbers = [4, 5, 2, 6, 11, 12, 13, 18, 20, 21, 25, 26, 29, 30, 33, 35, 38, 44, 46, 47, 49, 50, 51, 56, 57, 59]
     base_dir = data_dir
-    for number in tqdm(range(start, 1)):
+    for number in tqdm(range(start, end)):
         if number in skip_numbers:
             continue
         dirname = f'data-60-temp0_{number}'
