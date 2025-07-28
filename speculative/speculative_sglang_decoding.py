@@ -330,7 +330,7 @@ if __name__ == "__main__":
     # elif args.seed == 30981:
     #     wrong_list = [1, 2, 3, 4, 5, 10, 12, 13, 14, 15, 17, 18, 20, 21, 22, 25, 27, 28]
 
-    model_target_probe = SemanticEntropyProbTarget(5120, 256)
+    model_target_probe = SemanticEntropyProbTarget(5120, 512)
     model_target_probe.load_state_dict(torch.load(f'{args.target_probe}.pt'))
     model_target_probe = model_target_probe.to('cuda:1')
     model_target_probe.eval()
