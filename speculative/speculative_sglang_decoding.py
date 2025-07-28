@@ -166,10 +166,11 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 small_input_ids = generated_ids
 
                ## small model generation
+                small_input = speculative_tokenizer.decode(small_input_ids,skip_special_tokens=True)
 
                 speculative_outputs = speculative_model.generate(
-                        input_data, sampling_params=sampling_params, return_hidden_states=True)
-                speculative_real_output = speculative_tokenizer.decode(checking_generated_ids[0,small_input_ids.shape[1]:])
+                        [small_input], sampling_params=sampling_params, return_hidden_states=True)
+                speculative_real_output = speculative_tokenizer.decode(speculative_outputs[0]['text'])
                 #print("checking_generated_ids[0,small_input_ids.shape[1]:]\n",checking_generated_ids[0,small_input_ids.shape[1]:])
                 special_token_id = 151646
                 target_tokenizer_input = target_tokenizer(speculative_real_output, return_tensors="pt")['input_ids']
@@ -187,12 +188,27 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                     # print('previous_checking_target_ids',previous_checking_target_ids.shape)
                     checking_target_ids =  torch.cat([checking_target_ids.to(target_model.device),target_tokenizer_input.to(target_model.device)], dim=-1)
 
-                check_output, checking_tgt_kv, target_pooling_hidden_information = generate_with_partial_kv(
-                target_model, target_tokenizer, checking_target_ids , valid_tgt_kv,
-                    max_new_tokens=1, temperature=0.6, top_k=50, top_p=0.95, checking=True
+                checking_outputs = target_model.generate([small_input], sampling_params={"temperature": 0.1,"max_new_tokens": 1}, return_hidden_states=True)
+
+                checking_output = checking_outputs[0]
+                for i in range(len(checking_output["meta_info"]["hidden_states"])):
+                    checking_output["meta_info"]["hidden_states"][i] = torch.tensor(
+                        checking_output["meta_info"]["hidden_states"][i], dtype=torch.bfloat16
+                    )
+                Completion_tokens = checking_output['meta_info']['completion_tokens']
+                hidden_states = torch.cat(
+                    [
+                        i.unsqueeze(0) if len(i.shape) == 1 else i
+                        for i in checking_output["meta_info"]["hidden_states"]
+                    ]
                 )
-                # print('******** checking valid_tgt_kv',valid_tgt_kv[0][0].shape[2])
-                # check the entropy of the target model and speculative model.
+                real_answer = checking_output['text']
+                hidden_states = checking_output[-:-1, :]  # len *hidden
+
+
+
+
+
                 with torch.no_grad():
                     prob_target = model_target_probe(target_pooling_hidden_information.float().to(f"cuda:{1}"))
                 with torch.no_grad():
@@ -235,10 +251,10 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 try_correct_num = try_correct_num + 1
 
                 previous_original_target_text_len = generated_ids.shape[1]
-                generated_ids, valid_tgt_kv,output_last_hidden_list = generate_with_partial_kv(
-                target_model, target_tokenizer, generated_ids.to(f"cuda:{TARGET_model}"), valid_tgt_kv,
-                    max_new_tokens=change_tokens, temperature=0.6, top_k=50, top_p=0.95,checking=False
-                )
+                target_model_input = target_model.decode(generated_ids,skip_special_tokens=True)
+                speculative_outputs = target_model.generate(
+                    [target_model_input], sampling_params=sampling_params, return_hidden_states=True)
+                speculative_real_output = speculative_tokenizer.decode(speculative_outputs[0]['text'])
 
                 # if inferencing the model stops at the first time
                 if target_tokenizer.eos_token_id in generated_ids[0, target_prompt_len:]  :
