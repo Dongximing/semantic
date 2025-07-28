@@ -168,16 +168,10 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                         [small_input], sampling_params=sampling_params, return_hidden_states=True)
                 speculative_real_output_text = speculative_outputs[0]['text']
 
-                print('speculative_real_output_text',speculative_real_output_text)
-                #print("checking_generated_ids[0,small_input_ids.shape[1]:]\n",checking_generated_ids[0,small_input_ids.shape[1]:])
-                special_token_id = 151646
-                target_tokenizer_input = target_tokenizer(speculative_real_output, return_tensors="pt")['input_ids']
-                if target_tokenizer_input[0, 0].item() == special_token_id:
-                    target_tokenizer_input = target_tokenizer_input[:, 1:]
+                print('speculative_real_output_text\n',speculative_real_output_text)
 
-                target_tokenizer_input = target_tokenizer_input.to(
-                    target_model.device)
-
+                target_tokenizer_input = target_tokenizer(speculative_real_output_text, return_tensors="pt")['input_ids']
+                target_tokenizer_input_len = target_tokenizer_input.shape[1]
 
                 if use_target:
                     checking_target_ids =torch.cat([target_output_id,target_tokenizer_input], dim=-1)
@@ -193,15 +187,16 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                     checking_output["meta_info"]["hidden_states"][i] = torch.tensor(
                         checking_output["meta_info"]["hidden_states"][i], dtype=torch.bfloat16
                     )
-                Completion_tokens = checking_output['meta_info']['completion_tokens']
                 hidden_states = torch.cat(
                     [
                         i.unsqueeze(0) if len(i.shape) == 1 else i
                         for i in checking_output["meta_info"]["hidden_states"]
                     ]
                 )
-                real_answer = checking_output['text']
-                hidden_states = checking_output[-5:-1, :]  # len *hidden
+
+                target_pooling_hidden_information = hidden_states[target_tokenizer_input_len:-1, :]  # len *hidden
+
+                print('target_pooling_hidden_information shape\n',target_pooling_hidden_information.shape)
 
 
 
