@@ -224,7 +224,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                     detail.append({'spe_model':speculative_real_output})
                     correct_spe_number +=1
                     use_target = False
-                    generated_text =  small_input + checking_output['text']
+                    generated_text =  small_input + speculative_output['text']
                     print('acceptaccpetaccpetaccpetaccpetaccpetaccpetaccpetaccpetaccpet')
                 else:
                     if use_target:
@@ -263,7 +263,6 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
 
             if speculative_tokenizer.eos_token_id in generated_ids[0, target_prompt_len:]:
                 break
-            generated_text = speculative_tokenizer.decode(generated_ids[0, :], skip_special_tokens=True)
             length_of_output = generated_ids.shape[1]
 
 
