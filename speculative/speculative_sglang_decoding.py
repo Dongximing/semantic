@@ -263,11 +263,11 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
 
 
 
-def process_file_to_json(dir_path, target_model, target_tokenizer,speculative_model, speculative_tokenizer,problem, answer,target_temperature,speculative_temperature,max_new_tokens,model_target_probe,model_spec_probe):
+def process_file_to_json(dir_path, target_model, target_tokenizer,speculative_model, speculative_tokenizer,problem, answer,max_new_tokens,model_target_probe,model_spec_probe):
     all_generations = []
 
     start_time = time.time()
-    result = speculative_decoding(target_model, target_tokenizer, speculative_model, speculative_tokenizer, problem, target_temperature, speculative_temperature,max_new_tokens,model_target_probe,model_spec_probe)
+    result = speculative_decoding(target_model, target_tokenizer, speculative_model, speculative_tokenizer, problem,max_new_tokens,model_target_probe,model_spec_probe)
     end_time = time.time()
     generated_text, try_correct_num,correct_spe_number,detail,length_of_output = result
     print('real_answer\n',generated_text)
