@@ -144,6 +144,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
         prob_target = 0
         prob_spec = 0
         target_real_output = ''
+        generated_text = ''
 
         while checking_is_finish(generated_ids,max_new_tokens,use_target):
             # we start at the target model.
@@ -151,18 +152,15 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 change_tokens = BEGIN_TOKEN_NUM
                 use_target = True
             if not begin:
-                # generating the text and check by probe
-                # if it uses the target model, we need to covert the input text to the speculative model.
                 if use_target:
                     speculative_text = speculative_text+target_real_output
                     real_target_output = target_real_output
                     detail.append({'target_model':real_target_output,'why_is_not_good':speculative_real_output,"score_target":round(prob_target, 2),"score_spec":round(prob_spec, 2)})
 
                     print('small model input\n',speculative_text)
-
-
-               ## small model generation
-                small_input = speculative_text
+                    small_input = speculative_text
+                else:
+                    small_input = generated_text
 
                 speculative_outputs = speculative_model.generate(
                         [small_input], sampling_params=sampling_params, return_hidden_states=True)
@@ -225,20 +223,14 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                     detail.append({'spe_model':speculative_real_output})
                     correct_spe_number +=1
                     use_target = False
-                    generated_ids = checking_generated_ids
-                    target_output_id = checking_target_ids
+                    generated_text =  small_input + checking_output['text']
+
                 else:
-
-                    # valid_tgt_kv  not change
                     if use_target:
-                        generated_ids = target_output_id
+                        generated_text = speculative_text
                     else:
-                        generated_ids = previous_checking_target_ids
-
-
+                        generated_text = small_input
                     use_target = True
-                    start_speculative_text_inputs = small_input_ids
-                    #spec_kv = spec_kv # not change
 
 
             # Let the target model finish the generation.
