@@ -240,6 +240,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 try_correct_num = try_correct_num + 1
 
                 previous_original_target_text_len = generated_ids.shape[1]
+                print('generated_ids',generated_ids)
                 target_model_input = target_tokenizer.decode(generated_ids,skip_special_tokens=True)
                 speculative_outputs = target_model.generate(
                     [target_model_input], sampling_params=sampling_params, return_hidden_states=True)
