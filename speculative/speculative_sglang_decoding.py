@@ -84,7 +84,7 @@ class StoppingCriteriaSub(StoppingCriteria):
         return False
 STOP_TOKENS = [
     ' \n\n', '.\n\n', ':\n\n', '\n\n',
-    ')\n\n', '?\n\n', ']\n\n', ').\n\n'
+    ')\n\n', '?\n\n', ']\n\n', ').\n\n','Wait', ' Wait'
 ]
 
 
@@ -161,6 +161,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                     small_input = speculative_text
                 else:
                     small_input = generated_text
+                    print('gggggg')
                 print('small model input\n', small_input)
                 speculative_outputs = speculative_model.generate(
                         [small_input], sampling_params=sampling_params, return_hidden_states=True)
