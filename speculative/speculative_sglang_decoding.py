@@ -156,12 +156,12 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                     speculative_text = speculative_text+target_real_output
                     real_target_output = target_real_output
                     detail.append({'target_model':real_target_output,'why_is_not_good':speculative_real_output,"score_target":round(prob_target, 2),"score_spec":round(prob_spec, 2)})
-
-                    print('small model input\n',speculative_text)
+                    #
+                    # print('small model input\n',speculative_text)
                     small_input = speculative_text
                 else:
                     small_input = generated_text
-
+                print('small model input\n', small_input)
                 speculative_outputs = speculative_model.generate(
                         [small_input], sampling_params=sampling_params, return_hidden_states=True)
                 speculative_real_output_text = speculative_outputs[0]['text']
@@ -224,7 +224,6 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                     correct_spe_number +=1
                     use_target = False
                     generated_text =  small_input + checking_output['text']
-
                 else:
                     if use_target:
                         generated_text = speculative_text
