@@ -244,7 +244,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
 
                 previous_original_target_text_len = generated_ids.shape[1]
 
-
+                print('generated_text----------reject',generated_text)
                 target_outputs = target_model.generate(
                     [generated_text], sampling_params=sampling_params)
                 target_real_output = target_outputs[0]['text']
