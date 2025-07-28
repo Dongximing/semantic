@@ -189,8 +189,8 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 if use_target:
                     checking_target_text = speculative_text+speculative_real_output_text
                 else:
-                    checking_target_text = ''
-
+                    checking_target_text = generated_text + speculative_real_output_text
+                print('---------------')
 
                 checking_outputs = target_model.generate([checking_target_text], sampling_params={"temperature": 0.1,"max_new_tokens": 1}, return_hidden_states=True)
 
