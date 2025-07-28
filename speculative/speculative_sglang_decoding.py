@@ -157,12 +157,12 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                     real_target_output = target_real_output
                     detail.append({'target_model':real_target_output,'why_is_not_good':speculative_real_output,"score_target":round(prob_target, 2),"score_spec":round(prob_spec, 2)})
                     #
-                    # print('small model input\n',speculative_text)
+                    # #print('small model input\n',speculative_text)
                     small_input = speculative_text
                 else:
                     small_input = generated_text
-                    print('gggggg')
-                print('small model input\n', small_input)
+                    #print('gggggg')
+                #print('small model input\n', small_input)
                 speculative_outputs = speculative_model.generate(
                         [small_input], sampling_params=sampling_params, return_hidden_states=True)
                 speculative_real_output_text = speculative_outputs[0]['text']
@@ -181,7 +181,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
 
 
 
-                print('speculative_real_output_text\n',speculative_real_output_text)
+                #print('speculative_real_output_text\n',speculative_real_output_text)
 
                 target_tokenizer_input = target_tokenizer(speculative_real_output_text, return_tensors="pt")['input_ids']
                 target_tokenizer_input_len = target_tokenizer_input.shape[1]
@@ -190,7 +190,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                     checking_target_text = speculative_text+speculative_real_output_text
                 else:
                     checking_target_text = generated_text + speculative_real_output_text
-                print('---------checking_target_text------\n\n',checking_target_text)
+                #print('---------checking_target_text------\n\n',checking_target_text)
 
                 checking_outputs = target_model.generate([checking_target_text], sampling_params={"temperature": 0.1,"max_new_tokens": 1}, return_hidden_states=True)
 
@@ -207,9 +207,9 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 )
 
                 target_pooling_hidden_information = hidden_states[-target_tokenizer_input_len-1:-1, :]
-                print('target_pooling_hidden_information shape\n', target_pooling_hidden_information.shape)
+                #print('target_pooling_hidden_information shape\n', target_pooling_hidden_information.shape)
                 target_pooling_hidden_information = target_pooling_hidden_information.mean(dim=0, keepdim=True) # len *hidden
-                print('target_tokenizer_input_len',target_tokenizer_input_len)
+                #print('target_tokenizer_input_len',target_tokenizer_input_len)
 
 
                 with torch.no_grad():
@@ -219,20 +219,20 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
 
                 prob_target = prob_target.item()
                 prob_spec = prob_spec.item()
-                print(f"prob_target.item() {prob_target} , prob_spec.item() {prob_spec}")
+                #print(f"prob_target.item() {prob_target} , prob_spec.item() {prob_spec}")
                 if speculative_accept(prob_target, prob_spec):
                     detail.append({'spe_model':speculative_real_output})
                     correct_spe_number +=1
                     use_target = False
                     generated_text =  small_input + speculative_output['text']
-                    print('acceptaccpetaccpetaccpetaccpetaccpetaccpetaccpetaccpetaccpet')
+                    #print('acceptaccpetaccpetaccpetaccpetaccpetaccpetaccpetaccpetaccpet')
                 else:
                     if use_target:
                         generated_text = speculative_text
                     else:
                         generated_text = small_input
                     use_target = True
-                    print('rejectrejectrejectrejectrejectrejectrejectrejectrejectrejectreject')
+                    #print('rejectrejectrejectrejectrejectrejectrejectrejectrejectrejectreject')
 
 
             # Let the target model finish the generation.
@@ -244,21 +244,21 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
 
                 previous_original_target_text_len = generated_ids.shape[1]
 
-                print('generated_text----------reject',generated_text)
+                #print('generated_text----------reject',generated_text)
                 target_outputs = target_model.generate(
                     [generated_text], sampling_params=sampling_params)
                 target_real_output = target_outputs[0]['text']
 
-                print('speculative_outputs\n',target_outputs[0])
+                #print('speculative_outputs\n',target_outputs[0])
 
 
-                print('\n\n\n\n')
-                print('speculative_real_output\n',target_real_output)
+                #print('\n\n\n\n')
+                #print('speculative_real_output\n',target_real_output)
 
                 # if inferencing the model stops at the first time
                 if target_tokenizer.eos_token_id in target_tokenizer.encode(target_real_output):
                     generated_text = target_tokenizer.decode(generated_ids[0, :], skip_special_tokens=True)
-                    print('target_tokenizer.eos_token_id in the generated_text',target_tokenizer.eos_token_id)
+                    #print('target_tokenizer.eos_token_id in the generated_text',target_tokenizer.eos_token_id)
                     break
 
             if speculative_tokenizer.eos_token_id in generated_ids[0, target_prompt_len:]:
@@ -279,7 +279,7 @@ def process_file_to_json(dir_path, target_model, target_tokenizer,speculative_mo
     result = speculative_decoding(target_model, target_tokenizer, speculative_model, speculative_tokenizer, problem,max_new_tokens,model_target_probe,model_spec_probe)
     end_time = time.time()
     generated_text, try_correct_num,correct_spe_number,detail,length_of_output = result
-    print('real_answer\n',generated_text)
+    #print('real_answer\n',generated_text)
 
     all_generations.append({
         "input_text": problem,
@@ -378,12 +378,12 @@ if __name__ == "__main__":
     problems_and_answers = [{"problem": item["problem"], "answer": item["answer"]} for item in ds]
     # for idx, number in enumerate(tqdm(wrong_list, total=len(wrong_list))):
     #
-    #     print("doing wrong number:", number)
+    #     #print("doing wrong number:", number)
     #     dirname = f'spec_{args.dataset}_{number}'
     #     dir_path = os.path.join(f"{args.data_dir}{args.seed}", dirname)
     #     number = number
     #     problem = problems_and_answers[number]['problem']
-    #     print(f"{number}: {problem}")
+    #     #print(f"{number}: {problem}")
     #     answer = problems_and_answers[number]['answer']
     #     process_file_to_json(dir_path, target_model, target_tokenizer,speculative_model, speculative_tokenizer, problem,answer,args.target_temperature,args.speculative_temperature,args.max_new_tokens,model_target_probe,model_spec_probe)
 
