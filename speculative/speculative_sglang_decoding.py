@@ -143,6 +143,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
         speculative_real_output = ''
         prob_target = 0
         prob_spec = 0
+        target_real_output = ''
 
         while checking_is_finish(generated_ids,max_new_tokens,use_target):
             # we start at the target model.
@@ -153,16 +154,15 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 # generating the text and check by probe
                 # if it uses the target model, we need to covert the input text to the speculative model.
                 if use_target:
-                    target_output_id = generated_ids
-                    real_target_output = target_tokenizer.decode(generated_ids[0,previous_original_target_text_len:],skip_special_tokens=True)
+                    speculative_text = speculative_text+target_real_output
+                    real_target_output = target_real_output
                     detail.append({'target_model':real_target_output,'why_is_not_good':speculative_real_output,"score_target":round(prob_target, 2),"score_spec":round(prob_spec, 2)})
-                    speculative_tokenizer_input = speculative_tokenizer(real_target_output, return_tensors="pt")['input_ids']
-                    generated_ids = torch.cat([start_speculative_text_inputs,speculative_tokenizer_input], dim=-1)
-                    print('small model input\n',speculative_tokenizer.decode(generated_ids[0]))
-                small_input_ids = generated_ids
+
+                    print('small model input\n',speculative_tokenizer.decode(speculative_text[0]))
+
 
                ## small model generation
-                small_input = speculative_tokenizer.decode(small_input_ids,skip_special_tokens=True)
+                small_input = speculative_text
 
                 speculative_outputs = speculative_model.generate(
                         [small_input], sampling_params=sampling_params, return_hidden_states=True)
