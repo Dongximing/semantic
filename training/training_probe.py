@@ -153,7 +153,7 @@ def train_probe_regression(
     return history
 
 def create_Xs_and_ys(datasets, scores, val_test_splits=[0.2, 0.1], random_state=42):
-    X = np.array([d[0] for d in datasets])
+    X = np.array([d[0].to(torch.float32).numpy() for d in datasets])
     y = np.array(scores)
 
     valid_size, test_size = val_test_splits
