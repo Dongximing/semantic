@@ -12,9 +12,9 @@ MATH_PROMPT = "\nPlease reason step by step, and put your final answer within \\
 def inference_model(task_name: str, model, tokenizer):
     if task_name == 'math-500':
         df = pd.read_json(f"/home/shaowei/test.jsonl", lines=True)
-        prompts = df['problem'][0:100].tolist()
-        answers = df['answer'][0:100].tolist()
-        start_number = 0
+        prompts = df['problem'][60:100].tolist()
+        answers = df['answer'][60:100].tolist()
+        start_number = 60
         result_base_dir = "./qwq32b_math"
     elif task_name == 'aime':
         dataset = load_dataset("AI-MO/aimo-validation-aime")
