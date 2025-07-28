@@ -166,7 +166,9 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
 
                 speculative_outputs = speculative_model.generate(
                         [small_input], sampling_params=sampling_params, return_hidden_states=True)
-                speculative_real_output = speculative_tokenizer.decode(speculative_outputs[0]['text'])
+                speculative_real_output_text = speculative_outputs[0]['text']
+
+                print('speculative_real_output_text',speculative_real_output_text)
                 #print("checking_generated_ids[0,small_input_ids.shape[1]:]\n",checking_generated_ids[0,small_input_ids.shape[1]:])
                 special_token_id = 151646
                 target_tokenizer_input = target_tokenizer(speculative_real_output, return_tensors="pt")['input_ids']
