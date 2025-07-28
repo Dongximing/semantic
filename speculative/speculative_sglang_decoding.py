@@ -240,17 +240,17 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 try_correct_num = try_correct_num + 1
 
                 previous_original_target_text_len = generated_ids.shape[1]
-                print('generated_ids',generated_ids)
-                target_model_input = target_tokenizer.decode(generated_ids[0],skip_special_tokens=True)
-                speculative_outputs = target_model.generate(
-                    [target_model_input], sampling_params=sampling_params, return_hidden_states=True)
-                speculative_real_output = speculative_tokenizer.decode(speculative_outputs[0]['text'])
 
-                print('speculative_outputs\n',speculative_outputs)
+                target_model_input = target_tokenizer.decode(generated_ids[0],skip_special_tokens=True)
+                target_outputs = target_model.generate(
+                    [target_model_input], sampling_params=sampling_params, return_hidden_states=True)
+                target_real_output = target_outputs[0]['text']
+
+                print('speculative_outputs\n',target_outputs[0])
 
 
                 print('\n\n\n\n')
-                print('speculative_real_output\n',speculative_real_output)
+                print('speculative_real_output\n',target_real_output)
 
                 # if inferencing the model stops at the first time
                 if target_tokenizer.eos_token_id in generated_ids[0, target_prompt_len:]  :
