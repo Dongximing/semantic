@@ -121,11 +121,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
         start_speculative_text_inputs = target_tokenizer(speculative_text, return_tensors="pt")['input_ids']
         original_target_text_len = start_target_model_inputs["input_ids"].shape[1]
         # there are kv caches in both the target model and speculative model.
-
         correct_tokens, try_correct_num, correct_spe_number = [], 0, 0
-        # change flag is used to check whether the target models need to guide the speculative model.
-        token_num, change_tokens, change_flag = 0, 0, False
-        # 'begin' implicate the first time we start the speculative model.
         detail = []
         begin = True
         use_target = True
@@ -152,7 +148,6 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
             # we start at the target model.
             if begin:
                 change_tokens = BEGIN_TOKEN_NUM
-                valid_tgt_kv = None
                 use_target = True
             if not begin:
                 # generating the text and check by probe
@@ -203,7 +198,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                     ]
                 )
                 real_answer = checking_output['text']
-                hidden_states = checking_output[-:-1, :]  # len *hidden
+                hidden_states = checking_output[-5:-1, :]  # len *hidden
 
 
 
@@ -213,8 +208,6 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                     prob_target = model_target_probe(target_pooling_hidden_information.float().to(f"cuda:{1}"))
                 with torch.no_grad():
                     prob_spec = model_spec_probe(pooling_hidden_information.float().to(f"cuda:{1}"))
-                # if the prob of the target model is higher than the prob of the speculative model, we use the speculative model to keep going.
-                # if the prob of the target model is lower than the prob of the speculative model, we use the target model to generate the current part.
 
                 prob_target = prob_target.item()
                 prob_spec = prob_spec.item()
@@ -223,8 +216,6 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                     detail.append({'spe_model':speculative_real_output})
                     correct_spe_number +=1
                     use_target = False
-                    valid_tgt_kv = copy.deepcopy(checking_tgt_kv)# we just want to real generation KV cache,
-                    spec_kv = copy.deepcopy(checking_spec_kv)
                     generated_ids = checking_generated_ids
                     target_output_id = checking_target_ids
                 else:
@@ -235,8 +226,6 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                     else:
                         generated_ids = previous_checking_target_ids
 
-                    spec_kv = copy.deepcopy(previous_spec_kv)
-                    valid_tgt_kv = copy.deepcopy(previous)
 
                     use_target = True
                     start_speculative_text_inputs = small_input_ids
