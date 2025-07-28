@@ -50,7 +50,7 @@ def process_file(json_path, out_json_path, tokenizer):
     print(f"Saved {out_json_path} with {len(out_segments)} segments.")
 
 def inference_model(task_name: str, model, tokenizer):
-    base_dir = '/data/semantic/qwq32b_aime'
+    base_dir = '/data/semantic/qwq32b_math'
     # base_dir = '/home/shaowei/hf/math-result_left'
     for dirname in os.listdir(base_dir):
         if dirname.startswith('data'):
@@ -71,4 +71,4 @@ if __name__ == "__main__":
         "Qwen/QwQ-32B",
         trust_remote_code=True
     )
-    inference_model("aime", None, tokenizer)
+    inference_model("math-500", None, tokenizer)

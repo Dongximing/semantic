@@ -245,11 +245,11 @@ def process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_genera
 #quail /data/ximing/math-result_left
 def inference_model_pickle(task_name: str, model, tokenizer, base_dir,
                            start=31, end=50, num_generations=20):
-    numbers = [4, 5, 2, 6, 11, 12, 13, 18, 20, 21, 25, 26, 29, 30, 33, 35, 38, 44, 46, 47, 49, 50, 51, 56, 57, 59]
+    #numbers = [4, 5, 2, 6, 11, 12, 13, 18, 20, 21, 25, 26, 29, 30, 33, 35, 38, 44, 46, 47, 49, 50, 51, 56, 57, 59]
 
     for number in tqdm(range(start, end)):
-        if number in numbers:
-            continue
+        # if number in numbers:
+        #     continue
         if task_name == "aime":
             dirname = f'data-60-temp0_{number}'
         elif task_name == "math-500":
@@ -276,11 +276,11 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", type=str, default="Qwen/QwQ-32B")
-    parser.add_argument("--task",type=str,default="aime")
+    parser.add_argument("--task",type=str,default="math-500")
     parser.add_argument("--gpu", type=int, default=0)
     parser.add_argument("--start", type=int, help="dataset", default=0)
-    parser.add_argument("--end", type=int, help="dataset",default=60) #
-    parser.add_argument("--base_dir", type=str, help="dataset", default='/data/semantic/qwq32b_aime')
+    parser.add_argument("--end", type=int, help="dataset",default=100) #
+    parser.add_argument("--base_dir", type=str, help="dataset", default='/data/semantic/qwq32b_math')
     args = parser.parse_args()
     tokenizer = AutoTokenizer.from_pretrained(
         args.model,
