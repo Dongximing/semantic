@@ -167,6 +167,19 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 speculative_outputs = speculative_model.generate(
                         [small_input], sampling_params=sampling_params, return_hidden_states=True)
                 speculative_real_output_text = speculative_outputs[0]['text']
+                speculative_output = speculative_outputs[0]
+                for i in range(len(speculative_output["meta_info"]["hidden_states"])):
+                    speculative_output["meta_info"]["hidden_states"][i] = torch.tensor(
+                        speculative_output["meta_info"]["hidden_states"][i], dtype=torch.bfloat16
+                    )
+                pooling_hidden_information = torch.cat(
+                    [
+                        i.unsqueeze(0) if len(i.shape) == 1 else i
+                        for i in speculative_output["meta_info"]["hidden_states"]
+                    ]
+                )
+
+
 
                 print('speculative_real_output_text\n',speculative_real_output_text)
 
@@ -174,13 +187,12 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 target_tokenizer_input_len = target_tokenizer_input.shape[1]
 
                 if use_target:
-                    checking_target_ids =torch.cat([target_output_id,target_tokenizer_input], dim=-1)
+                    checking_target_text = speculative_text+speculative_real_output_text
                 else:
-                    previous_checking_target_ids = copy.deepcopy(checking_target_ids)
-                    # print('previous_checking_target_ids',previous_checking_target_ids.shape)
-                    checking_target_ids =  torch.cat([checking_target_ids.to(target_model.device),target_tokenizer_input.to(target_model.device)], dim=-1)
+                    checking_target_text = ''
 
-                checking_outputs = target_model.generate([small_input], sampling_params={"temperature": 0.1,"max_new_tokens": 1}, return_hidden_states=True)
+
+                checking_outputs = target_model.generate([checking_target_text], sampling_params={"temperature": 0.1,"max_new_tokens": 1}, return_hidden_states=True)
 
                 checking_output = checking_outputs[0]
                 for i in range(len(checking_output["meta_info"]["hidden_states"])):
@@ -195,12 +207,8 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 )
 
                 target_pooling_hidden_information = hidden_states[target_tokenizer_input_len:-1, :]  # len *hidden
-
+                print('target_tokenizer_input_len',target_tokenizer_input_len)
                 print('target_pooling_hidden_information shape\n',target_pooling_hidden_information.shape)
-
-
-
-
 
                 with torch.no_grad():
                     prob_target = model_target_probe(target_pooling_hidden_information.float().to(f"cuda:{1}"))
@@ -209,7 +217,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
 
                 prob_target = prob_target.item()
                 prob_spec = prob_spec.item()
-                #print(f"prob_target.item() {prob_target} , prob_spec.item() {prob_spec}")
+                print(f"prob_target.item() {prob_target} , prob_spec.item() {prob_spec}")
                 if speculative_accept(prob_target, prob_spec):
                     detail.append({'spe_model':speculative_real_output})
                     correct_spe_number +=1
