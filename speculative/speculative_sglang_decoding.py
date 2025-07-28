@@ -177,6 +177,8 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                         for i in speculative_output["meta_info"]["hidden_states"]
                     ]
                 )
+                Completion_tokens = speculative_output['meta_info']['completion_tokens']
+                pooling_hidden_information = pooling_hidden_information[-Completion_tokens:, :]
                 pooling_hidden_information = pooling_hidden_information.mean(dim=0, keepdim=True)
 
 
