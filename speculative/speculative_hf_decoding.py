@@ -161,16 +161,16 @@ def generate_with_partial_kv(
     if checking:
 
         output_last_hidden_list_big = big_hidden[-1].cpu()
-        #print("output_last_hidden_list_big.shape",output_last_hidden_list_big.shape)
+        ##print("output_last_hidden_list_big.shape",output_last_hidden_list_big.shape)
         output_last_hidden_list =output_last_hidden_list_big.squeeze(0)
         output_last_hidden_list = output_last_hidden_list.mean(dim=0, keepdim=True)
     else:
         output_last_hidden_list = torch.stack([layer[-1][:, -1, :] for layer in hidden]).cpu()
         output_last_hidden_list = output_last_hidden_list.squeeze(1)  # [len ,D]
-        #print("output_last_hidden_list.shape", output_last_hidden_list.shape)
+        ##print("output_last_hidden_list.shape", output_last_hidden_list.shape)
         output_last_hidden_list = output_last_hidden_list.mean(dim=0, keepdim=True)  # [1,D]
     if checking:
-        # print('checking_past_key_values',checking_past_key_values[0][0].shape[2])
+        # #print('checking_past_key_values',checking_past_key_values[0][0].shape[2])
         return generated_ids,checking_past_key_values,output_last_hidden_list
     else:
         return generated_ids, past_key_values,output_last_hidden_list
@@ -253,7 +253,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                     max_new_tokens=SPECULATIVE_OUTPUT_LENGTH, temperature=0.6, top_k=50, top_p=0.95,checking=False
                 )
                 speculative_real_output = speculative_tokenizer.decode(checking_generated_ids[0,small_input_ids.shape[1]:])
-                #print("checking_generated_ids[0,small_input_ids.shape[1]:]\n",checking_generated_ids[0,small_input_ids.shape[1]:])
+                ##print("checking_generated_ids[0,small_input_ids.shape[1]:]\n",checking_generated_ids[0,small_input_ids.shape[1]:])
                 special_token_id = 151646
                 target_tokenizer_input = target_tokenizer(speculative_real_output, return_tensors="pt")['input_ids']
                 if target_tokenizer_input[0, 0].item() == special_token_id:
@@ -262,7 +262,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 target_tokenizer_input = target_tokenizer_input.to(
                     target_model.device)
 
-                #print('target_tokenizer_input\n',target_tokenizer_input)
+                ##print('target_tokenizer_input\n',target_tokenizer_input)
                 # big model checking
                 # if we use the target model at last generation, we directly use 'target_output_id' and 'target_tokenizer_input'
                 # if not, we use last the checking_target_ids and 'target_tokenizer_input'
@@ -270,7 +270,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                     checking_target_ids =torch.cat([target_output_id,target_tokenizer_input], dim=-1)
                 else:
                     previous_checking_target_ids = copy.deepcopy(checking_target_ids)
-                    # print('previous_checking_target_ids',previous_checking_target_ids.shape)
+                    # #print('previous_checking_target_ids',previous_checking_target_ids.shape)
                     checking_target_ids =  torch.cat([checking_target_ids.to(target_model.device),target_tokenizer_input.to(target_model.device)], dim=-1)
                 ## TODO: need to optimize the checking generation
 
@@ -279,7 +279,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 target_model, target_tokenizer, checking_target_ids , valid_tgt_kv,
                     max_new_tokens=1, temperature=0.6, top_k=50, top_p=0.95, checking=True
                 )
-                # print('******** checking valid_tgt_kv',valid_tgt_kv[0][0].shape[2])
+                # #print('******** checking valid_tgt_kv',valid_tgt_kv[0][0].shape[2])
                 # check the entropy of the target model and speculative model.
                 with torch.no_grad():
                     prob_target = model_target_probe(target_pooling_hidden_information.float().to(f"cuda:{1}"))
@@ -290,7 +290,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
 
                 prob_target = prob_target.item()
                 prob_spec = prob_spec.item()
-                #print(f"prob_target.item() {prob_target} , prob_spec.item() {prob_spec}")
+                ##print(f"prob_target.item() {prob_target} , prob_spec.item() {prob_spec}")
                 if speculative_accept(prob_target, prob_spec):
                     detail.append({'spe_model':speculative_real_output})
                     correct_spe_number +=1
@@ -331,7 +331,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 # if inferencing the model stops at the first time
                 if target_tokenizer.eos_token_id in generated_ids[0, target_prompt_len:]  :
                     generated_text = target_tokenizer.decode(generated_ids[0, :], skip_special_tokens=True)
-                    #print('target_tokenizer.eos_token_id in the generated_text',target_tokenizer.eos_token_id)
+                    ##print('target_tokenizer.eos_token_id in the generated_text',target_tokenizer.eos_token_id)
                     break
 
             if speculative_tokenizer.eos_token_id in generated_ids[0, target_prompt_len:]:
@@ -353,7 +353,7 @@ def process_file_to_json(dir_path, target_model, target_tokenizer,speculative_mo
     result = speculative_decoding(target_model, target_tokenizer, speculative_model, speculative_tokenizer, problem,max_new_tokens,model_target_probe,model_spec_probe)
     end_time = time.time()
     generated_text, try_correct_num,correct_spe_number,detail,length_of_output = result
-    print('real_answer\n',generated_text)
+    #print('real_answer\n',generated_text)
 
     all_generations.append({
         "input_text": problem,
@@ -388,7 +388,7 @@ if __name__ == "__main__":
     parser.add_argument("--target_model", type=str,  help="target_model",default="Qwen/QwQ-32B")
     parser.add_argument("--speculative_model", type=str,  help="speculative_model", default="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
     parser.add_argument("--data_dir", type=str,  help="data_dir",default='/data/semantic/speculative/new_spec_result_math-500_QwQ-32B_full_size_deepseek1.5seed_')
-    parser.add_argument("--start_dataset", type=int, help="the beginning of the dataset",default=14)
+    parser.add_argument("--start_dataset", type=int, help="the beginning of the dataset",default=0)
     parser.add_argument("--end_dataset", type=int, help="the end of the dataset",default=30)
     parser.add_argument("--target_probe", type=str, help="target_probe",default="/data/semantic/training/valid_new_full_size_qwq_32b_aime_output_last_hidden_list_best_probe_mse")#aime_output_last_hidden_list_best_probe_mse
     parser.add_argument("--speculative_probe", type=str, help="speculative_probe",default="/home/shaowei/new_probe/valid_new_deepseekr11.5b_aime_output_last_hidden_list_best_probe_mse")
@@ -459,12 +459,12 @@ if __name__ == "__main__":
     problems_and_answers = [{"problem": item["problem"], "answer": item["answer"]} for item in ds]
     # for idx, number in enumerate(tqdm(wrong_list, total=len(wrong_list))):
     #
-    #     print("doing wrong number:", number)
+    #     #print("doing wrong number:", number)
     #     dirname = f'spec_{args.dataset}_{number}'
     #     dir_path = os.path.join(f"{args.data_dir}{args.seed}", dirname)
     #     number = number
     #     problem = problems_and_answers[number]['problem']
-    #     print(f"{number}: {problem}")
+    #     #print(f"{number}: {problem}")
     #     answer = problems_and_answers[number]['answer']
     #     process_file_to_json(dir_path, target_model, target_tokenizer,speculative_model, speculative_tokenizer, problem,answer,args.target_temperature,args.speculative_temperature,args.max_new_tokens,model_target_probe,model_spec_probe)
 
