@@ -128,14 +128,14 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
         previous_original_target_text_len = original_target_text_len
 
         def checking_is_finish(generated_ids, max_new_tokens, use_target):
-            print('target_tokenizer.encode(generated_ids)',target_tokenizer.encode(generated_ids))
+          #  print('target_tokenizer.encode(generated_ids)',target_tokenizer.encode(generated_ids))
             if use_target:
-                if (target_tokenizer.encode(generated_ids)).shape[1]- original_target_text_len < max_new_tokens:
+                if len(target_tokenizer.encode(generated_ids))- original_target_text_len < max_new_tokens:
                     return True
                 else:
                     return False
             else:
-                if (speculative_tokenizer.encode(generated_ids)['input_ids']).shape[1]- original_target_text_len < max_new_tokens:
+                if len(target_tokenizer.encode(generated_ids))- original_target_text_len < max_new_tokens:
                     return True
                 else:
                     return False
