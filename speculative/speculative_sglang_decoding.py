@@ -281,7 +281,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                     print('target_tokenizer.eos_token_id 281',target_tokenizer.eos_token_id)
                     break
 
-            if speculative_tokenizer.eos_token_id in target_tokenizer.encode(generated_text[target_prompt_len:]):
+            if speculative_tokenizer.eos_token_id in speculative_tokenizer.encode(generated_text[target_prompt_len:]):
                 print('target_tokenizer.eos_token_id 285', target_tokenizer.eos_token_id)
                 break
         length_of_output = target_tokenizer.encode(generated_text[target_prompt_len:])
