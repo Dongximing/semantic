@@ -128,7 +128,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
         previous_original_target_text_len = original_target_text_len
 
         def checking_is_finish(generated_ids, max_new_tokens, use_target):
-          #  print('target_tokenizer.encode(generated_ids)',target_tokenizer.encode(generated_ids))
+            print('target_tokenizer.encode(generated_ids)',len(target_tokenizer.encode(generated_ids)))
             if use_target:
                 if len(target_tokenizer.encode(generated_ids))- original_target_text_len < max_new_tokens:
                     return True
@@ -227,14 +227,14 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                     correct_spe_number +=1
                     use_target = False
                     generated_text =  small_input + speculative_output['text']
-                    #print('acceptaccpetaccpetaccpetaccpetaccpetaccpetaccpetaccpetaccpet')
+                    print('acceptaccpetaccpetaccpetaccpetaccpetaccpetaccpetaccpetaccpet')
                 else:
                     if use_target:
                         generated_text = speculative_text
                     else:
                         generated_text = small_input
                     use_target = True
-                    #print('rejectrejectrejectrejectrejectrejectrejectrejectrejectrejectreject')
+                    print('rejectrejectrejectrejectrejectrejectrejectrejectrejectrejectreject')
 
 
             # Let the target model finish the generation.
@@ -246,7 +246,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
 
                 previous_original_target_text_len = generated_ids.shape[1]
 
-                #print('generated_text----------reject',generated_text)
+                print('generated_text----------reject',generated_text)
                 target_outputs = target_model.generate(
                     [generated_text], sampling_params=sampling_params)
                 target_real_output = target_outputs[0]['text']
