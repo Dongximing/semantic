@@ -339,7 +339,7 @@ if __name__ == "__main__":
         model_path=args.target_model,
         tp_size=4,
         enable_return_hidden_states=True,
-        mem_fraction_static=0.65
+        mem_fraction_static=0.75
     )
     target_tokenizer = transformers.AutoTokenizer.from_pretrained(
     args.target_model,
