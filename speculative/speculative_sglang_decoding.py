@@ -159,7 +159,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                     )
                 else:
                     small_input  = generated_text
-                print('small_input:\n',small_input)
+                # print('small_input:\n',small_input)
 
                 # if speculative_tokenizer.eos_token_id in speculative_tokenizer.encode(small_input):
                 #     print('target_tokenizer.eos_token_id 285', speculative_tokenizer.eos_token_id)
@@ -194,7 +194,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
 
 
 
-                print('speculative_real_output_text:\n',speculative_real_output_text)
+                # print('speculative_real_output_text:\n',speculative_real_output_text)
                 if len(speculative_real_output_text) ==0:
                     break
 
@@ -247,7 +247,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
 
                 prob_target = prob_target.item()
                 prob_spec = prob_spec.item()
-                print(f"prob_target.item() {prob_target} , prob_spec.item() {prob_spec}")
+                # print(f"prob_target.item() {prob_target} , prob_spec.item() {prob_spec}")
                 if speculative_accept(prob_target, prob_spec):
                     detail.append({'spe_model':speculative_real_output_text})
                     correct_spe_number +=1
@@ -270,7 +270,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                 begin = False
                 try_correct_num = try_correct_num + 1
 
-                print("big model input:\n",generated_text)
+                # print("big model input:\n",generated_text)
                 json_data = {
                     "text": [generated_text],
                     "sampling_params": sampling_params,
@@ -283,7 +283,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                 target_outputs = target_outputs.json()
 
                 target_real_output = target_outputs[0]['text']
-                print('big target_output:\n',target_real_output)
+                # print('big target_output:\n',target_real_output)
                 generated_text = generated_text + target_real_output
 
 
@@ -342,7 +342,7 @@ if __name__ == "__main__":
     parser.add_argument("--start_dataset", type=int, help="the beginning of the dataset",default=0)
     parser.add_argument("--end_dataset", type=int, help="the end of the dataset",default=30)
     parser.add_argument("--target_probe", type=str, help="target_probe",default="/data/semantic/training/valid_new_full_size_qwq_32b_aime_output_last_hidden_list_best_probe_mse")#aime_output_last_hidden_list_best_probe_mse
-    parser.add_argument("--speculative_probe", type=str, help="speculative_probe",default="/home/shaowei/new_probe/s1_valid_new_deepseekr11.5b_s1_output_last_hidden_list_best_probe_mse.pt")
+    parser.add_argument("--speculative_probe", type=str, help="speculative_probe",default="/home/shaowei/new_probe/s1_valid_new_deepseekr11.5b_s1_output_last_hidden_list_best_probe_mse")
     parser.add_argument("--target_temperature", type=float, help="target_temperature",default=0.1)
     parser.add_argument("--speculative_temperature", type=float, help="speculative_temperature",default=0.6)
     parser.add_argument("--max_new_tokens", type=int, help="max_new_tokens",default=14000)
