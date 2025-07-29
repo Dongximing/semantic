@@ -199,6 +199,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                 json_data_check = {
                     "text": [checking_target_text],
                     "sampling_params": {"temperature": 0.1,"max_new_tokens": 1},
+                    "return_hidden_states": True,
                 }
                 checking_outputs = requests.post(
                     f"http://0.0.0.0:{30000}/generate",
