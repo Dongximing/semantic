@@ -158,16 +158,16 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                 small_input = generated_text
 
 
-                print('small model input\n', small_input)
+                # print('small model input\n', small_input)
                 json_data = {
                     "text": [small_input],
                     "sampling_params": sampling_params,
                     "return_hidden_states": True,
                 }
                 speculative_outputs = requests.post(
-        f"http://130.179.30.7:{30000}/generate",
-        json=json_data,
-    )
+                                    f"http://130.179.30.7:{30000}/generate",
+                                    json=json_data,
+                                     )
                 speculative_output = speculative_outputs.json()
                 speculative_real_output_text = speculative_output[0]['text']
                 speculative_output = speculative_output[0]
@@ -241,12 +241,12 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                     correct_spe_number +=1
                     use_target = False
                     generated_text =  small_input + speculative_output['text']
-                    print('acceptaccpetaccpetaccpetaccpetaccpetaccpetaccpetaccpetaccpet')
+                    # print('acceptaccpetaccpetaccpetaccpetaccpetaccpetaccpetaccpetaccpet')
                 else:
 
                     generated_text = small_input
                     use_target = True
-                    print('rejectrejectrejectrejectrejectrejectrejectrejectrejectrejectreject')
+                    # print('rejectrejectrejectrejectrejectrejectrejectrejectrejectrejectreject')
 
 
             # Let the target model finish the generation.
@@ -258,7 +258,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
 
                 previous_original_target_text_len = generated_ids.shape[1]
 
-                print('generated_text----------reject',generated_text)
+                # print('generated_text----------reject',generated_text)
 
                 json_data = {
                     "text": [generated_text],
@@ -280,6 +280,8 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                 if target_tokenizer.eos_token_id in target_tokenizer.encode(target_real_output):
                     print('target_tokenizer.eos_token_id 281',target_tokenizer.eos_token_id)
                     break
+
+            print(speculative_tokenizer.encode(generated_text[target_prompt_len:]))
 
             if speculative_tokenizer.eos_token_id in speculative_tokenizer.encode(generated_text[target_prompt_len:]):
                 print('target_tokenizer.eos_token_id 285', target_tokenizer.eos_token_id)
