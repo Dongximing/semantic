@@ -206,7 +206,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                     checking_target_text =  generated_text + speculative_real_output_text
                 else:
                     checking_target_text =  target_text  + target_tokenizer.decode(target_tokenizer(small_input+speculative_real_output_text,return_tensors="pt")['input_ids'][0,original_target_prompt_len:].tolist())
-                print('checking_target_text:\n',checking_target_text)
+                # print('checking_target_text:\n',checking_target_text)
 
                 json_data_check = {
                     "text": [checking_target_text],
@@ -253,12 +253,12 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                     correct_spe_number +=1
                     use_target = False
                     generated_text =  small_input + speculative_output['text']
-                    print('acceptacceptacceptacceptacceptacceptaccept!!!!!!!!!!!!!!!')
+                    # print('acceptacceptacceptacceptacceptacceptaccept!!!!!!!!!!!!!!!')
                 else:
                     generated_text = target_text + speculative_tokenizer.decode(
     speculative_tokenizer(small_input, return_tensors="pt")['input_ids'][0,original_speculative_text_len :].tolist()
 )
-                    print('rejectrejectrejectrejectrejectrejectrejectreject!!!!!!!!!!!!!!!')
+                    # print('rejectrejectrejectrejectrejectrejectrejectreject!!!!!!!!!!!!!!!')
                     use_target = True
 
 
@@ -342,13 +342,13 @@ if __name__ == "__main__":
     parser.add_argument("--start_dataset", type=int, help="the beginning of the dataset",default=0)
     parser.add_argument("--end_dataset", type=int, help="the end of the dataset",default=30)
     parser.add_argument("--target_probe", type=str, help="target_probe",default="/data/semantic/training/valid_new_full_size_qwq_32b_aime_output_last_hidden_list_best_probe_mse")#aime_output_last_hidden_list_best_probe_mse
-    parser.add_argument("--speculative_probe", type=str, help="speculative_probe",default="/home/shaowei/new_probe/valid_new_deepseekr11.5b_aime_output_last_hidden_list_best_probe_mse")
+    parser.add_argument("--speculative_probe", type=str, help="speculative_probe",default="/home/shaowei/new_probe/s1_valid_new_deepseekr11.5b_s1_output_last_hidden_list_best_probe_mse.pt")
     parser.add_argument("--target_temperature", type=float, help="target_temperature",default=0.1)
     parser.add_argument("--speculative_temperature", type=float, help="speculative_temperature",default=0.6)
     parser.add_argument("--max_new_tokens", type=int, help="max_new_tokens",default=14000)
     parser.add_argument("--top_p", type=float, help="top_p",default=0.9)
     parser.add_argument("--top_k", type=int, help="top_k",default=50)
-    parser.add_argument("--seed", type=int, help="seed", default=456)
+    parser.add_argument("--seed", type=int, help="seed", default=729)
     args = parser.parse_args()
     seed_everything(args.seed)
     #wrong_list = [ 240, 248, 251,  282, 286, 295, 296, 299, 301, 306, 308, 309, 317, 327, 338, 341, 349,  352, 355, 369, 381, 392, 400, 403, 416, 422, 425, 432, 444, 460, 464, 469, 470, 473, 478, 481, 483, 485, 490, 493]
