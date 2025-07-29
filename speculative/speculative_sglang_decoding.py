@@ -114,30 +114,26 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
             "no_stop_trim": True
         }
 
-        # since we first feed the input to the target model, we need to add record the length of the input text in the target model and speculative model both;
-        # this one is for the edge case, We need to check that the target model generates the answer within 200 words, then we need to stop directly.
         start_target_model_inputs = target_tokenizer(target_text, return_tensors="pt")
-        generated_ids = start_target_model_inputs['input_ids']
-        target_prompt_len = start_target_model_inputs["input_ids"].shape[1]
-        original_len = target_prompt_len
-        start_speculative_text_inputs = target_tokenizer(speculative_text, return_tensors="pt")['input_ids']
-        original_target_text_len = start_target_model_inputs["input_ids"].shape[1]
-        # there are kv caches in both the target model and speculative model.
+        original_target_prompt_len = start_target_model_inputs["input_ids"].shape[1]
+
+        start_speculative_text_inputs = speculative_tokenizer(speculative_text, return_tensors="pt")
+        original_speculative_text_len = start_speculative_text_inputs["input_ids"].shape[1]
+
         correct_tokens, try_correct_num, correct_spe_number = [], 0, 0
         detail = []
         begin = True
         use_target = True
-        previous_original_target_text_len = original_target_text_len
+
 
         def checking_is_finish(generated_ids, max_new_tokens, use_target):
-            print('target_tokenizer.encode(generated_ids)',len(target_tokenizer.encode(generated_ids)))
             if use_target:
-                if len(target_tokenizer.encode(generated_ids))- original_target_text_len < max_new_tokens:
+                if len(target_tokenizer.encode(generated_ids))- original_target_prompt_len < max_new_tokens:
                     return True
                 else:
                     return False
             else:
-                if len(target_tokenizer.encode(generated_ids))- original_target_text_len < max_new_tokens:
+                if len(target_tokenizer.encode(generated_ids))- original_target_prompt_len < max_new_tokens:
                     return True
                 else:
                     return False
@@ -154,14 +150,13 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
         while checking_is_finish(generated_text,max_new_tokens,use_target):
             # we start at the target model.
             if begin:
-                change_tokens = BEGIN_TOKEN_NUM
                 use_target = True
             if not begin:
+                if use_target:
+                    small_input  = speculative_text + target_tokenizer.decode(target_tokenizer(generated_text,return_tensors="pt")[original_target_prompt_len:])
+                else:
+                    small_input  = generated_text
 
-                small_input = generated_text
-
-
-                # print('small model input\n', small_input)
                 json_data = {
                     "text": [small_input],
                     "sampling_params": sampling_params,
@@ -191,27 +186,23 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
 
 
                 print('speculative_real_output_text\n',speculative_real_output_text)
-                if len(speculative_real_output_text) == 0:
-                    break
 
 
                 target_tokenizer_input = target_tokenizer(speculative_real_output_text, return_tensors="pt")['input_ids']
                 target_tokenizer_input_len = target_tokenizer_input.shape[1]
 
                 if use_target:
-                    checking_target_text = speculative_text+speculative_real_output_text
+                    checking_target_text =  generated_text + speculative_real_output_text
                 else:
-                    checking_target_text = generated_text + speculative_real_output_text
-                #print('---------checking_target_text------\n\n',checking_target_text)
+                    checking_target_text =  target_text  + target_tokenizer.decode(target_tokenizer(small_input+speculative_real_output_text,return_tensors="pt")[original_target_prompt_len:])
 
-                json_data = {
+                json_data_check = {
                     "text": [checking_target_text],
                     "sampling_params": {"temperature": 0.1,"max_new_tokens": 1},
-                    "return_hidden_states": True,
                 }
                 checking_outputs = requests.post(
                     f"http://0.0.0.0:{30000}/generate",
-                    json=json_data,
+                    json=json_data_check,
                 )
 
                 checking_outputs = checking_outputs.json()
@@ -241,18 +232,17 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
 
                 prob_target = prob_target.item()
                 prob_spec = prob_spec.item()
-                #print(f"prob_target.item() {prob_target} , prob_spec.item() {prob_spec}")
+                print(f"prob_target.item() {prob_target} , prob_spec.item() {prob_spec}")
                 if speculative_accept(prob_target, prob_spec):
                     detail.append({'spe_model':speculative_real_output_text})
                     correct_spe_number +=1
                     use_target = False
                     generated_text =  small_input + speculative_output['text']
-                    # print('acceptaccpetaccpetaccpetaccpetaccpetaccpetaccpetaccpetaccpet')
                 else:
 
-                    generated_text = small_input
+                    generated_text = target_text + speculative_tokenizer.decode(speculative_tokenizer(small_input,return_tensors="pt")[original_speculative_text_len:])
                     use_target = True
-                    # print('rejectrejectrejectrejectrejectrejectrejectrejectrejectrejectreject')
+
 
 
             # Let the target model finish the generation.
@@ -262,9 +252,6 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                 begin = False
                 try_correct_num = try_correct_num + 1
 
-                previous_original_target_text_len = generated_ids.shape[1]
-
-                # print('generated_text----------reject',generated_text)
 
                 json_data = {
                     "text": [generated_text],
@@ -289,10 +276,10 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
 
             # print(speculative_tokenizer.encode(generated_text[target_prompt_len:]))
 
-            if [151643,151645] in speculative_tokenizer.encode(generated_text[target_prompt_len:]):
+            if [151643,151645] in speculative_tokenizer.encode(generated_text[original_speculative_text_len:]):
                 print('target_tokenizer.eos_token_id 285', target_tokenizer.eos_token_id)
                 break
-        length_of_output = target_tokenizer.encode(generated_text[target_prompt_len:])
+        length_of_output = speculative_tokenizer.encode(generated_text[original_speculative_text_len:])
 
 
         return generated_text, try_correct_num,correct_spe_number,detail,len(length_of_output)
