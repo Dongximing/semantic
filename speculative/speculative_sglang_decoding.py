@@ -278,12 +278,13 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                 # if inferencing the model stops at the first time
                 print(target_tokenizer.encode(generated_text))
                 if target_tokenizer.eos_token_id in target_tokenizer.encode(generated_text):
-
+                    print('target_tokenizer.eos_token_id 281',target_tokenizer.eos_token_id)
                     break
 
             if target_tokenizer.eos_token_id in target_tokenizer.encode(generated_text):
+                print('target_tokenizer.eos_token_id 285', target_tokenizer.eos_token_id)
                 break
-            length_of_output = generated_ids.shape[1]
+            length_of_output = target_tokenizer.encode(generated_text)
 
 
         return generated_text, try_correct_num,correct_spe_number,detail,length_of_output-original_len
