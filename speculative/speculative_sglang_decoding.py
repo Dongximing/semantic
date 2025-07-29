@@ -109,7 +109,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
             "temperature": 0.6,
             "top_p": 0.95,
             "max_new_tokens": 500,
-            "stop_token_ids": [4710, 382, 1447, 271, 692, 1939, 2533, 3593, 13824, 14190],
+            "stop_token_ids": [4710, 382, 1447, 271, 692, 1939, 2533, 3593],
             "no_stop_trim": True
         }
         # since we first feed the input to the target model, we need to add record the length of the input text in the target model and speculative model both;
@@ -339,7 +339,7 @@ if __name__ == "__main__":
         model_path=args.target_model,
         tp_size=4,
         enable_return_hidden_states=True,
-        mem_fraction_static=0.7
+        mem_fraction_static=0.5
     )
     target_tokenizer = transformers.AutoTokenizer.from_pretrained(
     args.target_model,
