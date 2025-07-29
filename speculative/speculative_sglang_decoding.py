@@ -248,6 +248,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 target_outputs = target_model.generate(
                     [generated_text], sampling_params=sampling_params)
                 target_real_output = target_outputs[0]['text']
+                generated_text = generated_text + target_real_output
 
                 #print('speculative_outputs\n',target_outputs[0])
 
