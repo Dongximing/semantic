@@ -249,7 +249,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                     generated_text =  small_input + speculative_output['text']
                 else:
 
-                    generated_text = target_text + speculative_tokenizer.decode(speculative_tokenizer(small_input,return_tensors="pt")[original_speculative_text_len:])
+                    generated_text = target_text + speculative_tokenizer.decode(speculative_tokenizer(small_input,return_tensors="pt")['input_ids'][0:original_target_prompt_len:].tolist())
                     use_target = True
 
 
@@ -286,8 +286,8 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
 
             # print(speculative_tokenizer.encode(generated_text[target_prompt_len:]))
 
-            if [151643,151645] in speculative_tokenizer.encode(generated_text[original_speculative_text_len:]):
-                print('target_tokenizer.eos_token_id 285', target_tokenizer.eos_token_id)
+            if speculative_tokenizer.eos_token_id in speculative_tokenizer.encode(generated_text[original_speculative_text_len:]):
+                print('target_tokenizer.eos_token_id 285', speculative_tokenizer.eos_token_id)
                 break
         length_of_output = speculative_tokenizer.encode(generated_text[original_speculative_text_len:])
 
