@@ -155,7 +155,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                 if use_target:
                     # print('target_tokenizer.decode(target_tokenizer(generated_text,return_tensors="pt")[original_target_prompt_len:]:\n',
                     #       target_tokenizer(generated_text,return_tensors="pt"))
-                    small_input  = speculative_text + target_tokenizer.decode(target_tokenizer(generated_text,return_tensors="pt")['input_ids'][0:original_target_prompt_len:])
+                    small_input  = speculative_text + target_tokenizer.decode(target_tokenizer(generated_text,return_tensors="pt")['input_ids'][0:original_target_prompt_len:].tolist())
                 else:
                     small_input  = generated_text
                 print('small_input:\n',small_input)
@@ -198,7 +198,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                 if use_target:
                     checking_target_text =  generated_text + speculative_real_output_text
                 else:
-                    checking_target_text =  target_text  + target_tokenizer.decode(target_tokenizer(small_input+speculative_real_output_text,return_tensors="pt")[original_target_prompt_len:])
+                    checking_target_text =  target_text  + target_tokenizer.decode(target_tokenizer(small_input+speculative_real_output_text,return_tensors="pt")['input_ids'][0:original_target_prompt_len:].tolist())
                 print('checking_target_text:\n',checking_target_text)
 
                 json_data_check = {
