@@ -190,7 +190,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
 
 
 
-                #print('speculative_real_output_text\n',speculative_real_output_text)
+                print('speculative_real_output_text\n',speculative_real_output_text)
 
                 target_tokenizer_input = target_tokenizer(speculative_real_output_text, return_tensors="pt")['input_ids']
                 target_tokenizer_input_len = target_tokenizer_input.shape[1]
@@ -240,7 +240,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                 prob_spec = prob_spec.item()
                 #print(f"prob_target.item() {prob_target} , prob_spec.item() {prob_spec}")
                 if speculative_accept(prob_target, prob_spec):
-                    detail.append({'spe_model':speculative_real_output})
+                    detail.append({'spe_model':speculative_real_output_text})
                     correct_spe_number +=1
                     use_target = False
                     generated_text =  small_input + speculative_output['text']
@@ -284,9 +284,9 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                     print('target_tokenizer.eos_token_id 281',target_tokenizer.eos_token_id)
                     break
 
-            print(speculative_tokenizer.encode(generated_text[target_prompt_len:]))
+            # print(speculative_tokenizer.encode(generated_text[target_prompt_len:]))
 
-            if speculative_tokenizer.eos_token_id in speculative_tokenizer.encode(generated_text[target_prompt_len:]):
+            if [151643,151645] in speculative_tokenizer.encode(generated_text[target_prompt_len:]):
                 print('target_tokenizer.eos_token_id 285', target_tokenizer.eos_token_id)
                 break
         length_of_output = target_tokenizer.encode(generated_text[target_prompt_len:])
