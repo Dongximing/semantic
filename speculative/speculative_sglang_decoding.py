@@ -144,8 +144,8 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
         target_real_output = ''
         generated_text = target_text
 
-        print('speculative_tokenizer.eos_token_id ', speculative_tokenizer.eos_token_id)
-        print('target_tokenizer.eos_token_id ', target_tokenizer.eos_token_id)
+        # print('speculative_tokenizer.eos_token_id ', speculative_tokenizer.eos_token_id)
+        # print('target_tokenizer.eos_token_id ', target_tokenizer.eos_token_id)
 
         while checking_is_finish(generated_text,max_new_tokens,use_target):
             # we start at the target model.
@@ -161,11 +161,11 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                     )
                 else:
                     small_input  = generated_text
-                print('small_input:\n',small_input)
+                # print('small_input:\n',small_input)
 
-                if speculative_tokenizer.eos_token_id in speculative_tokenizer.encode(small_input):
-                    print('target_tokenizer.eos_token_id 285', speculative_tokenizer.eos_token_id)
-                    break
+                # if speculative_tokenizer.eos_token_id in speculative_tokenizer.encode(small_input):
+                #     print('target_tokenizer.eos_token_id 285', speculative_tokenizer.eos_token_id)
+                #     break
 
                 json_data = {
                     "text": [small_input],
@@ -191,12 +191,12 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                 )
                 Completion_tokens = speculative_output['meta_info']['completion_tokens']
                 pooling_hidden_information = pooling_hidden_information[-Completion_tokens:, :]
-                print('pooling_hidden_information',pooling_hidden_information.size())
+                # print('pooling_hidden_information',pooling_hidden_information.size())
                 pooling_hidden_information = pooling_hidden_information.mean(dim=0, keepdim=True)
 
 
 
-                print('speculative_real_output_text:\n',speculative_real_output_text)
+                # print('speculative_real_output_text:\n',speculative_real_output_text)
 
 
                 target_tokenizer_input = target_tokenizer(speculative_real_output_text, return_tensors="pt")['input_ids']
@@ -206,7 +206,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                     checking_target_text =  generated_text + speculative_real_output_text
                 else:
                     checking_target_text =  target_text  + target_tokenizer.decode(target_tokenizer(small_input+speculative_real_output_text,return_tensors="pt")['input_ids'][0,original_target_prompt_len:].tolist())
-                print('checking_target_text:\n',checking_target_text)
+                # print('checking_target_text:\n',checking_target_text)
 
                 json_data_check = {
                     "text": [checking_target_text],
@@ -233,7 +233,9 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                 )
 
                 target_pooling_hidden_information = hidden_states[-target_tokenizer_input_len-1:-1, :]
-                print('target_pooling_hidden_information shape', target_pooling_hidden_information.shape)
+                # print('target_pooling_hidden_information shape', target_pooling_hidden_information.shape)
+                if target_pooling_hidden_information.shape[0] == 0:
+                    break
                 target_pooling_hidden_information = target_pooling_hidden_information.mean(dim=0, keepdim=True) # len *hidden
                 #print('target_tokenizer_input_len',target_tokenizer_input_len)
 
