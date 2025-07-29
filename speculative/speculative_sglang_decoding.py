@@ -229,10 +229,8 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                     generated_text =  small_input + speculative_output['text']
                     print('acceptaccpetaccpetaccpetaccpetaccpetaccpetaccpetaccpetaccpet')
                 else:
-                    if use_target:
-                        generated_text = speculative_text
-                    else:
-                        generated_text = small_input
+
+                    generated_text = small_input
                     use_target = True
                     print('rejectrejectrejectrejectrejectrejectrejectrejectrejectrejectreject')
 
