@@ -156,6 +156,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                     small_input  = speculative_text + target_tokenizer.decode(target_tokenizer(generated_text,return_tensors="pt")[original_target_prompt_len:])
                 else:
                     small_input  = generated_text
+                print('small_input:\n',small_input)
 
                 json_data = {
                     "text": [small_input],
@@ -186,7 +187,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
 
 
 
-                print('speculative_real_output_text\n',speculative_real_output_text)
+                print('speculative_real_output_text:\n',speculative_real_output_text)
 
 
                 target_tokenizer_input = target_tokenizer(speculative_real_output_text, return_tensors="pt")['input_ids']
@@ -196,6 +197,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                     checking_target_text =  generated_text + speculative_real_output_text
                 else:
                     checking_target_text =  target_text  + target_tokenizer.decode(target_tokenizer(small_input+speculative_real_output_text,return_tensors="pt")[original_target_prompt_len:])
+                print('checking_target_text:\n',checking_target_text)
 
                 json_data_check = {
                     "text": [checking_target_text],
@@ -254,7 +256,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                 begin = False
                 try_correct_num = try_correct_num + 1
 
-
+                print("big model input",generated_text)
                 json_data = {
                     "text": [generated_text],
                     "sampling_params": sampling_params,
