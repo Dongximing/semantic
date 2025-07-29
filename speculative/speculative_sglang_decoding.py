@@ -153,6 +153,8 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                 use_target = True
             if not begin:
                 if use_target:
+                    print('target_tokenizer.decode(target_tokenizer(generated_text,return_tensors="pt")[original_target_prompt_len:]:\n',
+                          target_tokenizer.decode(target_tokenizer(generated_text,return_tensors="pt")[original_target_prompt_len:]))
                     small_input  = speculative_text + target_tokenizer.decode(target_tokenizer(generated_text,return_tensors="pt")[original_target_prompt_len:])
                 else:
                     small_input  = generated_text
