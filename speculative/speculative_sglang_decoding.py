@@ -162,7 +162,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 else:
                     small_input = generated_text
                     #print('gggggg')
-                #print('small model input\n', small_input)
+                print('small model input\n', small_input)
                 speculative_outputs = speculative_model.generate(
                         [small_input], sampling_params=sampling_params, return_hidden_states=True)
                 speculative_real_output_text = speculative_outputs[0]['text']
@@ -347,7 +347,7 @@ if __name__ == "__main__":
         model_path=args.target_model,
         tp_size=4,
         enable_return_hidden_states=True,
-        mem_fraction_static=0.7
+        mem_fraction_static=0.8
     )
     target_tokenizer = transformers.AutoTokenizer.from_pretrained(
     args.target_model,
@@ -358,7 +358,7 @@ if __name__ == "__main__":
         model_path=args.speculative_model,
         tp_size=4,
         enable_return_hidden_states=True,
-        mem_fraction_static=0.2
+        mem_fraction_static=0.15
     )
 
     speculative_tokenizer = transformers.AutoTokenizer.from_pretrained(
