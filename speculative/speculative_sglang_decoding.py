@@ -269,7 +269,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                 begin = False
                 try_correct_num = try_correct_num + 1
 
-                print("big model input:\n",generated_text)
+                # print("big model input:\n",generated_text)
                 json_data = {
                     "text": [generated_text],
                     "sampling_params": sampling_params,
@@ -282,7 +282,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                 target_outputs = target_outputs.json()
 
                 target_real_output = target_outputs[0]['text']
-                print('big target_output:\n',target_real_output)
+                # print('big target_output:\n',target_real_output)
                 generated_text = generated_text + target_real_output
 
 
@@ -292,7 +292,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                     print('target_tokenizer.eos_token_id 281',target_tokenizer.eos_token_id)
                     break
 
-            print(speculative_tokenizer.encode(generated_text[original_speculative_text_len:]))
+            # print(speculative_tokenizer.encode(generated_text[original_speculative_text_len:]))
 
 
         length_of_output = speculative_tokenizer.encode(generated_text[original_speculative_text_len:])
