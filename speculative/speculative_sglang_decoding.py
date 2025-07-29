@@ -148,6 +148,9 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
         target_real_output = ''
         generated_text = target_text
 
+        print('speculative_tokenizer.eos_token_id ', speculative_tokenizer.eos_token_id)
+        print('target_tokenizer.eos_token_id ', target_tokenizer.eos_token_id)
+
         while checking_is_finish(generated_text,max_new_tokens,use_target):
             # we start at the target model.
             if begin:
