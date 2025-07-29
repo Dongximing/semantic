@@ -20,6 +20,7 @@ TARGET_model= 0
 SPEC_model = 1
 TARGET_probe = 2
 SPEC_probe = 3
+import requests
 
 def speculative_accept(qi, pi, threshold_min=0.7):
 
@@ -89,7 +90,7 @@ STOP_TOKENS = [
 
 
 
-def speculative_decoding(target_model, target_tokenizer, speculative_model,speculative_tokenizer,problem,max_new_tokens,model_target_probe,model_spec_probe):
+def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_tokens,model_target_probe,model_spec_probe):
         # add prompt before inferencing the model
         messages = [
             {"role": "user", "content": problem + MATH_PROMPT}
@@ -112,6 +113,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
             "stop_token_ids": [4710, 382, 1447, 271, 692, 1939, 2533, 3593],
             "no_stop_trim": True
         }
+
         # since we first feed the input to the target model, we need to add record the length of the input text in the target model and speculative model both;
         # this one is for the edge case, We need to check that the target model generates the answer within 200 words, then we need to stop directly.
         start_target_model_inputs = target_tokenizer(target_text, return_tensors="pt")
@@ -155,11 +157,20 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
 
                 small_input = generated_text
 
+
                 print('small model input\n', small_input)
-                speculative_outputs = speculative_model.generate(
-                        [small_input], sampling_params=sampling_params, return_hidden_states=True)
-                speculative_real_output_text = speculative_outputs[0]['text']
-                speculative_output = speculative_outputs[0]
+                json_data = {
+                    "text": [small_input],
+                    "sampling_params": sampling_params,
+                    "return_hidden_states": True,
+                }
+                speculative_outputs = requests.post(
+        f"http://130.179.30.7:{30000}/generate",
+        json=json_data,
+    )
+                speculative_output = speculative_outputs.json()
+                speculative_real_output_text = speculative_output[0]['text']
+                speculative_output = speculative_output[0]
                 for i in range(len(speculative_output["meta_info"]["hidden_states"])):
                     speculative_output["meta_info"]["hidden_states"][i] = torch.tensor(
                         speculative_output["meta_info"]["hidden_states"][i], dtype=torch.bfloat16
@@ -187,7 +198,17 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                     checking_target_text = generated_text + speculative_real_output_text
                 #print('---------checking_target_text------\n\n',checking_target_text)
 
-                checking_outputs = target_model.generate([checking_target_text], sampling_params={"temperature": 0.1,"max_new_tokens": 1}, return_hidden_states=True)
+                json_data = {
+                    "text": [checking_target_text],
+                    "sampling_params": {"temperature": 0.1,"max_new_tokens": 1},
+                    "return_hidden_states": True,
+                }
+                checking_outputs = requests.post(
+                    f"http://0.0.0.0:{30000}/generate",
+                    json=json_data,
+                )
+
+                checking_outputs = checking_outputs.json()
 
                 checking_output = checking_outputs[0]
                 for i in range(len(checking_output["meta_info"]["hidden_states"])):
@@ -238,16 +259,21 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                 previous_original_target_text_len = generated_ids.shape[1]
 
                 print('generated_text----------reject',generated_text)
-                target_outputs = target_model.generate(
-                    [generated_text], sampling_params=sampling_params)
+
+                json_data = {
+                    "text": [generated_text],
+                    "sampling_params": sampling_params,
+                    "return_hidden_states": False,
+                }
+                target_outputs = requests.post(
+                    f"http://0.0.0.0:{30000}/generate",
+                    json=json_data,
+                )
+                target_outputs = target_outputs.json()
+
                 target_real_output = target_outputs[0]['text']
                 generated_text = generated_text + target_real_output
 
-                #print('speculative_outputs\n',target_outputs[0])
-
-
-                #print('\n\n\n\n')
-                #print('speculative_real_output\n',target_real_output)
 
                 # if inferencing the model stops at the first time
                 if target_tokenizer.eos_token_id in target_tokenizer.encode(target_real_output):
@@ -266,11 +292,11 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
 
 
 
-def process_file_to_json(dir_path, target_model, target_tokenizer,speculative_model, speculative_tokenizer,problem, answer,max_new_tokens,model_target_probe,model_spec_probe):
+def process_file_to_json(dir_path , target_tokenizer, speculative_tokenizer,problem, answer,max_new_tokens,model_target_probe,model_spec_probe):
     all_generations = []
 
     start_time = time.time()
-    result = speculative_decoding(target_model, target_tokenizer, speculative_model, speculative_tokenizer, problem,max_new_tokens,model_target_probe,model_spec_probe)
+    result = speculative_decoding( target_tokenizer, speculative_tokenizer, problem,max_new_tokens,model_target_probe,model_spec_probe)
     end_time = time.time()
     generated_text, try_correct_num,correct_spe_number,detail,length_of_output = result
     #print('real_answer\n',generated_text)
@@ -335,22 +361,10 @@ if __name__ == "__main__":
     model_spec_probe = model_spec_probe.to('cuda:1')
     model_spec_probe.eval()
 
-    target_model = sgl.Engine(
-        model_path=args.target_model,
-        tp_size=4,
-        enable_return_hidden_states=True,
-        mem_fraction_static=0.7
-    )
+
     target_tokenizer = transformers.AutoTokenizer.from_pretrained(
     args.target_model,
         trust_remote_code=True
-    )
-
-    speculative_model = sgl.Engine(
-        model_path=args.speculative_model,
-        tp_size=4,
-        enable_return_hidden_states=True,
-        mem_fraction_static=0.2
     )
 
     speculative_tokenizer = transformers.AutoTokenizer.from_pretrained(
@@ -386,4 +400,4 @@ if __name__ == "__main__":
         dir_path = os.path.join(f"{args.data_dir}{args.seed}", dirname)
         problem = problems_and_answers[idx]['problem']
         answer = problems_and_answers[idx]['answer']
-        process_file_to_json(dir_path, target_model, target_tokenizer,speculative_model, speculative_tokenizer, problem,answer,args.max_new_tokens,model_target_probe,model_spec_probe)
+        process_file_to_json(dir_path,  target_tokenizer, speculative_tokenizer, problem,answer,args.max_new_tokens,model_target_probe,model_spec_probe)
