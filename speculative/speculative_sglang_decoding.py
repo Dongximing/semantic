@@ -191,6 +191,9 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
 
 
                 print('speculative_real_output_text\n',speculative_real_output_text)
+                if len(speculative_real_output_text) == 0:
+                    break
+
 
                 target_tokenizer_input = target_tokenizer(speculative_real_output_text, return_tensors="pt")['input_ids']
                 target_tokenizer_input_len = target_tokenizer_input.shape[1]
