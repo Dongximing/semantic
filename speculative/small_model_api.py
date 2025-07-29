@@ -22,9 +22,7 @@ else:
 
 def main():
     # Launch the server
-    server_process, port = launch_server_cmd(
-        "python -m sglang.launch_server --model-path Alibaba-NLP/gte-Qwen2-1.5B-instruct --enable-return-hidden-states --host 0.0.0.0"
-    )
+
     port = 30000
     wait_for_server(f"http://130.179.30.7:{port}")
 
@@ -52,7 +50,6 @@ def main():
         json=json_data,
     )
 
-    terminate_process(server_process)
 
     outputs = response.json()
     for prompt, output in zip(prompts, outputs):
