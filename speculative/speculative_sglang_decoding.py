@@ -22,11 +22,9 @@ TARGET_probe = 2
 SPEC_probe = 3
 import requests
 
-def speculative_accept(qi, pi, threshold_min=0.7):
+def speculative_accept(qi, pi):
 
     ratio = qi / pi if pi > 0 else 0
-    if ratio < threshold_min:
-        return False
     threshold = min(1.0, ratio)
     r = random.uniform(0, 1)
     return r < threshold
@@ -255,10 +253,12 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                     correct_spe_number +=1
                     use_target = False
                     generated_text =  small_input + speculative_output['text']
+                    print('acceptacceptacceptacceptacceptacceptaccept!!!!!!!!!!!!!!!')
                 else:
                     generated_text = target_text + speculative_tokenizer.decode(
     speculative_tokenizer(small_input, return_tensors="pt")['input_ids'][0,original_speculative_text_len :].tolist()
 )
+                    print('rejectrejectrejectrejectrejectrejectrejectreject!!!!!!!!!!!!!!!')
                     use_target = True
 
 
