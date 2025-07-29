@@ -358,7 +358,7 @@ if __name__ == "__main__":
         model_path=args.speculative_model,
         tp_size=4,
         enable_return_hidden_states=True,
-        mem_fraction_static=0.15
+        mem_fraction_static=0.2
     )
 
     speculative_tokenizer = transformers.AutoTokenizer.from_pretrained(
