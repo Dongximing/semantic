@@ -249,7 +249,9 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                     generated_text =  small_input + speculative_output['text']
                 else:
 
-                    generated_text = target_text + speculative_tokenizer.decode(speculative_tokenizer(small_input,return_tensors="pt")['input_ids'][0:original_speculative_text_len:].tolist())
+                    generated_text = target_text +speculative_tokenizer.decode(
+    speculative_tokenizer(small_input, return_tensors="pt")['input_ids'][0,original_speculative_text_len :].tolist()
+)
                     use_target = True
 
 
