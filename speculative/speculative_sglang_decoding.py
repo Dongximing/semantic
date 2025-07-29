@@ -222,7 +222,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                 )
 
                 target_pooling_hidden_information = hidden_states[-target_tokenizer_input_len-1:-1, :]
-                print('target_pooling_hidden_information shape\n', target_pooling_hidden_information.shape)
+                print('target_pooling_hidden_information shape', target_pooling_hidden_information.shape)
                 target_pooling_hidden_information = target_pooling_hidden_information.mean(dim=0, keepdim=True) # len *hidden
                 #print('target_tokenizer_input_len',target_tokenizer_input_len)
 
