@@ -204,7 +204,7 @@ def inference_model_pickle(task_name: str, base_dir,
         #     continue
 
         print(f"[Info] Processing file: {json_path}")
-        process_file_to_pickle(json_path, out_pkl_path, model, num_generations)
+        process_file_to_pickle(json_path, out_pkl_path, num_generations)
 
     print("[Info] Processing completed.")
 
