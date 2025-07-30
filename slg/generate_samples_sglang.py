@@ -9,7 +9,7 @@ from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import sys
 import argparse
-
+import requests
 import sglang as sgl
 
 STOP_TOKENS = [
@@ -23,8 +23,8 @@ AIME_STOP_TOKENS = [
 NUMBER = 0
 
 
-def predict(model, input_data,temperature):
-    input_data = [input_data]
+def predict( input_data,temperature):
+
     sampling_params = {
         "temperature": temperature,
         "top_p": 0.95,
@@ -32,23 +32,33 @@ def predict(model, input_data,temperature):
         "stop_token_ids":[4710,382,1447,271,692,1939,2533,3593,13824,14190],
         "no_stop_trim": True
     }
-    outputs = model.generate(
-        input_data, sampling_params=sampling_params, return_hidden_states=True
+    json_data_check = {
+        "text": [input_data],
+        "sampling_params": sampling_params,
+        "return_hidden_states": True,
+    }
+    checking_outputs = requests.post(
+        f"http://0.0.0.0:{30000}/generate",
+        json=json_data_check,
     )
-    prompt = input_data[0]
-    output =  outputs[0]
-    for i in range(len(output["meta_info"]["hidden_states"])):
-        output["meta_info"]["hidden_states"][i] = torch.tensor(
-            output["meta_info"]["hidden_states"][i], dtype=torch.bfloat16
+
+    checking_outputs = checking_outputs.json()
+
+    checking_output = checking_outputs[0]
+    for i in range(len(checking_output["meta_info"]["hidden_states"])):
+        checking_output["meta_info"]["hidden_states"][i] = torch.tensor(
+            checking_output["meta_info"]["hidden_states"][i], dtype=torch.bfloat16
         )
-    Completion_tokens = output['meta_info']['completion_tokens']
     hidden_states = torch.cat(
         [
             i.unsqueeze(0) if len(i.shape) == 1 else i
-            for i in output["meta_info"]["hidden_states"]
+            for i in checking_output["meta_info"]["hidden_states"]
         ]
     )
-    real_answer = output['text']
+    Completion_tokens = checking_output['meta_info']['completion_tokens']
+    target_pooling_hidden_information = hidden_states[-Completion_tokens:, :]
+
+    real_answer = checking_output['text']
     hidden_states = hidden_states[-Completion_tokens:,:] #len *hidden
 
 
@@ -66,7 +76,7 @@ def predict(model, input_data,temperature):
     return (real_answer, hidden_states)
 
 
-def process_file_to_pickle(json_path, out_pkl_path, model, num_generations):
+def process_file_to_pickle(json_path, out_pkl_path,  num_generations):
     with open(json_path, 'r', encoding='utf-8') as f:
         alldata = json.load(f)
     all_generations = []
@@ -90,12 +100,12 @@ def process_file_to_pickle(json_path, out_pkl_path, model, num_generations):
                     (
                         most_real_answer,
                         ( most_last_token_hidden,most_sec_last_input,most_last_tok_bef_gen_input,most_output_hidden_states)
-                    ) = predict(model, input_text,temperature=0.1)
+                    ) = predict( input_text,temperature=0.1)
                 else:
                     (
                         real_answer,
                         ( last_token_hidden,sec_last_input,last_tok_bef_gen_input,output_hidden_states)
-                    ) = predict(model,input_text,temperature=0.6)
+                    ) = predict(input_text,temperature=0.6)
 
 
                 if i == 0:
@@ -212,11 +222,7 @@ if __name__ == "__main__":
     # /home/cs/staff/shaowei/semantic/aime
     # /data/ximing/aime
     # /home/cs/staff/shaowei/semantic/deepseek-32b_r1_awq_math
-    llm = sgl.Engine(
-        model_path=args.model,
-        tp_size=4,
-        enable_return_hidden_states=True,
-    )
-    inference_model_pickle(task_name=args.task, model=llm, base_dir=args.base_dir,
+
+    inference_model_pickle(task_name=args.task, base_dir=args.base_dir,
                            start=args.start, end=args.end)
     print("done")
