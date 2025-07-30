@@ -181,7 +181,7 @@ def process_file_to_pickle(json_path, out_pkl_path,  num_generations):
 
 # wail /home/cs/staff/shaowei/hf/math-result_left
 # quail /data/ximing/math-result_left
-def inference_model_pickle(task_name: str, model, base_dir,
+def inference_model_pickle(task_name: str, base_dir,
                            start=9, end=50, num_generations=20):
     numbers = [4, 5, 2, 6, 11, 12, 13, 18, 20, 21, 25, 26, 29, 30, 33, 35, 38, 44, 46, 47, 49, 50, 51, 56, 57, 59]
 
