@@ -50,14 +50,16 @@ if __name__ == '__main__':
             length = generations[0].get('length_of_output')
 
             time += float(generations[0].get('execution_time').rstrip('s'))
+            result = check_math_correctness(standard, predict)
 
             spe_step += generations[0].get('correct_spe_number')
             target_step += generations[0].get('try_correct_num')
             if length is not None:
                 number_of_tokens += length
             else:
-                number_of_tokens += generations[0].get('length_of_real_output')
-        result = check_math_correctness(standard,predict)
+                if result:
+                    number_of_tokens += generations[0].get('length_of_real_output')
+
         if result:
             number_correct += 1
         else:
@@ -65,7 +67,7 @@ if __name__ == '__main__':
             print(f'Error in {dirname}')
     print(f"total time: {time}")
     print(f'Accuracy: {number_correct / total_number} in {args.dataset}')
-    print("Number of tokens: ", number_of_tokens/total_number)
+    print("Number of tokens: ", number_of_tokens/number_correct)
     print("average spe step: ", spe_step/(spe_step+target_step))
     print("average target step: ", target_step / (spe_step + target_step))
     print("average execution time: ", time/total_number)
