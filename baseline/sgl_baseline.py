@@ -29,7 +29,6 @@ def seed_everything(seed):
 NUMBER = 0
 
 def predict(tokenizer, input_data, model):
-    max_new_tokens = 14000
     start_time = time.time()
     messages = [
         {"role": "user", "content": input_data + MATH_PROMPT}
@@ -52,11 +51,12 @@ def predict(tokenizer, input_data, model):
         "return_hidden_states": True,
     }
     if model =='Qwen/QwQ-32B':
-
+        print('------------------')
         speculative_outputs = requests.post(
             f"http://130.179.30.15:{30000}/generate",
             json=json_data,
         )
+
     else:
         speculative_outputs = requests.post(
             f"http://130.179.30.7:{30000}/generate",
