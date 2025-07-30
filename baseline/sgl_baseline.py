@@ -1,6 +1,6 @@
 import datetime
 import torch
-import json
+
 import os
 import traceback
 from tqdm import tqdm
@@ -11,6 +11,8 @@ import numpy as np
 import random
 import torch
 import time
+import requests
+import json
 
 MATH_PROMPT = "\nPlease reason step by step, and put your final answer within \\boxed{}."
 def seed_everything(seed):
@@ -26,8 +28,9 @@ def seed_everything(seed):
 
 NUMBER = 0
 
-def predict(tokenizer, model, input_data, temperature):
+def predict(tokenizer, input_data, temperature):
     max_new_tokens = 14000
+    start_time = time.time()
     messages = [
         {"role": "user", "content": input_data + MATH_PROMPT}
     ]
@@ -37,27 +40,32 @@ def predict(tokenizer, model, input_data, temperature):
         tokenize=False,
         add_generation_prompt=True
     )
-    inputs = tokenizer(target_text, return_tensors="pt").to(f"cuda:{NUMBER}")
-    initial_length = len(inputs['input_ids'][0])
-    start_time  = time.time()
-    with torch.no_grad():
-        outputs = model.generate(
-            **inputs,
-            max_new_tokens=max_new_tokens,
-            temperature=temperature,
-            do_sample=True,
-        )
-    execution_time = time.time() - start_time
+    sampling_params = {
+        "temperature": 0.6,
+        "top_p": 0.95,
+        "max_new_tokens": 14000,
+    }
 
-    full_answer = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    full_answer_len = outputs.shape[1]
-    real_answer = tokenizer.decode(outputs[0][initial_length:], skip_special_tokens=True)
-    return real_answer, full_answer, input_data,full_answer_len,execution_time
+    json_data = {
+        "text": [target_text],
+        "sampling_params": sampling_params,
+        "return_hidden_states": True,
+    }
 
-def process_file_to_json(save_path, tokenizer, model, problem, answer):
+    speculative_outputs = requests.post(
+        f"http://130.179.30.7:{30000}/generate",
+        json=json_data,
+    )
+    speculative_output =speculative_outputs.json()
+    speculative_real_output_text = speculative_output[0]['text']
+    end_time = time.time()
+    len_output = speculative_output[0]['meta_info']['completion_tokens']
+    return speculative_real_output_text, target_text+speculative_real_output_text, input_data,len_output,end_time-start_time
+
+def process_file_to_json(save_path, tokenizer, problem, answer):
     all_generations = []
     try:
-        real_answer, full_answer, input_data,full_answer_len,execution_time = predict(tokenizer, model, problem, temperature=0.6)
+        real_answer, full_answer, input_data,full_answer_len,execution_time = predict(tokenizer, problem, temperature=0.6)
         all_generations.append({
             "input_text": input_data,
             "real_answer": real_answer,
@@ -82,7 +90,7 @@ def process_file_to_json(save_path, tokenizer, model, problem, answer):
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(all_generations, f, ensure_ascii=False, indent=2)
 
-def inference_model_pickle(task_name: str, model, tokenizer, base_dir,
+def inference_model_pickle(task_name: str, tokenizer, base_dir,
                            start=0, end=10,seed=42):
     if task_name == "math-500":
         ds = load_dataset("HuggingFaceH4/MATH-500")['test']
@@ -100,7 +108,7 @@ def inference_model_pickle(task_name: str, model, tokenizer, base_dir,
         dir_path = os.path.join(base_dir, dirname)
         problem = problems_and_answers[idx]['problem']
         answer = problems_and_answers[idx]['answer']
-        process_file_to_json(dir_path, tokenizer, model, problem, answer)
+        process_file_to_json(dir_path, tokenizer, problem, answer)
 
     print("[Info] Processing completed.")
 
@@ -121,21 +129,12 @@ if __name__ == "__main__":
         model_name = "QwQ-32B-AWQ"
     elif args.model == "Qwen/QwQ-32B":
         model_name = "QwQ-32B"
-    tokenizer = AutoTokenizer.from_pretrained(
-        pretrained_model_name_or_path=args.model,
-        trust_remote_code=True
-    )
-    model = AutoModelForCausalLM.from_pretrained(
-        pretrained_model_name_or_path=args.model,
-        torch_dtype=torch.float16,
-        device_map="auto"
-    )
 
-    base_dir = f'/data/semantic/baseline/{model_name}_{args.dataset}_seed{args.seed}/'
+
+
+    base_dir = f'/data/semantic/baseline/sgl_{model_name}_{args.dataset}_seed{args.seed}/'
     inference_model_pickle(
         task_name=args.dataset,
-        model=model,
-        tokenizer=tokenizer,
         base_dir=base_dir,
         start=args.start,
         end=args.end,
