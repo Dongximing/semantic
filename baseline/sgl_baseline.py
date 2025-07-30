@@ -53,7 +53,7 @@ def predict(tokenizer, input_data, temperature):
     }
 
     speculative_outputs = requests.post(
-        f"http://130.179.30.7:{30000}/generate",
+        f"http://130.179.30.15:{30000}/generate",
         json=json_data,
     )
     speculative_output =speculative_outputs.json()
@@ -116,7 +116,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str, help="dataset", default='aime')  # math-500
     parser.add_argument("--seed", type=int, help="seed", default=123)
-    parser.add_argument("--model", type=str, help="model", default="DeepSeek-R1-Distill-1.5b")
+    parser.add_argument("--model", type=str, help="model", default="Qwen/QwQ-32B")
     parser.add_argument("--start", type=int, help="start", default=0)
     parser.add_argument("--end", type=int, help="end", default=30)
     args = parser.parse_args()
