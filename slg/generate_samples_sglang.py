@@ -56,9 +56,10 @@ def predict( input_data,temperature):
         ]
     )
     Completion_tokens = checking_output['meta_info']['completion_tokens']
-    target_pooling_hidden_information = hidden_states[-Completion_tokens:, :]
+
 
     real_answer = checking_output['text']
+    print('checking_output',real_answer)
     hidden_states = hidden_states[-Completion_tokens:,:] #len *hidden
 
 
