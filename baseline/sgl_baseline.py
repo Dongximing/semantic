@@ -116,7 +116,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str, help="dataset", default='aime')  # math-500
     parser.add_argument("--seed", type=int, help="seed", default=123)
-    parser.add_argument("--model", type=str, help="model", default="")
+    parser.add_argument("--model", type=str, help="model", default="DeepSeek-R1-Distill-1.5b")
     parser.add_argument("--start", type=int, help="start", default=0)
     parser.add_argument("--end", type=int, help="end", default=30)
     args = parser.parse_args()
@@ -129,6 +129,8 @@ if __name__ == "__main__":
         model_name = "QwQ-32B-AWQ"
     elif args.model == "Qwen/QwQ-32B":
         model_name = "QwQ-32B"
+    elif args.model == "DeepSeek-R1-Distill-1.5b":
+        model_name = "DeepSeek-R1-Distill-1.5b"
 
 
 
