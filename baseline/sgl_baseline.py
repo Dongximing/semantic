@@ -132,12 +132,15 @@ if __name__ == "__main__":
     elif args.model == "DeepSeek-R1-Distill-1.5b":
         model_name = "DeepSeek-R1-Distill-1.5b"
 
+    Tokenizer = AutoTokenizer.from_pretrained('deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B')
+
 
 
     base_dir = f'/data/semantic/baseline/sgl_{model_name}_{args.dataset}_seed{args.seed}/'
     inference_model_pickle(
         task_name=args.dataset,
         base_dir=base_dir,
+        tokenizer=Tokenizer,
         start=args.start,
         end=args.end,
         seed=args.seed
