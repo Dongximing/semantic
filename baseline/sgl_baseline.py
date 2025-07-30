@@ -28,7 +28,7 @@ def seed_everything(seed):
 
 NUMBER = 0
 
-def predict(tokenizer, input_data, temperature):
+def predict(tokenizer, input_data, model):
     max_new_tokens = 14000
     start_time = time.time()
     messages = [
@@ -51,21 +51,28 @@ def predict(tokenizer, input_data, temperature):
         "sampling_params": sampling_params,
         "return_hidden_states": True,
     }
+    if model =='Qwen/QwQ-32B':
 
-    speculative_outputs = requests.post(
-        f"http://130.179.30.15:{30000}/generate",
-        json=json_data,
-    )
+        speculative_outputs = requests.post(
+            f"http://130.179.30.15:{30000}/generate",
+            json=json_data,
+        )
+    else:
+        speculative_outputs = requests.post(
+            f"http://130.179.30.7:{30000}/generate",
+            json=json_data,
+        )
+
     speculative_output =speculative_outputs.json()
     speculative_real_output_text = speculative_output[0]['text']
     end_time = time.time()
     len_output = speculative_output[0]['meta_info']['completion_tokens']
     return speculative_real_output_text, target_text+speculative_real_output_text, input_data,len_output,end_time-start_time
 
-def process_file_to_json(save_path, tokenizer, problem, answer):
+def process_file_to_json(save_path, tokenizer, problem, answer,model):
     all_generations = []
     try:
-        real_answer, full_answer, input_data,full_answer_len,execution_time = predict(tokenizer, problem, temperature=0.6)
+        real_answer, full_answer, input_data,full_answer_len,execution_time = predict(tokenizer, problem, model)
         all_generations.append({
             "input_text": input_data,
             "real_answer": real_answer,
@@ -90,7 +97,7 @@ def process_file_to_json(save_path, tokenizer, problem, answer):
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(all_generations, f, ensure_ascii=False, indent=2)
 
-def inference_model_pickle(task_name: str, tokenizer, base_dir,
+def inference_model_pickle(task_name: str, tokenizer, base_dir,model,
                            start=0, end=10,seed=42):
     if task_name == "math-500":
         ds = load_dataset("HuggingFaceH4/MATH-500")['test']
@@ -108,7 +115,7 @@ def inference_model_pickle(task_name: str, tokenizer, base_dir,
         dir_path = os.path.join(base_dir, dirname)
         problem = problems_and_answers[idx]['problem']
         answer = problems_and_answers[idx]['answer']
-        process_file_to_json(dir_path, tokenizer, problem, answer)
+        process_file_to_json(dir_path, tokenizer, problem, answer,model)
 
     print("[Info] Processing completed.")
 
@@ -141,8 +148,10 @@ if __name__ == "__main__":
         task_name=args.dataset,
         base_dir=base_dir,
         tokenizer=Tokenizer,
+        model=args.model,
         start=args.start,
         end=args.end,
-        seed=args.seed
+        seed=args.seed,
+
     )
     print("done")
