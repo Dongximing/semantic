@@ -67,6 +67,7 @@ def predict(tokenizer, input_data, model):
     speculative_real_output_text = speculative_output[0]['text']
     end_time = time.time()
     len_output = speculative_output[0]['meta_info']['completion_tokens']
+    print(speculative_real_output_text)
     return speculative_real_output_text, target_text+speculative_real_output_text, input_data,len_output,end_time-start_time
 
 def process_file_to_json(save_path, tokenizer, problem, answer,model):
