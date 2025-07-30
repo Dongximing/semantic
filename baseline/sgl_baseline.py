@@ -72,26 +72,26 @@ def predict(tokenizer, input_data, model):
 
 def process_file_to_json(save_path, tokenizer, problem, answer,model):
     all_generations = []
-    try:
-        real_answer, full_answer, input_data,full_answer_len,execution_time = predict(tokenizer, problem, model)
-        all_generations.append({
-            "input_text": input_data,
-            "real_answer": real_answer,
-            "full_answer": full_answer,
-            "tokens_full_answer":full_answer_len,
-            "answer": answer,
-            "execution_time":execution_time
-        })
-    except Exception as e:
-        print('ggggg')
-        all_generations.append({
-            "input_text": problem,
-            "real_answer": None,
-            "full_answer": None,
-            "answer": answer,
-            "tokens_full_answer":None,
-            "error": traceback.format_exc()
-        })
+    # try:
+    real_answer, full_answer, input_data,full_answer_len,execution_time = predict(tokenizer, problem, model)
+    all_generations.append({
+        "input_text": input_data,
+        "real_answer": real_answer,
+        "full_answer": full_answer,
+        "tokens_full_answer":full_answer_len,
+        "answer": answer,
+        "execution_time":execution_time
+    })
+    # except Exception as e:
+    #     print('ggggg')
+    #     all_generations.append({
+    #         "input_text": problem,
+    #         "real_answer": None,
+    #         "full_answer": None,
+    #         "answer": answer,
+    #         "tokens_full_answer":None,
+    #         "error": traceback.format_exc()
+    #     })
 
     os.makedirs(save_path, exist_ok=True)
     out_path = os.path.join(save_path, "generation.json")
