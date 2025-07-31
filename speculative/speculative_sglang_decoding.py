@@ -134,7 +134,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                 else:
                     return False
 
-        speculative_real_output = ''
+        speculative_real_output_text = ''
         prob_target = 0
         prob_spec = 0
         target_real_output = ''
@@ -151,7 +151,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                 if use_target:
                     # print('target_tokenizer.decode(target_tokenizer(generated_text,return_tensors="pt")[original_target_prompt_len:]:\n',
                     #       target_tokenizer(generated_text,return_tensors="pt"))
-                    detail.append({'target_model': target_real_output, 'why_is_not_good': speculative_real_output,
+                    detail.append({'target_model': target_real_output, 'why_is_not_good': speculative_real_output_text,
                                    "score_target": round(prob_target, 2), "score_spec": round(prob_spec, 2)})
                     small_input = speculative_text + target_tokenizer.decode(
                         target_tokenizer(generated_text, return_tensors="pt")['input_ids'][0,

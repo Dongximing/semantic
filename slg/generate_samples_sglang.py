@@ -59,7 +59,7 @@ def predict( input_data,temperature):
 
 
     real_answer = checking_output['text']
-    print('checking_output',real_answer)
+    # print('checking_output',real_answer)
     hidden_states = hidden_states[-Completion_tokens:,:] #len *hidden
 
 
@@ -215,7 +215,7 @@ if __name__ == "__main__":
     parser.add_argument("--model", type=str, default="Qwen/QwQ-32B")
     parser.add_argument("--task", type=str, default="math-500")
     parser.add_argument("--gpu", type=int, default=0)
-    parser.add_argument("--start", type=int, help="dataset", default=12)
+    parser.add_argument("--start", type=int, help="dataset", default=23)
     parser.add_argument("--end", type=int, help="dataset", default=100)  #
     parser.add_argument("--base_dir", type=str, help="dataset", default='/data/semantic/qwq32b_math')
     args = parser.parse_args()
