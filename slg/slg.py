@@ -1,7 +1,6 @@
 import requests
-from requests.exceptions import RequestException
 
-small_input = 'hell0'
+small_input  = 'hell0'
 sampling_params = {
     "temperature": 0.6,
     "top_p": 0.95,
@@ -13,13 +12,9 @@ json_data = {
     "text": [small_input],
     "sampling_params": sampling_params,
 }
-try:
-    speculative_outputs = requests.post(
-        "http://194.68.245.149:8888/generate",  # 使用 8888
-        json=json_data,
-        timeout=10
-    )
-    speculative_outputs.raise_for_status()
-    print(speculative_outputs.json())
-except RequestException as e:
-    print(f"Request failed: {e}")
+speculative_outputs = requests.post(
+    "http://0.0.0.0:3000/generate",
+    json=json_data,
+)
+
+print(speculative_outputs.json())
