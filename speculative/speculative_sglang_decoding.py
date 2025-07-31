@@ -362,11 +362,11 @@ if __name__ == "__main__":
     #     wrong_list = [1, 2, 3, 4, 10, 13, 15, 16, 17, 20, 21, 22, 25, 27, 28]
     # elif args.seed == 30981:
     #     wrong_list = [1, 2, 3, 4, 5, 10, 12, 13, 14, 15, 17, 18, 20, 21, 22, 25, 27, 28]
-    if args.seed  == 729:
+    if args.seed  == 7291:
         wrong_list =  [1, 2, 3, 4, 5, 6, 10, 13, 14, 16, 17, 18, 20, 21, 25, 27, 28, 29]
-    elif args.seed == 1250:
+    elif args.seed == 12501:
         wrong_list = [1, 2, 3, 5, 6, 10, 13, 16, 17, 20, 21, 22, 25, 28, 29]
-    elif args.seed == 2024:
+    elif args.seed == 20241:
         wrong_list = [1, 2, 3, 4, 10, 13, 14, 17, 20, 21, 25, 27, 28, 29]
 
 
@@ -404,20 +404,20 @@ if __name__ == "__main__":
 
     ds = ds.select(range(args.start_dataset, args.end_dataset))
     problems_and_answers = [{"problem": item["problem"], "answer": item["answer"]} for item in ds]
-    # for idx, number in enumerate(tqdm(wrong_list, total=len(wrong_list))):
-    #
-    #     #print("doing wrong number:", number)
-    #     dirname = f'spec_{args.dataset}_{number}'
-    #     dir_path = os.path.join(f"{args.data_dir}{args.seed}", dirname)
-    #     number = number
-    #     problem = problems_and_answers[number]['problem']
-    #     #print(f"{number}: {problem}")
-    #     answer = problems_and_answers[number]['answer']
-    #     process_file_to_json(dir_path, target_model, target_tokenizer,speculative_model, speculative_tokenizer, problem,answer,args.target_temperature,args.speculative_temperature,args.max_new_tokens,model_target_probe,model_spec_probe)
+    for idx, number in enumerate(tqdm(wrong_list, total=len(wrong_list))):
 
-    for idx, number in enumerate(tqdm(range(args.start_dataset, args.end_dataset))):
+        #print("doing wrong number:", number)
         dirname = f'spec_{args.dataset}_{number}'
         dir_path = os.path.join(f"{args.data_dir}{args.seed}", dirname)
-        problem = problems_and_answers[idx]['problem']
-        answer = problems_and_answers[idx]['answer']
-        process_file_to_json(dir_path,  target_tokenizer, speculative_tokenizer, problem,answer,args.max_new_tokens,model_target_probe,model_spec_probe)
+        number = number
+        problem = problems_and_answers[number]['problem']
+        #print(f"{number}: {problem}")
+        answer = problems_and_answers[number]['answer']
+        process_file_to_json(dir_path, target_tokenizer, speculative_tokenizer, problem,answer,args.max_new_tokens,model_target_probe,model_spec_probe)
+
+    # for idx, number in enumerate(tqdm(range(args.start_dataset, args.end_dataset))):
+    #     dirname = f'spec_{args.dataset}_{number}'
+    #     dir_path = os.path.join(f"{args.data_dir}{args.seed}", dirname)
+    #     problem = problems_and_answers[idx]['problem']
+    #     answer = problems_and_answers[idx]['answer']
+    #     process_file_to_json(dir_path,  target_tokenizer, speculative_tokenizer, problem,answer,args.max_new_tokens,model_target_probe,model_spec_probe)
