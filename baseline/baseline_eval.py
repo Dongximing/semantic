@@ -44,14 +44,15 @@ if __name__ == '__main__':
             #print(predict)
             time += generations[0]['execution_time']
             standard = generations[0]['answer']
-            number_of_tokens += generations[0]['tokens_full_answer']
+            # number_of_tokens += generations[0]['tokens_full_answer']
         result = check_math_correctness(standard,predict)
         if result:
+            number_of_tokens += generations[0]['tokens_full_answer']
             number_correct += 1
         else:
             print(f'Error in {dirname}')
     print(f'Accuracy: {number_correct / total_number} in {args.dataset}')
-    print("Number of tokens: ", number_of_tokens/total_number)
+    print("Number of tokens: ", number_of_tokens/number_correct)
     print(f'Number_correct: {number_correct}')
     print(f'Total: {total_number}')
     print(f'average execution time: {time/total_number}')
