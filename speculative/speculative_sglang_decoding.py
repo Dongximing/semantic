@@ -363,11 +363,11 @@ if __name__ == "__main__":
     # elif args.seed == 30981:
     #     wrong_list = [1, 2, 3, 4, 5, 10, 12, 13, 14, 15, 17, 18, 20, 21, 22, 25, 27, 28]
     if args.seed  == 7291:
-        wrong_list =  [1, 2, 3, 4, 5, 6, 10, 13, 14, 16, 17, 18, 20, 21, 25, 27, 28, 29]
+        wrong_list =  [1,  4, 5, 6, 10, 14, 16, 18,  25, 27]
     elif args.seed == 12501:
-        wrong_list = [ 2, 3, 5, 6, 10, 13, 16, 17, 20, 21, 22, 25, 28, 29]
+        wrong_list = [ 5, 6, 10,  16,  22, 25]
     elif args.seed == 20241:
-        wrong_list = [1, 2, 3, 4, 10, 13, 14, 17, 20, 21, 25, 27, 28, 29]
+        wrong_list = [1,4, 10, 14, 25, 27]
 
 
     model_target_probe = SemanticEntropyProbTarget(5120, 512)
