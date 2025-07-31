@@ -22,9 +22,11 @@ TARGET_probe = 2
 SPEC_probe = 3
 import requests
 
-def speculative_accept(qi, pi):
+def speculative_accept(qi, pi, threshold_min=0.7):
 
     ratio = qi / pi if pi > 0 else 0
+    if ratio < threshold_min:
+        return False   # ratio 太低，直接 reject
     threshold = min(1.0, ratio)
     r = random.uniform(0, 1)
     return r < threshold
@@ -81,10 +83,6 @@ class StoppingCriteriaSub(StoppingCriteria):
                 self.triggered_stop = stop
                 return True
         return False
-STOP_TOKENS = [
-    ' \n\n', '.\n\n', ':\n\n', '\n\n',
-    ')\n\n', '?\n\n', ']\n\n', ').\n\n',
-]
 
 
 
@@ -153,6 +151,8 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                 if use_target:
                     # print('target_tokenizer.decode(target_tokenizer(generated_text,return_tensors="pt")[original_target_prompt_len:]:\n',
                     #       target_tokenizer(generated_text,return_tensors="pt"))
+                    detail.append({'target_model': target_real_output, 'why_is_not_good': speculative_real_output,
+                                   "score_target": round(prob_target, 2), "score_spec": round(prob_spec, 2)})
                     small_input = speculative_text + target_tokenizer.decode(
                         target_tokenizer(generated_text, return_tensors="pt")['input_ids'][0,
                         original_target_prompt_len:].tolist()
@@ -362,6 +362,13 @@ if __name__ == "__main__":
     #     wrong_list = [1, 2, 3, 4, 10, 13, 15, 16, 17, 20, 21, 22, 25, 27, 28]
     # elif args.seed == 30981:
     #     wrong_list = [1, 2, 3, 4, 5, 10, 12, 13, 14, 15, 17, 18, 20, 21, 22, 25, 27, 28]
+    if args.seed  == 729:
+        wrong_list =  [1, 2, 3, 4, 5, 6, 10, 13, 14, 16, 17, 18, 20, 21, 25, 27, 28, 29]
+    elif args.seed == 1250:
+        wrong_list = [1, 2, 3, 5, 6, 10, 13, 16, 17, 20, 21, 22, 25, 28, 29]
+    elif args.seed == 2024:
+        wrong_list = [1, 2, 3, 4, 10, 13, 14, 17, 20, 21, 25, 27, 28, 29]
+
 
     model_target_probe = SemanticEntropyProbTarget(5120, 512)
     model_target_probe.load_state_dict(torch.load(f'{args.target_probe}.pt'))
