@@ -14,7 +14,7 @@ json_data = {
     "return_hidden_states": True,
 }
 speculative_outputs = requests.post(
-    "http://194.68.245.149:22071/generate",
+    "http://194.68.245.149:8888/generate",
     json=json_data,
 )
 
