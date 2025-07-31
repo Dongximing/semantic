@@ -13,7 +13,7 @@ json_data = {
     "sampling_params": sampling_params,
 }
 speculative_outputs = requests.post(
-    "http://0.0.0.0:3000/generate",
+    "http://127.0.0.1:3000/generate",
     json=json_data,
 )
 
