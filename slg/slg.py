@@ -1,6 +1,6 @@
 import requests
 
-url = "http://130.179.30.7:{30000}/generate"
+url = "http://194.68.245.149:{22071}/generate"
 small_input  = 'hell0'
 sampling_params = {
     "temperature": 0.6,
@@ -15,7 +15,7 @@ json_data = {
     "return_hidden_states": True,
 }
 speculative_outputs = requests.post(
-    f"http://130.179.30.7:{30000}/generate",
+    f"http://194.68.245.149:{30000}/generate",
     json=json_data,
 )
 
