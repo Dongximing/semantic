@@ -55,9 +55,9 @@ if __name__ == '__main__':
             spe_step += generations[0].get('correct_spe_number')
             target_step += generations[0].get('try_correct_num')
             if length is not None:
-                #number_of_tokens += length
-                if result:
-                    number_of_tokens += length
+                number_of_tokens += length
+                # if result:
+                #     number_of_tokens += length
             else:
                 if result:
                     number_of_tokens += generations[0].get('length_of_real_output')
