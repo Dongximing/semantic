@@ -22,7 +22,7 @@ TARGET_probe = 2
 SPEC_probe = 3
 import requests
 
-def speculative_accept(qi, pi, threshold_min=0.7):
+def speculative_accept(qi, pi, threshold_min=0.8):
 
     ratio = qi / pi if pi > 0 else 0
     if ratio < threshold_min:
@@ -363,7 +363,7 @@ if __name__ == "__main__":
     # elif args.seed == 30981:
     #     wrong_list = [1, 2, 3, 4, 5, 10, 12, 13, 14, 15, 17, 18, 20, 21, 22, 25, 27, 28]
     if args.seed  == 7291:
-        wrong_list =  [ 5, 10, 14, 18, 27]
+        wrong_list =  [ 4, 14, 18, 27]
     elif args.seed == 12501:
         wrong_list = [1, 5, 6, 10, 16, 22, 25]
     elif args.seed == 20241:
