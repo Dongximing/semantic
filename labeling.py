@@ -67,7 +67,7 @@ def equivalence_prompt(text1, text2, prefix):
     # print('\n\n\n\n')
     return prompt
 def get_deberta_output(text1,text2,model,tokenizer):
-    inputs = tokenizer(text1, text2, return_tensors="pt").to("cuda:0")
+    inputs = tokenizer(text1, text2, return_tensors="pt").to("cuda:1")
     outputs = model(**inputs)
     logits = outputs.logits
     # Deberta-mnli returns `neutral` and `entailment` classes at indices 1 and 2.
@@ -162,7 +162,7 @@ def process_file_to_pickle(json_path, out_pkl_path):
 
     tokenizer = AutoTokenizer.from_pretrained("microsoft/deberta-v2-xlarge-mnli")
     model = AutoModelForSequenceClassification.from_pretrained(
-        "microsoft/deberta-v2-xlarge-mnli").to("cuda:0")
+        "microsoft/deberta-v2-xlarge-mnli").to("cuda:1")
 
     group_size = 21
     with open(json_path, "rb") as f:
@@ -264,7 +264,7 @@ def inference_model_pickle(
 if __name__ == "__main__":
     argparse = argparse.ArgumentParser()
     argparse.add_argument('--base_dir', type=str, default='/data/semantic/qwq32b_math')
-    argparse.add_argument('--start', type=int, default=0)
+    argparse.add_argument('--start', type=int, default=25)
     argparse.add_argument('--end', type=int, default=50)
     args = argparse.parse_args()
     inference_model_pickle(base_dir=args.base_dir, start=args.start, end=args.end)
