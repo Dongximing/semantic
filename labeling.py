@@ -263,8 +263,8 @@ def inference_model_pickle(
 
 if __name__ == "__main__":
     argparse = argparse.ArgumentParser()
-    argparse.add_argument('--base_dir', type=str, default='/home/shaowei/math-500-32b-qwq-full')
+    argparse.add_argument('--base_dir', type=str, default='/data/semantic/qwq32b_math')
     argparse.add_argument('--start', type=int, default=0)
-    argparse.add_argument('--end', type=int, default=37)
+    argparse.add_argument('--end', type=int, default=25)
     args = argparse.parse_args()
     inference_model_pickle(base_dir=args.base_dir, start=args.start, end=args.end)
