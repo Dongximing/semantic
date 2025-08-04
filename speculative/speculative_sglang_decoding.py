@@ -217,8 +217,10 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                     f"https://tqks84p4oltpp8-8800.proxy.runpod.net/generate",
                     json=json_data_check,
                 )
-
+                print('checking_outputs', checking_outputs)
                 checking_outputs = checking_outputs.json()
+
+
 
                 checking_output = checking_outputs[0]
                 for i in range(len(checking_output["meta_info"]["hidden_states"])):
