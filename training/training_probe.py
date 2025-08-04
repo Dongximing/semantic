@@ -252,10 +252,10 @@ def main(dataset,method,data_dir,model_name):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     # "last_hidden_state", "last_second_token", "last_input_token", "output_last_hidden_list"
-    parser.add_argument("--dataset", type=str, required=True, help="dataset",default='math-500')
-    parser.add_argument("--model", type=str, required=True, help="model",default='full_size_slg_qwq-32b')
-    parser.add_argument("--method", type=str, required=True, help="method for X",default='output_last_hidden_list')
-    parser.add_argument("--data_dir", type=str, required=True, help="method for X",default='/data/semantic/qwq32b_math')
+    parser.add_argument("--dataset", type=str,  help="dataset",default='math-500')
+    parser.add_argument("--model", type=str,  help="model",default='full_size_slg_qwq-32b')
+    parser.add_argument("--method", type=str,help="method for X",default='output_last_hidden_list')
+    parser.add_argument("--data_dir", type=str, help="method for X",default='/data/semantic/qwq32b_math')
     args = parser.parse_args()
     main(args.dataset,args.method,args.data_dir,args.model)
 
