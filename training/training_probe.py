@@ -177,15 +177,15 @@ def create_Xs_and_ys(datasets, scores, val_test_splits=[0.2, 0.1], random_state=
 def main(dataset,method,data_dir,model_name):
 
     start = 0
-    end = 60
+    end = 100
     X, Y = [], []
     #skip_numbers = [1, 9, 10, 17, 18, 19, 21, 26, 30, 32, 36, 41, 43, 62, 64, 71, 80, 82, 88, 94, 96, 97]
     #skip_numbers = [1, 9, 11, 17, 18, 19, 21, 25, 26, 41, 43, 50, 51, 63, 64, 66, 71, 80, 82, 88, 94, 96, 97]
-    skip_numbers = [4, 5, 2, 6, 11, 12, 13, 18, 20, 21, 25, 26, 29, 30, 33, 35, 38, 44, 46, 47, 49, 50, 51, 56, 57, 59]
+   # skip_numbers = [4, 5, 2, 6, 11, 12, 13, 18, 20, 21, 25, 26, 29, 30, 33, 35, 38, 44, 46, 47, 49, 50, 51, 56, 57, 59]
     base_dir = data_dir
     for number in tqdm(range(start, end)):
-        if number in skip_numbers:
-            continue
+        # if number in skip_numbers:
+        #     continue
         dirname = f'data-60-temp0_{number}'
         dir_path = os.path.join(base_dir, dirname)
         pkl_path = os.path.join(dir_path, f'new_generations_with_entropy_prob{number}.pkl')
@@ -252,10 +252,10 @@ def main(dataset,method,data_dir,model_name):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     # "last_hidden_state", "last_second_token", "last_input_token", "output_last_hidden_list"
-    parser.add_argument("--dataset", type=str, required=True, help="dataset")
-    parser.add_argument("--model", type=str, required=True, help="model")
-    parser.add_argument("--method", type=str, required=True, help="method for X")
-    parser.add_argument("--data_dir", type=str, required=True, help="method for X",default='/home/cs/staff/shaowei/semantic/qwq-merge')
+    parser.add_argument("--dataset", type=str, required=True, help="dataset",default='math-500')
+    parser.add_argument("--model", type=str, required=True, help="model",default='full_size_slg_qwq-32b')
+    parser.add_argument("--method", type=str, required=True, help="method for X",default='output_last_hidden_list')
+    parser.add_argument("--data_dir", type=str, required=True, help="method for X",default='/data/semantic/qwq32b_math')
     args = parser.parse_args()
     main(args.dataset,args.method,args.data_dir,args.model)
 
