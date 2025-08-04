@@ -186,7 +186,7 @@ def main(dataset,method,data_dir,model_name):
     for number in tqdm(range(start, end)):
         # if number in skip_numbers:
         #     continue
-        dirname = f'data-60-temp0_{number}'
+        dirname = f'data-500-temp0_{number}'
         dir_path = os.path.join(base_dir, dirname)
         pkl_path = os.path.join(dir_path, f'new_generations_with_entropy_prob{number}.pkl')
         if not os.path.exists(pkl_path):
