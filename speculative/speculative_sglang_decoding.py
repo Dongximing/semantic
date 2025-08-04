@@ -214,7 +214,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                     "return_hidden_states": True,
                 }
                 checking_outputs = requests.post(
-                    f"http://0.0.0.0:{8800}/generate",
+                    f"https://tqks84p4oltpp8-8800.proxy.runpod.net/generate",
                     json=json_data_check,
                 )
 
@@ -277,7 +277,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                     "return_hidden_states": False,
                 }
                 target_outputs = requests.post(
-                    f"http://0.0.0.0:{8800}/generate",
+                    f"https://tqks84p4oltpp8-8800.proxy.runpod.net/generate",
                     json=json_data,
                 )
                 target_outputs = target_outputs.json()

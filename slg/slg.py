@@ -13,7 +13,7 @@ json_data = {
     "sampling_params": sampling_params,
 }
 speculative_outputs = requests.post(
-    "https://0jlklcgw6wsdau-8800.proxy.runpod.net/generate",
+    "https://tqks84p4oltpp8-8800.proxy.runpod.net/generate",
     json=json_data,
 
 )
