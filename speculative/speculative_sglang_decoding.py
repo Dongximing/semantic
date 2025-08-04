@@ -277,7 +277,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                     "return_hidden_states": False,
                 }
                 target_outputs = requests.post(
-                    f"http://0.0.0.0:{30000}/generate",
+                    f"http://0.0.0.0:{8800}/generate",
                     json=json_data,
                 )
                 target_outputs = target_outputs.json()
