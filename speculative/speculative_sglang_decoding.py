@@ -335,14 +335,14 @@ def process_file_to_json(dir_path , target_tokenizer, speculative_tokenizer,prob
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", type=str,  help="dataset",default='aime')#math-500
+    parser.add_argument("--dataset", type=str,  help="dataset",default='math-500')#math-500
     parser.add_argument("--target_model", type=str,  help="target_model",default="Qwen/QwQ-32B")
     parser.add_argument("--speculative_model", type=str,  help="speculative_model", default="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
-    parser.add_argument("--data_dir", type=str,  help="data_dir",default='/data/semantic/speculative/sglang_new_spec_result_aime_full_size_QwQ-32B_r132_deepseek1.5seed_')
+    parser.add_argument("--data_dir", type=str,  help="data_dir",default='/data/semantic/speculative/sglang_new_spec_result_math-500_full_size_QwQ-32B_r132_deepseek1.5seed_')
     parser.add_argument("--start_dataset", type=int, help="the beginning of the dataset",default=0)
     parser.add_argument("--end_dataset", type=int, help="the end of the dataset",default=30)
-    parser.add_argument("--target_probe", type=str, help="target_probe",default="/data/semantic/training/valid_new_full_size_qwq_32b_aime_output_last_hidden_list_best_probe_mse")#aime_output_last_hidden_list_best_probe_mse
-    parser.add_argument("--speculative_probe", type=str, help="speculative_probe",default="/home/shaowei/new_probe/valid_new_deepseekr11.5b_aime_output_last_hidden_list_best_probe_mse")
+    parser.add_argument("--target_probe", type=str, help="target_probe",default="/data/semantic/training/valid_new_full_size_slg_qwq-32b_math-500_output_last_hidden_list_best_probe_mse")#aime_output_last_hidden_list_best_probe_mse
+    parser.add_argument("--speculative_probe", type=str, help="speculative_probe",default="/home/shaowei/new_probe/new_deepseekr11.5b_math-500_output_last_hidden_list_best_probe_mse")
     parser.add_argument("--target_temperature", type=float, help="target_temperature",default=0.1)
     parser.add_argument("--speculative_temperature", type=float, help="speculative_temperature",default=0.6)
     parser.add_argument("--max_new_tokens", type=int, help="max_new_tokens",default=14000)
@@ -362,12 +362,12 @@ if __name__ == "__main__":
     #     wrong_list = [1, 2, 3, 4, 10, 13, 15, 16, 17, 20, 21, 22, 25, 27, 28]
     # elif args.seed == 30981:
     #     wrong_list = [1, 2, 3, 4, 5, 10, 12, 13, 14, 15, 17, 18, 20, 21, 22, 25, 27, 28]
-    if args.seed  == 7291:
-        wrong_list =  [18]
-    elif args.seed == 12501:
-        wrong_list = [1, 5, 6, 10, 16, 22, 25]
-    elif args.seed == 20241:
-        wrong_list = [27]
+    # if args.seed  == 7291:
+    #     wrong_list =  [18]
+    # elif args.seed == 12501:
+    #     wrong_list = [1, 5, 6, 10, 16, 22, 25]
+    # elif args.seed == 20241:
+    #     wrong_list = [27]
 
 
     model_target_probe = SemanticEntropyProbTarget(5120, 512)
@@ -404,20 +404,20 @@ if __name__ == "__main__":
 
     ds = ds.select(range(args.start_dataset, args.end_dataset))
     problems_and_answers = [{"problem": item["problem"], "answer": item["answer"]} for item in ds]
-    for idx, number in enumerate(tqdm(wrong_list, total=len(wrong_list))):
-
-        #print("doing wrong number:", number)
-        dirname = f'spec_{args.dataset}_{number}'
-        dir_path = os.path.join(f"{args.data_dir}{args.seed}", dirname)
-        number = number
-        problem = problems_and_answers[number]['problem']
-        #print(f"{number}: {problem}")
-        answer = problems_and_answers[number]['answer']
-        process_file_to_json(dir_path, target_tokenizer, speculative_tokenizer, problem,answer,args.max_new_tokens,model_target_probe,model_spec_probe)
-
-    # for idx, number in enumerate(tqdm(range(args.start_dataset, args.end_dataset))):
+    # for idx, number in enumerate(tqdm(wrong_list, total=len(wrong_list))):
+    #
+    #     #print("doing wrong number:", number)
     #     dirname = f'spec_{args.dataset}_{number}'
     #     dir_path = os.path.join(f"{args.data_dir}{args.seed}", dirname)
-    #     problem = problems_and_answers[idx]['problem']
-    #     answer = problems_and_answers[idx]['answer']
-    #     process_file_to_json(dir_path,  target_tokenizer, speculative_tokenizer, problem,answer,args.max_new_tokens,model_target_probe,model_spec_probe)
+    #     number = number
+    #     problem = problems_and_answers[number]['problem']
+    #     #print(f"{number}: {problem}")
+    #     answer = problems_and_answers[number]['answer']
+    #     process_file_to_json(dir_path, target_tokenizer, speculative_tokenizer, problem,answer,args.max_new_tokens,model_target_probe,model_spec_probe)
+
+    for idx, number in enumerate(tqdm(range(args.start_dataset, args.end_dataset))):
+        dirname = f'spec_{args.dataset}_{number}'
+        dir_path = os.path.join(f"{args.data_dir}{args.seed}", dirname)
+        problem = problems_and_answers[idx]['problem']
+        answer = problems_and_answers[idx]['answer']
+        process_file_to_json(dir_path,  target_tokenizer, speculative_tokenizer, problem,answer,args.max_new_tokens,model_target_probe,model_spec_probe)
