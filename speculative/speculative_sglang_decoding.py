@@ -284,9 +284,10 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                     f"https://tqks84p4oltpp8-8800.proxy.runpod.net/generate",
                     json=json_data,
                 )
-                target_outputs = target_outputs.json()
                 print(target_outputs.status_code)
                 print(target_outputs.text)
+                target_outputs = target_outputs.json()
+
 
                 target_real_output = target_outputs[0]['text']
                 # print('big target_output:\n',target_real_output)
