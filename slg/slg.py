@@ -12,13 +12,15 @@ json_data = {
     "text": [small_input],
     "sampling_params": sampling_params,
 }
-speculative_outputs = requests.post(
-    "https://tqks84p4oltpp8-8800.proxy.runpod.net/generate",
-    json=json_data,
+for i in range(1000):
+    speculative_outputs = requests.post(
+        "https://tqks84p4oltpp8-8800.proxy.runpod.net/generate",
+        json=json_data,
+        timeout=60
 
-)
+    )
 
-print(speculative_outputs.json())
+    print(speculative_outputs.json())
 
 
 
