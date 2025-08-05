@@ -122,7 +122,7 @@ def inference_model_pickle(task_name: str, tokenizer, base_dir,model,
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", type=str, help="dataset", default='aime')  # math-500
+    parser.add_argument("--dataset", type=str, help="dataset", default='math-500')  # math-500
     parser.add_argument("--seed", type=int, help="seed", default=123)
     parser.add_argument("--model", type=str, help="model", default="Qwen/QwQ-32B")
     parser.add_argument("--start", type=int, help="start", default=0)
@@ -144,7 +144,7 @@ if __name__ == "__main__":
 
 
 
-    base_dir = f'/home/cs/staff/shaowei/semantic/baseline/sgl_{model_name}_{args.dataset}_seed{args.seed}/'
+    base_dir = f'/data/semantic/baseline/sgl_{model_name}_{args.dataset}_seed{args.seed}/'
     inference_model_pickle(
         task_name=args.dataset,
         base_dir=base_dir,
