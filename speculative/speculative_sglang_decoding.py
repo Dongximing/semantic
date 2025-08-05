@@ -213,14 +213,14 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                     "sampling_params": {"temperature": 0.1,"max_new_tokens": 1},
                     "return_hidden_states": True,
                 }
-                print(json_data_check)
+                # print(json_data_check)
                 checking_outputs = requests.post(
                     f"https://tqks84p4oltpp8-8800.proxy.runpod.net/generate",
                     json=json_data_check,
                     timeout=120
                 )
-                print('checking_outputs', checking_outputs)
-                print(checking_outputs.status_code)
+                # print('checking_outputs', checking_outputs)
+                # print(checking_outputs.status_code)
                 # print(checking_outputs.text)
                 checking_outputs = checking_outputs.json()
 
@@ -282,13 +282,13 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                     "sampling_params": sampling_params,
                     "return_hidden_states": False,
                 }
-                print(json_data)
+                # print(json_data)
                 target_outputs = requests.post(
                     f"https://tqks84p4oltpp8-8800.proxy.runpod.net/generate",
                     json=json_data,
                     timeout=120
                 )
-                print(target_outputs.status_code)
+                # print(target_outputs.status_code)
                 # print(target_outputs.text)
                 target_outputs = target_outputs.json()
 
