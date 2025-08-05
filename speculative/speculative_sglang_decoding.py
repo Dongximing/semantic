@@ -317,30 +317,67 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
 
 
 
-def process_file_to_json(dir_path , target_tokenizer, speculative_tokenizer,problem, answer,max_new_tokens,model_target_probe,model_spec_probe):
+def process_file_to_json(
+    dir_path,
+    target_tokenizer,
+    speculative_tokenizer,
+    problem,
+    answer,
+    max_new_tokens,
+    model_target_probe,
+    model_spec_probe,
+    idx
+):
     all_generations = []
+    failed_list = []
 
-    start_time = time.time()
-    result = speculative_decoding( target_tokenizer, speculative_tokenizer, problem,max_new_tokens,model_target_probe,model_spec_probe)
-    end_time = time.time()
-    generated_text, try_correct_num,correct_spe_number,detail,length_of_output = result
-    print('real_answer\n',generated_text)
+    try:
+        print(f"[Index {idx}] Starting speculative_decoding...")
+        start_time = time.time()
 
-    all_generations.append({
-        "input_text": problem,
-        "real_answer": generated_text,
-        "try_correct_num": try_correct_num,
-        "standard_answer": answer,
-        "execution_time": f"{end_time - start_time:.2f}s",
-        "correct_spe_number":correct_spe_number,
-        "detail":detail,
-        "length_of_output":length_of_output
+        result = speculative_decoding(
+            target_tokenizer,
+            speculative_tokenizer,
+            problem,
+            max_new_tokens,
+            model_target_probe,
+            model_spec_probe
+        )
 
-    })
-    os.makedirs(dir_path, exist_ok=True)
-    out_path = os.path.join(dir_path, "spec_generation.json")
-    with open(out_path, "w", encoding="utf-8") as f:
-        json.dump(all_generations, f, ensure_ascii=False, indent=2)
+        end_time = time.time()
+
+        generated_text, try_correct_num, correct_spe_number, detail, length_of_output = result
+        print("real_answer\n", generated_text)
+
+        all_generations.append({
+            "input_text": problem,
+            "real_answer": generated_text,
+            "try_correct_num": try_correct_num,
+            "standard_answer": answer,
+            "execution_time": f"{end_time - start_time:.2f}s",
+            "correct_spe_number": correct_spe_number,
+            "detail": detail,
+            "length_of_output": length_of_output,
+            "index": idx
+        })
+
+        os.makedirs(dir_path, exist_ok=True)
+        out_path = os.path.join(dir_path, "spec_generation.json")
+        with open(out_path, "w", encoding="utf-8") as f:
+            json.dump(all_generations, f, ensure_ascii=False, indent=2)
+
+    except Exception as e:
+        print(f"[Index {idx}] Failed with error: {e}")
+        print("Sleeping 10 seconds before moving on...")
+        time.sleep(10)
+        failed_list.append(idx)
+    return failed_list
+
+
+
+
+
+
 
 
 
@@ -410,10 +447,11 @@ if __name__ == "__main__":
     #     #print(f"{number}: {problem}")
     #     answer = problems_and_answers[number]['answer']
     #     process_file_to_json(dir_path, target_tokenizer, speculative_tokenizer, problem,answer,args.max_new_tokens,model_target_probe,model_spec_probe)
-
+    failed_total = []
     for idx, number in enumerate(tqdm(range(args.start_dataset, args.end_dataset))):
         dirname = f'spec_{args.dataset}_{number}'
         dir_path = os.path.join(f"{args.data_dir}{args.seed}", dirname)
         problem = problems_and_answers[idx]['problem']
         answer = problems_and_answers[idx]['answer']
-        process_file_to_json(dir_path,  target_tokenizer, speculative_tokenizer, problem,answer,args.max_new_tokens,model_target_probe,model_spec_probe)
+        failed = process_file_to_json(dir_path,  target_tokenizer, speculative_tokenizer, problem,answer,args.max_new_tokens,model_target_probe,model_spec_probe,idx)
+        failed_total.extend(failed)
