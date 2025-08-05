@@ -53,7 +53,7 @@ def predict(tokenizer, input_data, model):
     if model =='Qwen/QwQ-32B':
         print('------------------')
         speculative_outputs = requests.post(
-            f"http://130.179.30.15:{30000}/generate",
+            f"http://130.179.30.15:{8800}/generate",
             json=json_data,
         )
 
