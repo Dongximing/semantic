@@ -22,7 +22,7 @@ TARGET_probe = 2
 SPEC_probe = 3
 import requests
 
-def speculative_accept(qi, pi, threshold_min=0.8):
+def speculative_accept(qi, pi, threshold_min=0.7):
 
     ratio = qi / pi if pi > 0 else 0
     if ratio < threshold_min:
@@ -216,7 +216,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                 }
                 # print(json_data_check)
                 checking_outputs = requests.post(
-                    f"http://0.0.0.0:{8800}/generate",
+                    f"https://v4uu2uvo7nzf9q-8800.proxy.runpod.net/generate",
                     json=json_data_check,
                     timeout=120
                 )
@@ -285,7 +285,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                 }
                 # print(json_data)
                 target_outputs = requests.post(
-                    f"http://0.0.0.0:{8800}/generate",
+                    f"https://v4uu2uvo7nzf9q-8800.proxy.runpod.net/generate",
                     json=json_data,
                     timeout=120
                 )
@@ -363,23 +363,7 @@ if __name__ == "__main__":
     parser.add_argument("--seed", type=int, help="seed", default=729)
     args = parser.parse_args()
     seed_everything(args.seed)
-    #wrong_list = [ 240, 248, 251,  282, 286, 295, 296, 299, 301, 306, 308, 309, 317, 327, 338, 341, 349,  352, 355, 369, 381, 392, 400, 403, 416, 422, 425, 432, 444, 460, 464, 469, 470, 473, 478, 481, 483, 485, 490, 493]
-    #123
-    #wrong_list = [100, 101, 109, 110, 119, 120,  137, 138, 145, 154, 164, 165, 166, 168, 176,  189, 197,  204,  219, 221, 228,  239, 240, 242, 246, 248, 264, 279,  286, 288, 302, 306, 308, 309, 317, 324, 332, 340, 349,  352, 359, 365, 369, 372, 380, 381, 382,  385, 392, 400, 403, 419, 421, 422, 425,444, 448, 456, 460, 466, 475, 478, 481,486, 490, 494, 497]
-    # 42
-    #wrong_list =  [100, 101, 103, 104, 105, 110, 119, 120, 128, 138, 145, 154, 164, 168, 176, 196, 204, 209, 217, 219, 238, 239, 240, 242, 248, 264, 282, 285, 286, 292, 295, 296, 301, 303, 308, 309, 324, 340,  352, 358, 369, 381, 392, 400, 401, 405, 409, 421, 422, 425, 432, 439, 444, 460, 466, 478, 481, 485, 489, 491, 494]
-    # if args.seed  == 981:
-    #     wrong_list =  [1, 2, 3, 5, 6, 10, 13, 14, 16, 17, 18, 20, 21, 22, 23, 25, 27, 28]
-    # elif args.seed == 20981:
-    #     wrong_list = [1, 2, 3, 4, 10, 13, 15, 16, 17, 20, 21, 22, 25, 27, 28]
-    # elif args.seed == 30981:
-    #     wrong_list = [1, 2, 3, 4, 5, 10, 12, 13, 14, 15, 17, 18, 20, 21, 22, 25, 27, 28]
-    # if args.seed  == 7291:
-    #     wrong_list =  [18]
-    # elif args.seed == 12501:
-    #     wrong_list = [1, 5, 6, 10, 16, 22, 25]
-    # elif args.seed == 20241:
-    #     wrong_list = [27]
+
 
 
     model_target_probe = SemanticEntropyProbTarget(5120, 512)
