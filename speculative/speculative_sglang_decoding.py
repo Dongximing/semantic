@@ -216,7 +216,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                 }
                 # print(json_data_check)
                 checking_outputs = requests.post(
-                    f"http://130.179.30.7:{8800}/generate",
+                    f"http://130.179.30.15:{8800}/generate",
                     json=json_data_check,
                     timeout=120
                 )
@@ -285,7 +285,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                 }
                 # print(json_data)
                 target_outputs = requests.post(
-                    f"http://130.179.30.7:{8800}/generate",
+                    f"http://130.179.30.15:{8800}/generate",
                     json=json_data,
                     timeout=120
                 )
