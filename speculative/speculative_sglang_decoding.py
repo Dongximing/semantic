@@ -438,7 +438,7 @@ if __name__ == "__main__":
     ds = ds.select(range(args.start_dataset, args.end_dataset))
     problems_and_answers = [{"problem": item["problem"], "answer": item["answer"]} for item in ds]
     if args.seed == 1995:
-        wrong_list = [136,139,145,156,189,204,205,206,233,242,243,321,324,355,356,360,371,372,391,392,393,396,397,400,401,406,407,419,421,429,444,462,467]
+        wrong_list = [372,391,392,393,396,397,401,406,407,419,421,429,462,467]
 
     for idx, number in enumerate(tqdm(wrong_list, total=len(wrong_list))):
 
