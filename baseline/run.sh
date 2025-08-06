@@ -11,8 +11,8 @@ while kill -0 $TARGET_PID 2>/dev/null; do
 done
 
 echo "Process $TARGET_PID has ended. Running your script..."
-python sgl_baseline.py --seed 123 --start 100 --end 500 --model Qwen/QwQ-32B
-python sgl_baseline.py --seed 456 --start 100 --end 500 --model Qwen/QwQ-32B
+
+#python sgl_baseline.py --seed 456 --start 100 --end 500 --model Qwen/QwQ-32B
 python sgl_baseline.py --seed 789 --start 100 --end 500 --model Qwen/QwQ-32B
 
 #python baseline.py --seed 2015 --start 0 --end 30 --model Qwen/QwQ-32B
