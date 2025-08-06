@@ -1,6 +1,6 @@
 #!/bin/bash
 
-TARGET_PID=3854517
+TARGET_PID=234912
 CHECK_INTERVAL=10  # 每10秒检查一次
 
 echo "Waiting for process $TARGET_PID to finish..."
