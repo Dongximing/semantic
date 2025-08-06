@@ -409,7 +409,7 @@ if __name__ == "__main__":
     model_target_probe.eval()
 
 
-    model_spec_probe = SemanticEntropyProbSpec(1536, 256)
+    model_spec_probe = SemanticEntropyProbSpec(1536, 512)
     model_spec_probe.load_state_dict(torch.load(f'{args.speculative_probe}.pt'))
     model_spec_probe = model_spec_probe.to('cuda:1')
     model_spec_probe.eval()
