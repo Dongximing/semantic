@@ -397,7 +397,7 @@ if __name__ == "__main__":
     parser.add_argument("--max_new_tokens", type=int, help="max_new_tokens",default=14000)
     parser.add_argument("--top_p", type=float, help="top_p",default=0.9)
     parser.add_argument("--top_k", type=int, help="top_k",default=50)
-    parser.add_argument("--seed", type=int, help="seed", default=20251)
+    parser.add_argument("--seed", type=int, help="seed", default=1995)
     args = parser.parse_args()
     seed_everything(args.seed)
 
@@ -437,27 +437,27 @@ if __name__ == "__main__":
 
     ds = ds.select(range(args.start_dataset, args.end_dataset))
     problems_and_answers = [{"problem": item["problem"], "answer": item["answer"]} for item in ds]
-    # if args.seed == 20251:
-    #     wrong_list = [5]
+    if args.seed == 1995:
+        wrong_list = [136,139,145,156,189,204,205,206,233,242,243,321,324,355,356,360,371,372,391,392,393,396,397,400,401,406,407,419,421,429,444,462,467]
 
-    # for idx, number in enumerate(tqdm(wrong_list, total=len(wrong_list))):
-    #
-    #     #print("doing wrong number:", number)
-    #     dirname = f'spec_{args.dataset}_{number}'
-    #     dir_path = os.path.join(f"{args.data_dir}{args.seed}", dirname)
-    #     number = number
-    #     problem = problems_and_answers[number]['problem']
-    #     #print(f"{number}: {problem}")
-    #     answer = problems_and_answers[number]['answer']
-    #     process_file_to_json(dir_path, target_tokenizer, speculative_tokenizer, problem,answer,args.max_new_tokens,model_target_probe,model_spec_probe,number)
-    #
-    #
+    for idx, number in enumerate(tqdm(wrong_list, total=len(wrong_list))):
 
-    failed_total = []
-    for idx, number in enumerate(tqdm(range(args.start_dataset, args.end_dataset))):
+        #print("doing wrong number:", number)
         dirname = f'spec_{args.dataset}_{number}'
         dir_path = os.path.join(f"{args.data_dir}{args.seed}", dirname)
-        problem = problems_and_answers[idx]['problem']
-        answer = problems_and_answers[idx]['answer']
-        failed = process_file_to_json(dir_path,  target_tokenizer, speculative_tokenizer, problem,answer,args.max_new_tokens,model_target_probe,model_spec_probe,number)
-        failed_total.extend(failed)
+        number = number-100
+        problem = problems_and_answers[number]['problem']
+        #print(f"{number}: {problem}")
+        answer = problems_and_answers[number]['answer']
+        process_file_to_json(dir_path, target_tokenizer, speculative_tokenizer, problem,answer,args.max_new_tokens,model_target_probe,model_spec_probe,number)
+
+
+
+    # failed_total = []
+    # for idx, number in enumerate(tqdm(range(args.start_dataset, args.end_dataset))):
+    #     dirname = f'spec_{args.dataset}_{number}'
+    #     dir_path = os.path.join(f"{args.data_dir}{args.seed}", dirname)
+    #     problem = problems_and_answers[idx]['problem']
+    #     answer = problems_and_answers[idx]['answer']
+    #     failed = process_file_to_json(dir_path,  target_tokenizer, speculative_tokenizer, problem,answer,args.max_new_tokens,model_target_probe,model_spec_probe,number)
+    #     failed_total.extend(failed)
