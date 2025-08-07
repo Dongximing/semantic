@@ -197,7 +197,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
 
                 # print('speculative_real_output_text:\n',speculative_real_output_text)
                 if len(speculative_real_output_text) ==0:
-                    end_time = time.time()
+
                     break
 
 
@@ -307,8 +307,8 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                     break
 
             # print(speculative_tokenizer.encode(generated_text[original_speculative_text_len:]))
-        else:
-            end_time = time.time()
+
+        end_time = time.time()
 
 
         length_of_output = speculative_tokenizer.encode(generated_text[original_speculative_text_len:])
