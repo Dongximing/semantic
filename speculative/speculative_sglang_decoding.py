@@ -151,7 +151,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                 if use_target:
                     # print('target_tokenizer.decode(target_tokenizer(generated_text,return_tensors="pt")[original_target_prompt_len:]:\n',
                     #       target_tokenizer(generated_text,return_tensors="pt"))
-                    detail.append({'target_model': target_real_output, 'why_is_not_good': speculative_real_output_text,
+                    detail.append({'target_model': target_real_output, 'why_is_not_gd': speculative_real_output_text,
                                    "score_target": round(prob_target, 2), "score_spec": round(prob_spec, 2)})
                     small_input = speculative_text + target_tokenizer.decode(
                         target_tokenizer(generated_text, return_tensors="pt")['input_ids'][0,
@@ -453,6 +453,10 @@ if __name__ == "__main__":
     #     answer = problems_and_answers[number]['answer']
     #     process_file_to_json(dir_path, target_tokenizer, speculative_tokenizer, problem,answer,args.max_new_tokens,model_target_probe,model_spec_probe,number)
     #
+    common_errors_minus_100 = [
+        10, 28, 54, 104, 140, 164, 208,
+        224, 322, 344
+    ]
 
 
     failed_total = []
@@ -461,5 +465,7 @@ if __name__ == "__main__":
         dir_path = os.path.join(f"{args.data_dir}{args.seed}", dirname)
         problem = problems_and_answers[idx]['problem']
         answer = problems_and_answers[idx]['answer']
+        if idx in common_errors_minus_100:
+            continue
         failed = process_file_to_json(dir_path,  target_tokenizer, speculative_tokenizer, problem,answer,args.max_new_tokens,model_target_probe,model_spec_probe,number)
         failed_total.extend(failed)
