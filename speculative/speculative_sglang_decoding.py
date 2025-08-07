@@ -142,7 +142,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
 
         # print('speculative_tokenizer.eos_token_id ', speculative_tokenizer.eos_token_id)
         # print('target_tokenizer.eos_token_id ', target_tokenizer.eos_token_id)
-
+        start_time = time.time()
         while checking_is_finish(generated_text,max_new_tokens,use_target):
             # we start at the target model.
             if begin:
@@ -197,6 +197,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
 
                 # print('speculative_real_output_text:\n',speculative_real_output_text)
                 if len(speculative_real_output_text) ==0:
+                    end_time = time.time()
                     break
 
 
@@ -306,12 +307,14 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                     break
 
             # print(speculative_tokenizer.encode(generated_text[original_speculative_text_len:]))
+        else:
+            end_time = time.time()
 
 
         length_of_output = speculative_tokenizer.encode(generated_text[original_speculative_text_len:])
 
 
-        return generated_text, try_correct_num,correct_spe_number,detail,len(length_of_output)
+        return generated_text, try_correct_num,correct_spe_number,detail,len(length_of_output),end_time-start_time
 
 
 
