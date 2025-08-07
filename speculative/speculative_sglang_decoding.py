@@ -313,7 +313,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
 
         length_of_output = speculative_tokenizer.encode(generated_text[original_speculative_text_len:])
 
-
+        print('end_time-start_time',end_time-start_time)
         return generated_text, try_correct_num,correct_spe_number,detail,len(length_of_output),end_time-start_time
 
 
