@@ -336,7 +336,7 @@ def process_file_to_json(
 
     try:
         print(f"[Index {idx}] Starting speculative_decoding...")
-        start_time = time.time()
+        # start_time = time.time()
 
         result = speculative_decoding(
             target_tokenizer,
@@ -347,9 +347,9 @@ def process_file_to_json(
             model_spec_probe
         )
 
-        end_time = time.time()
+        # end_time = time.time()
 
-        generated_text, try_correct_num, correct_spe_number, detail, length_of_output = result
+        generated_text, try_correct_num, correct_spe_number, detail, length_of_output,time = result
         print("real_answer\n", generated_text)
 
         all_generations.append({
@@ -357,7 +357,7 @@ def process_file_to_json(
             "real_answer": generated_text,
             "try_correct_num": try_correct_num,
             "standard_answer": answer,
-            "execution_time": f"{end_time - start_time:.2f}s",
+            "execution_time": f"{time:.2f}s",
             "correct_spe_number": correct_spe_number,
             "detail": detail,
             "length_of_output": length_of_output,
