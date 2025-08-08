@@ -265,6 +265,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                             json=json_data,
                             timeout=120
                         )
+                        detail.append({'spe_model': speculative_outputs.json()[0]['text']})
                         generated_text = generated_text + speculative_outputs.json()[0]['text']
 
                         break
@@ -329,6 +330,8 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                         json=json_data,
                         timeout=120
                     )
+                    detail.append({'spe_model': speculative_outputs.json()[0]['text']})
+
                     generated_text = generated_text+speculative_outputs.json()[0]['text']
 
                     break
