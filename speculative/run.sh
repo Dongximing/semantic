@@ -19,6 +19,7 @@ echo "Process $TARGET_PID has ended. Running your script..."
 #python speculative_sglang_decoding.py --seed 2013   --dataset math-500 --start_dataset 100 --end_dataset 500
 #python speculative_sglang_decoding.py --seed 2025   --dataset math-500 --start_dataset 101 --end_dataset 500
 python speculative_sglang_decoding.py --seed 301   --dataset math-500 --start_dataset 100 --end_dataset 500
+python speculative_sglang_decoding.py --seed 7811   --dataset math-500 --start_dataset 100 --end_dataset 500
 #python speculative_sglang_decoding.py --seed 78   --dataset math-500 --start_dataset 118 --end_dataset 500
 #python speculative_sglang_decoding.py --seed 99   --dataset math-500 --start_dataset 100 --end_dataset 500
 #python slg/generate_samples_sglang.py
