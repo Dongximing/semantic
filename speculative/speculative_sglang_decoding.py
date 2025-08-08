@@ -26,7 +26,7 @@ def speculative_accept(qi, pi, threshold_min=0.7):
 
     ratio = qi / pi if pi > 0 else 0
     if ratio < threshold_min:
-        return False   # ratio 太低，直接 reject
+        return False
     threshold = min(1.0, ratio)
     r = random.uniform(0, 1)
     return r < threshold
@@ -159,11 +159,6 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                     )
                 else:
                     small_input  = generated_text
-                # print('small_input:\n',small_input)
-
-                # if speculative_tokenizer.eos_token_id in speculative_tokenizer.encode(small_input):
-                #     print('target_tokenizer.eos_token_id 285', speculative_tokenizer.eos_token_id)
-                #     break
 
                 json_data = {
                     "text": [small_input],
@@ -190,14 +185,9 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                 )
                 Completion_tokens = speculative_output['meta_info']['completion_tokens']
                 pooling_hidden_information = pooling_hidden_information[-Completion_tokens:, :]
-                # print('pooling_hidden_information',pooling_hidden_information.size())
                 pooling_hidden_information = pooling_hidden_information.mean(dim=0, keepdim=True)
 
-
-
-                # print('speculative_real_output_text:\n',speculative_real_output_text)
                 if len(speculative_real_output_text) ==0:
-
                     break
 
 
@@ -208,22 +198,19 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                     checking_target_text =  generated_text + speculative_real_output_text
                 else:
                     checking_target_text =  target_text  + target_tokenizer.decode(target_tokenizer(small_input+speculative_real_output_text,return_tensors="pt")['input_ids'][0,original_target_prompt_len:].tolist())
-                # print('checking_target_text:\n',checking_target_text)
+
 
                 json_data_check = {
                     "text": [checking_target_text],
                     "sampling_params": {"temperature": 0.1,"max_new_tokens": 1},
                     "return_hidden_states": True,
                 }
-                # print(json_data_check)
+
                 checking_outputs = requests.post(
                     f"http://130.179.30.15:{8800}/generate",
                     json=json_data_check,
                     timeout=120
                 )
-                # print('checking_outputs', checking_outputs)
-                # print(checking_outputs.status_code)
-                # print(checking_outputs.text)
                 checking_outputs = checking_outputs.json()
 
 
@@ -261,6 +248,31 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                     correct_spe_number +=1
                     use_target = False
                     generated_text =  small_input + speculative_output['text']
+                    if '</think>' in speculative_output['text']:
+                        sampling_params_end = {
+                            "temperature": 0.6,
+                            "top_p": 0.95,
+                            "max_new_tokens": 2000,
+
+                        }
+
+                        json_data = {
+                            "text": [generated_text],
+                            "sampling_params": sampling_params_end,
+                        }
+                        speculative_outputs = requests.post(
+                            f"http://130.179.30.7:{30000}/generate",
+                            json=json_data,
+                            timeout=120
+                        )
+                        generated_text = generated_text + speculative_outputs.json()[0]['text']
+
+                        break
+
+
+
+
+
                     # print('acceptacceptacceptacceptacceptacceptaccept!!!!!!!!!!!!!!!')
                 else:
                     generated_text = target_text + speculative_tokenizer.decode(
@@ -296,7 +308,30 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
 
 
                 target_real_output = target_outputs[0]['text']
-                # print('big target_output:\n',target_real_output)
+                if '</think>' in target_real_output:
+                    sampling_params_end = {
+                        "temperature": 0.6,
+                        "top_p": 0.95,
+                        "max_new_tokens": 2000,
+
+                    }
+                    small_input = speculative_text + target_tokenizer.decode(
+                        target_tokenizer(generated_text, return_tensors="pt")['input_ids'][0,
+                        original_target_prompt_len:].tolist()
+                    )
+
+                    json_data = {
+                        "text": [small_input+target_real_output],
+                        "sampling_params": sampling_params_end,
+                    }
+                    speculative_outputs = requests.post(
+                        f"http://130.179.30.7:{30000}/generate",
+                        json=json_data,
+                        timeout=120
+                    )
+                    generated_text = generated_text+speculative_outputs.json()[0]['text']
+
+                    break
                 generated_text = generated_text + target_real_output
 
 
