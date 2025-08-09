@@ -42,12 +42,13 @@ if __name__ == '__main__':
             #print('generations',generations)
             predict = generations[0]['full_answer']
             #print(predict)
+            time += generations[0]['execution_time']
 
             standard = generations[0]['answer']
             # number_of_tokens += generations[0]['tokens_full_answer']
         result = check_math_correctness(standard,predict)
         if result:
-            time += generations[0]['execution_time']
+
             number_of_tokens += generations[0]['tokens_full_answer']
             number_correct += 1
         else:
@@ -56,7 +57,7 @@ if __name__ == '__main__':
     print("Number of tokens: ", number_of_tokens/number_correct)
     print(f'Number_correct: {number_correct}')
     print(f'Total: {total_number}')
-    print(f'average execution time: {time/number_correct}')
+    print(f'average execution time: {time/total_number}')
 
 
 
