@@ -29,12 +29,14 @@ class SemanticEntropyModel(nn.Module):
         super().__init__()
         self.fc1 = nn.Linear(input_dim, hidden_dim)
         self.dropout = nn.Dropout(dropout)
-        self.fc2 = nn.Linear(hidden_dim, 1)
+        self.fc2 = nn.Linear(hidden_dim, input_dim)
+        self.fc3 = nn.Linear(hidden_dim, 1)
 
     def forward(self, x):
         h = F.relu(self.fc1(x))
         h = self.dropout(h)
-        out = torch.sigmoid(self.fc2(h))
+        h = F.relu(self.fc2(h))
+        out = torch.sigmoid(self.fc3(h))
         return out.squeeze(-1)
 
 
@@ -209,7 +211,7 @@ def main(dataset,method,data_dir,model_name):
 
     # 模型与训练
     INPUT_DIM = X_train.shape[1]
-    HIDDEN_DIM = 512
+    HIDDEN_DIM = 2048
     model = SemanticEntropyModel(INPUT_DIM, HIDDEN_DIM)
     history = train_probe_regression(
         model, train_loader, val_loader, epochs=50, lr=1e-3,
@@ -253,7 +255,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     # "last_hidden_state", "last_second_token", "last_input_token", "output_last_hidden_list"
     parser.add_argument("--dataset", type=str,  help="dataset",default='math-500')
-    parser.add_argument("--model", type=str,  help="model",default='full_size_slg_qwq-32b')
+    parser.add_argument("--model", type=str,  help="model",default='2048_full_size_slg_qwq-32b')
     parser.add_argument("--method", type=str,help="method for X",default='output_last_hidden_list')
     parser.add_argument("--data_dir", type=str, help="method for X",default='/data/semantic/qwq32b_math')
     args = parser.parse_args()
