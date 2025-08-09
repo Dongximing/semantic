@@ -339,7 +339,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                         "sampling_params": sampling_params_end,
                     }
                     speculative_outputs = requests.post(
-                        f"http://130.179.30.7:{30000}/generate",
+                        f"http://130.179.30.15:{8801}/generate",
                         json=json_data,
                         timeout=120
                     )
