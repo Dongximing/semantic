@@ -29,8 +29,8 @@ class SemanticEntropyModel(nn.Module):
         super().__init__()
         self.fc1 = nn.Linear(input_dim, hidden_dim)
         self.dropout = nn.Dropout(dropout)
-        self.fc2 = nn.Linear(hidden_dim, input_dim)
-        self.fc3 = nn.Linear(hidden_dim, 1)
+        self.fc2 = nn.Linear(hidden_dim, 256)
+        self.fc3 = nn.Linear(256, 1)
 
     def forward(self, x):
         h = F.relu(self.fc1(x))
