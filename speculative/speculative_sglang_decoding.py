@@ -32,16 +32,29 @@ def speculative_accept(qi, pi, threshold_min=0.7):
     return r < threshold
 
 
+# class SemanticEntropyProbTarget(nn.Module):
+#     def __init__(self, input_dim, hidden_dim):
+#         super().__init__()
+#         self.fc1 = nn.Linear(input_dim, hidden_dim)
+#         self.fc2 = nn.Linear(hidden_dim, 1)
+#     def forward(self, x):
+#         h = F.relu(self.fc1(x))
+#         out = torch.sigmoid(self.fc2(h))
+#         return out.squeeze(-1)
 class SemanticEntropyProbTarget(nn.Module):
-    def __init__(self, input_dim, hidden_dim):
+    def __init__(self, input_dim, hidden_dim, dropout=0.3):
         super().__init__()
         self.fc1 = nn.Linear(input_dim, hidden_dim)
-        self.fc2 = nn.Linear(hidden_dim, 1)
+        self.dropout = nn.Dropout(dropout)
+        self.fc2 = nn.Linear(hidden_dim, 256)
+        self.fc3 = nn.Linear(256, 1)
+
     def forward(self, x):
         h = F.relu(self.fc1(x))
-        out = torch.sigmoid(self.fc2(h))
+        h = self.dropout(h)
+        h = F.relu(self.fc2(h))
+        out = torch.sigmoid(self.fc3(h))
         return out.squeeze(-1)
-
 # class SemanticEntropyProbSpec(nn.Module):
 #     def __init__(self, input_dim, hidden_dim):
 #         super().__init__()
@@ -430,7 +443,7 @@ if __name__ == "__main__":
     parser.add_argument("--data_dir", type=str,  help="data_dir",default='/data/semantic/speculative/sglang_new_spec_result_math-500_full_size_QwQ-32B_r132_deepseek1.5seed_')
     parser.add_argument("--start_dataset", type=int, help="the beginning of the dataset",default=0)
     parser.add_argument("--end_dataset", type=int, help="the end of the dataset",default=30)
-    parser.add_argument("--target_probe", type=str, help="target_probe",default="/data/semantic/training/valid_new_full_size_slg_qwq-32b_math-500_output_last_hidden_list_best_probe_mse")#aime_output_last_hidden_list_best_probe_mse
+    parser.add_argument("--target_probe", type=str, help="target_probe",default="/data/semantic/training/valid_new_2048_full_size_slg_qwq-32b_math-500_output_last_hidden_list_best_probe_mse")#aime_output_last_hidden_list_best_probe_mse
     parser.add_argument("--speculative_probe", type=str, help="speculative_probe",default="/home/shaowei/new_probe/s1_valid_new_deepseekr11.5b_s1_output_last_hidden_list_best_probe_mse")
     parser.add_argument("--target_temperature", type=float, help="target_temperature",default=0.1)
     parser.add_argument("--speculative_temperature", type=float, help="speculative_temperature",default=0.6)
@@ -443,7 +456,7 @@ if __name__ == "__main__":
 
 
 
-    model_target_probe = SemanticEntropyProbTarget(5120, 512)
+    model_target_probe = SemanticEntropyProbTarget(5120, 2048)
     model_target_probe.load_state_dict(torch.load(f'{args.target_probe}.pt'))
     model_target_probe = model_target_probe.to('cuda:1')
     model_target_probe.eval()
