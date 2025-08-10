@@ -515,11 +515,12 @@ if __name__ == "__main__":
 
     failed_total = []
     for idx, number in enumerate(tqdm(range(args.start_dataset, args.end_dataset))):
+        if idx in common_errors_minus_100:
+            continue
         dirname = f'spec_{args.dataset}_{number}'
         dir_path = os.path.join(f"{args.data_dir}{args.seed}", dirname)
         problem = problems_and_answers[idx]['problem']
         answer = problems_and_answers[idx]['answer']
-        if idx in common_errors_minus_100:
-            continue
+
         failed = process_file_to_json(dir_path,  target_tokenizer, speculative_tokenizer, problem,answer,args.max_new_tokens,model_target_probe,model_spec_probe,number)
         failed_total.extend(failed)
