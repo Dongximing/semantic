@@ -179,7 +179,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                     "return_hidden_states": True,
                 }
                 speculative_outputs = requests.post(
-                                    f"http://130.179.30.15:{8801}/generate",
+                                    f"http://130.179.30.7:{8801}/generate",
                                     json=json_data,
                     timeout=120
                                      )
@@ -274,7 +274,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                             "sampling_params": sampling_params_end,
                         }
                         speculative_outputs = requests.post(
-                            f"http://130.179.30.15:{8801}/generate",
+                            f"http://130.179.30.7:{8801}/generate",
                             json=json_data,
                             timeout=120
                         )
@@ -339,7 +339,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                         "sampling_params": sampling_params_end,
                     }
                     speculative_outputs = requests.post(
-                        f"http://130.179.30.15:{8801}/generate",
+                        f"http://130.179.30.7:{8801}/generate",
                         json=json_data,
                         timeout=120
                     )
@@ -490,37 +490,40 @@ if __name__ == "__main__":
 
     ds = ds.select(range(args.start_dataset, args.end_dataset))
     problems_and_answers = [{"problem": item["problem"], "answer": item["answer"]} for item in ds]
-    # if args.seed == 301:
-    #     wrong_list = [480, 486, 492, 497]
-    # elif args.seed == 7811:
-    #     wrong_list = [100, 101, 102, 103, 136, 143, 145, 168, 174, 177, 194, 201, 219, 226, 236, 254, 268, 275, 277, 284, 286, 292, 294, 298, 302, 306, 315, 322, 327, 334, 338, 340, 343, 352, 369, 383, 392, 400, 405, 412, 419, 432, 445, 456, 466, 469, 478, 486, 490, 491]
-    # elif args.seed == 999:
-    #     wrong_list = [100, 101, 103, 119, 120, 147, 154, 163, 166, 168, 181, 198, 204, 205, 207,217, 219, 239, 240,257, 264, 284, 286,293, 298, 301, 308, 317,324, 327, 340, 361,365,377, 383, 392, 400, 401, 419, 422, 456, 473, 475,481, 490,487]
-    # for idx, number in enumerate(tqdm(wrong_list, total=len(wrong_list))):
-    #
-    #     #print("doing wrong number:", number)
-    #     dirname = f'spec_{args.dataset}_{number}'
-    #     dir_path = os.path.join(f"{args.data_dir}{args.seed}", dirname)
-    #     number = number-100
-    #     problem = problems_and_answers[number]['problem']
-    #     #print(f"{number}: {problem}")
-    #     answer = problems_and_answers[number]['answer']
-    #     process_file_to_json(dir_path, target_tokenizer, speculative_tokenizer, problem,answer,args.max_new_tokens,model_target_probe,model_spec_probe,number)
+    if args.seed == 3001:
+        wrong_list = [100, 101, 103, 104, 108, 109, 110, 116, 118, 119, 120, 123, 126, 128, 129, 130, 136, 138, 139, 142, 145, 146, 147, 148, 150, 151, 152, 153, 154, 155, 156, 162, 163, 164, 166, 168, 170, 173, 177, 180, 181, 183, 184, 188, 189, 193, 194, 196, 197, 198,200, 202, 203, 204, 205, 210, 211, 213, 214, 215, 217, 219, 220, 221, 222, 223, 224, 228, 232, 234, 235, 236, 239, 240, 242, 245, 248, 249, 252, 256, 261, 264, 267, 271, 274, 276, 278, 279, 281, 282, 284, 285, 286, 287, 288, 289, 291, 292, 294, 295, 296, 298, 299, 301, 302, 303, 306, 308, 309, 311, 315, 316, 317, 320, 323, 324, 326, 327, 328, 331, 332, 333, 335, 337, 340, 342, 348, 349, 351, 352, 353, 355, 356, 360, 361, 365, 366, 369, 371, 372, 375, 377, 379, 380, 381, 382, 383,387, 390, 391, 392, 394, 395, 396, 397, 399, 400, 401, 403, 408, 409, 412, 415, 416, 420, 421, 422, 423, 425, 428, 429, 431, 432, 435,439, 443, 444, 445, 446, 448, 454, 456, 457, 459, 460, 461, 462, 465, 466, 467, 468,470, 473, 475, 477, 478, 480, 481, 482, 483, 484, 485, 486, 489, 490, 491, 493, 494, 495, 497, 498, 499]
+    elif args.seed == 3002:
+        wrong_list = [100, 101, 103, 104, 108, 109, 110, 113, 118, 119, 120, 123, 126, 127, 128, 129, 130, 134, 135, 136, 138, 139, 142, 145, 147, 150, 151, 152, 153, 154, 155, 156, 158, 163, 164, 166, 168, 169, 170, 173, 175, 176, 177, 178, 179, 180, 183, 184, 188, 189, 194, 197, 198,202, 204, 205, 209, 210, 211, 213, 217, 219, 221, 222, 223, 224, 226, 228, 232, 235,236, 237, 239, 240, 241, 242, 244, 245, 246, 248, 250, 252, 256, 264, 265, 267, 268, 271, 273, 274, 275, 276, 279, 281, 284,285, 286, 287, 288, 291, 292, 294, 295, 296, 298, 299, 300, 301, 302, 303, 306, 308, 309, 311, 316, 317, 320, 323, 324, 325, 326, 327, 328, 332, 333, 335, 336, 337, 338,340, 341, 345, 348, 349, 350, 351, 352, 355, 356, 357, 358, 360, 361, 365, 366, 368, 369, 371, 372, 377, 378, 379, 380, 381, 382, 383,385, 390, 391, 392, 394, 395, 396, 397, 399, 400, 401, 403, 406, 408, 409, 412, 415, 416, 419, 420, 421, 422, 423, 425, 428, 429, 432, 433, 439, 444, 445, 449, 454, 460, 462, 466, 467, 469, 470, 473, 474, 475, 477, 478, 480, 481, 482, 483, 484, 485, 486, 489, 490, 491, 493, 494, 496, 497, 498, 499]
+    elif args.seed == 999:
+        wrong_list = [100, 101, 103, 119, 120, 147, 154, 163, 166, 168, 181, 198, 204, 205, 207,217, 219, 239, 240,257, 264, 284, 286,293, 298, 301, 308, 317,324, 327, 340, 361,365,377, 383, 392, 400, 401, 419, 422, 456, 473, 475,481, 490,487]
+    for idx, number in enumerate(tqdm(wrong_list, total=len(wrong_list))):
 
-    common_errors_minus_100 = [
-        10, 28, 54, 104, 140, 164, 208,
-        224, 322, 344
-    ]
-
-
-    failed_total = []
-    for idx, number in enumerate(tqdm(range(args.start_dataset, args.end_dataset))):
-        if idx in common_errors_minus_100:
-            continue
+        #print("doing wrong number:", number)
         dirname = f'spec_{args.dataset}_{number}'
         dir_path = os.path.join(f"{args.data_dir}{args.seed}", dirname)
-        problem = problems_and_answers[idx]['problem']
-        answer = problems_and_answers[idx]['answer']
+        number = number-100
+        problem = problems_and_answers[number]['problem']
+        #print(f"{number}: {problem}")
+        answer = problems_and_answers[number]['answer']
+        process_file_to_json(dir_path, target_tokenizer, speculative_tokenizer, problem,answer,args.max_new_tokens,model_target_probe,model_spec_probe,number)
 
-        failed = process_file_to_json(dir_path,  target_tokenizer, speculative_tokenizer, problem,answer,args.max_new_tokens,model_target_probe,model_spec_probe,number)
-        failed_total.extend(failed)
+    # common_errors_minus_100 = [
+    #     10, 28, 54, 104, 140, 164, 208,
+    #     224, 322, 344
+    # ]
+    #
+    #
+    # [198, 383, 435, 468]
+
+
+    # failed_total = []
+    # for idx, number in enumerate(tqdm(range(args.start_dataset, args.end_dataset))):
+    #     if idx in common_errors_minus_100:
+    #         continue
+    #     dirname = f'spec_{args.dataset}_{number}'
+    #     dir_path = os.path.join(f"{args.data_dir}{args.seed}", dirname)
+    #     problem = problems_and_answers[idx]['problem']
+    #     answer = problems_and_answers[idx]['answer']
+    #
+    #     failed = process_file_to_json(dir_path,  target_tokenizer, speculative_tokenizer, problem,answer,args.max_new_tokens,model_target_probe,model_spec_probe,number)
+    #     failed_total.extend(failed)
