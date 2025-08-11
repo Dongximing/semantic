@@ -30,7 +30,6 @@ NUMBER = 0
 
 def predict(tokenizer, input_data, model):
     start_time = time.time()
-    input_data = "How many r's are in the word \"strawberry\""
     messages = [
         {"role": "user", "content": input_data + MATH_PROMPT}
     ]
@@ -43,7 +42,7 @@ def predict(tokenizer, input_data, model):
     sampling_params = {
         "temperature": 0.6,
         "top_p": 0.95,
-        "max_new_tokens": 500,
+        "max_new_tokens": 14000,
     }
 
     json_data = {
@@ -68,15 +67,13 @@ def predict(tokenizer, input_data, model):
     speculative_real_output_text = speculative_output[0]['text']
     end_time = time.time()
     len_output = speculative_output[0]['meta_info']['completion_tokens']
-    print(end_time-start_time)
+    print(speculative_real_output_text)
     return speculative_real_output_text, target_text+speculative_real_output_text, input_data,len_output,end_time-start_time
 
 def process_file_to_json(save_path, tokenizer, problem, answer,model):
     all_generations = []
     # try:
-
     real_answer, full_answer, input_data,full_answer_len,execution_time = predict(tokenizer, problem, model)
-
     all_generations.append({
         "input_text": input_data,
         "real_answer": real_answer,
@@ -100,7 +97,6 @@ def process_file_to_json(save_path, tokenizer, problem, answer,model):
     out_path = os.path.join(save_path, "generation.json")
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(all_generations, f, ensure_ascii=False, indent=2)
-    return execution_time
 
 def inference_model_pickle(task_name: str, tokenizer, base_dir,model,
                            start=0, end=10,seed=42):
@@ -114,16 +110,15 @@ def inference_model_pickle(task_name: str, tokenizer, base_dir,model,
 
     ds = ds.select(range(start, end))
     problems_and_answers = [{"problem": item["problem"], "answer": item["answer"]} for item in ds]
-    total_time = 0
+
     for idx, number in enumerate(tqdm(range(start, end))):
         dirname = f'seed_{seed}_baseline_{task_name}_{number}'
         dir_path = os.path.join(base_dir, dirname)
         problem = problems_and_answers[idx]['problem']
         answer = problems_and_answers[idx]['answer']
-        execution_time = process_file_to_json(dir_path, tokenizer, problem, answer,model)
-        total_time+=execution_time
+        process_file_to_json(dir_path, tokenizer, problem, answer,model)
 
-    print("[Info] Processing completed.time is {}".format(total_time))
+    print("[Info] Processing completed.")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -149,7 +144,7 @@ if __name__ == "__main__":
 
 
 
-    base_dir = f'/home/cs/staff/shaowei/semantic/baseline/test_sgl_{model_name}_{args.dataset}_seed{args.seed}/'
+    base_dir = f'/home/cs/staff/shaowei/semantic/baseline/sgl_{model_name}_{args.dataset}_seed{args.seed}/'
     inference_model_pickle(
         task_name=args.dataset,
         base_dir=base_dir,

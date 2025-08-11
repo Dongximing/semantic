@@ -12,7 +12,9 @@ done
 
 echo "Process $TARGET_PID has ended. Running your script..."
 
-python sgl_baseline.py --seed 456 --start 212 --end 500 --model Qwen/QwQ-32B
+python sgl_baseline.py --seed 1234 --start 100 --end 500 --model Qwen/QwQ-32B
+python sgl_baseline.py --seed 5678 --start 100 --end 500 --model Qwen/QwQ-32B
+python sgl_baseline.py --seed 9101112 --start 100 --end 500 --model Qwen/QwQ-32B
 #python sgl_baseline.py --seed 789 --start 156 --end 500 --model Qwen/QwQ-32B
 
 #python baseline.py --seed 2015 --start 0 --end 30 --model Qwen/QwQ-32B
