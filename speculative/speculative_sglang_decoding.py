@@ -422,7 +422,7 @@ def process_file_to_json(
     except Exception as e:
         print(f"[Index {idx}] Failed with error: {e}")
         print("Sleeping 10 seconds before moving on...")
-        time.sleep(10)
+        time.sleep(1)
         failed_list.append(idx)
     return failed_list
 
