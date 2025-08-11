@@ -49,7 +49,7 @@ def predict(tokenizer, input_data, model):
     json_data = {
         "text": [target_text],
         "sampling_params": sampling_params,
-        # "return_hidden_states": True,
+        "return_hidden_states": True,
     }
     if model =='Qwen/QwQ-32B':
         print('------------------')
@@ -149,7 +149,7 @@ if __name__ == "__main__":
 
 
 
-    base_dir = f'/data/semantic/baseline/without_hidden_test_sgl_{model_name}_{args.dataset}_seed{args.seed}/'
+    base_dir = f'/data/semantic/baseline/test_sgl_{model_name}_{args.dataset}_seed{args.seed}/'
     inference_model_pickle(
         task_name=args.dataset,
         base_dir=base_dir,
