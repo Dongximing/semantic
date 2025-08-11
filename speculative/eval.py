@@ -70,7 +70,7 @@ if __name__ == '__main__':
             wrong_list.append(number)
             print(f'Error in {dirname}')
     print(f"total time: {time}")
-    print(f'Accuracy: {number_correct / total_number} in {args.dataset}')
+    print(f'Accuracy: {number_correct / len(l)} in {args.dataset}')
     print("Number of tokens: ", number_of_tokens/number_correct)
     print("average spe step: ", spe_step/(spe_step+target_step))
     print("average target step: ", target_step / (spe_step + target_step))
