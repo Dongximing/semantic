@@ -30,7 +30,7 @@ NUMBER = 0
 
 def predict(tokenizer, input_data, model):
     start_time = time.time()
-    input_data = 'Let $ABCD$ be a tetrahedron such that $AB=CD= \sqrt{41}$, $AC=BD= \sqrt{80}$, and $BC=AD= \sqrt{89}$. There exists a point $I$ inside the tetrahedron such that the distances from $I$ to each of the faces of the tetrahedron are all equal. This distance can be written in the form $\frac{m \sqrt n}{p}$, where $m$, $n$, and $p$ are positive integers, $m$ and $p$ are relatively prime, and $n$ is not divisible by the square of any prime. Find $m+n+p$.'
+    input_data = 'Rectangle $ABCD$ has center $O$ and $AB/AD=k$. A point is randomly chosen from the interior of rectangle $ABCD$. What is the probability that it is closer to $O$ than to any of the four vertices?  [asy]\nsize(200);\ndraw((-250,100)--(250,100)--(250,-100)--(-250,-100)--cycle);\ndot((0,0));\nlabel(\"$O$\",(0,0),N);\nlabel(\"$A$\",(-250,100),NW); label(\"$B$\",(250,100),NE); label(\"$C$\",(250,-100),SE); label(\"$D$\",(-250,-100),SW);[/asy]'
     messages = [
         {"role": "user", "content": input_data + MATH_PROMPT}
     ]
