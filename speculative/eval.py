@@ -43,6 +43,7 @@ if __name__ == '__main__':
         dir_path = os.path.join(args.eval_path, dirname)
         json_path = os.path.join(dir_path, "spec_generation.json")
         if not os.path.exists(json_path):
+            wrong_list.append(number)
             print(f"[Warning] {json_path} does not exist, skipping...")
             continue
         speculative_tokenizer = transformers.AutoTokenizer.from_pretrained(
