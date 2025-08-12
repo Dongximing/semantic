@@ -43,7 +43,7 @@ def predict(tokenizer, input_data, model):
     sampling_params = {
         "temperature": 0.6,
         "top_p": 0.95,
-        "max_new_tokens": 2000,
+        "max_new_tokens": 14000,
     }
 
     json_data = {
