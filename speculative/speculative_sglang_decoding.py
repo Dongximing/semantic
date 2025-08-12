@@ -272,6 +272,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                         json_data = {
                             "text": [generated_text],
                             "sampling_params": sampling_params_end,
+                            "return_hidden_states": False,
                         }
                         speculative_outputs = requests.post(
                             f"http://130.179.30.7:{8801}/generate",
@@ -330,6 +331,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                     json_data = {
                         "text": [small_input+target_real_output],
                         "sampling_params": sampling_params_end,
+                        "return_hidden_states": False,
                     }
                     speculative_outputs = requests.post(
                         f"http://130.179.30.7:{8801}/generate",

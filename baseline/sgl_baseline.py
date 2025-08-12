@@ -48,10 +48,9 @@ def predict(tokenizer, input_data, model):
     json_data = {
         "text": [target_text],
         "sampling_params": sampling_params,
-        "return_hidden_states": True,
+        # "return_hidden_states": True,
     }
     if model =='Qwen/QwQ-32B':
-        print('------------------')
         speculative_outputs = requests.post(
             f"http://130.179.30.15:{8080}/generate",
             json=json_data,
