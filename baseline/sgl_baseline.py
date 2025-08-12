@@ -121,6 +121,7 @@ def inference_model_pickle(task_name: str, tokenizer, base_dir,model,
         problem = problems_and_answers[idx]['problem']
         answer = problems_and_answers[idx]['answer']
         total_time += process_file_to_json(dir_path, tokenizer, problem, answer,model)
+    print('total_time',total_time)
 
     print("[Info] Processing completed.")
 
