@@ -215,7 +215,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
 
                 json_data_check = {
                     "text": [checking_target_text],
-                    "sampling_params": {"temperature": 0.1,"max_new_tokens": 0},
+                    "sampling_params": {"temperature": 0.1,"max_new_tokens": 1},
                     "return_hidden_states": True,
                 }
 
@@ -240,7 +240,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                     ]
                 )
 
-                target_pooling_hidden_information = hidden_states[-target_tokenizer_input_len:, :]
+                target_pooling_hidden_information = hidden_states[-target_tokenizer_input_len-1:-1, :]
                 # print('target_pooling_hidden_information shape', target_pooling_hidden_information.shape)
                 if target_pooling_hidden_information.shape[0] == 0:
                     break
