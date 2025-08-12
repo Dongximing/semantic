@@ -240,7 +240,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                     ]
                 )
 
-                target_pooling_hidden_information = hidden_states[-target_tokenizer_input_len-1:-1, :]
+                target_pooling_hidden_information = hidden_states[-target_tokenizer_input_len:, :]
                 # print('target_pooling_hidden_information shape', target_pooling_hidden_information.shape)
                 if target_pooling_hidden_information.shape[0] == 0:
                     break
