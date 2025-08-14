@@ -50,6 +50,7 @@ if __name__ == '__main__':
         if result:
 
             number_of_tokens += generations[0]['tokens_full_answer']
+            time += generations[0]['execution_time']
             number_correct += 1
         else:
             print(f'Error in {dirname}')
@@ -57,7 +58,7 @@ if __name__ == '__main__':
     print("Number of tokens: ", number_of_tokens/number_correct)
     print(f'Number_correct: {number_correct}')
     print(f'Total: {total_number}')
-    print(f'average execution time: {time/total_number}')
+    print(f'average execution time: {time/number_correct}')
 
 
 
