@@ -32,6 +32,7 @@ if __name__ == '__main__':
     small_tokens =0
     big_tokens = 0
     whole_time = 0
+    whole_length = 0
     speculative_tokenizer = transformers.AutoTokenizer.from_pretrained(
         'deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B',
         trust_remote_code=True
@@ -58,6 +59,7 @@ if __name__ == '__main__':
             #print(predict)
             standard = generations[0]['standard_answer']
             length = generations[0].get('length_of_output')
+            whole_length+=length
             details = generations[0]['detail']
             whole_time+=float(generations[0].get('execution_time').rstrip('s'))
 
@@ -99,6 +101,6 @@ if __name__ == '__main__':
     print(f"small_tokens rate : ", small_tokens/(small_tokens+big_tokens))
 
     print(f'average speed: {number_of_tokens / time}')
-    print(f'average whole execution time: {whole_time/total_number}')
+    print(f'average whole execution time: {whole_time/whole_length}')
 
 
