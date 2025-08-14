@@ -101,14 +101,18 @@ def inference_model_pickle(task_name: str, tokenizer, base_dir,model,
                            start=0, end=10,seed=42):
     if task_name == "math-500":
         ds = load_dataset("HuggingFaceH4/MATH-500")['test']
-
     elif task_name == "aime":
         ds = load_dataset("HuggingFaceH4/aime_2024", split="train")
+    elif args.dataset == "amc23":
+        ds = load_dataset("zwhe99/amc23", split="test")
     else:
         raise ValueError(f"Unknown task: {task_name}")
 
     ds = ds.select(range(start, end))
-    problems_and_answers = [{"problem": item["problem"], "answer": item["answer"]} for item in ds]
+    if args.dataset == "amc23":
+        problems_and_answers = [{"problem": item["question"], "answer": item["answer"]} for item in ds]
+    else:
+        problems_and_answers = [{"problem": item["problem"], "answer": item["answer"]} for item in ds]
 
     for idx, number in enumerate(tqdm(range(start, end))):
         dirname = f'seed_{seed}_baseline_{task_name}_{number}'
