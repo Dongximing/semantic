@@ -46,10 +46,10 @@ if __name__ == '__main__':
             wrong_list.append(number)
             print(f"[Warning] {json_path} does not exist, skipping...")
             continue
-        speculative_tokenizer = transformers.AutoTokenizer.from_pretrained(
-            'deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B',
-            trust_remote_code=True
-        )
+        # speculative_tokenizer = transformers.AutoTokenizer.from_pretrained(
+        #     'deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B',
+        #     trust_remote_code=True
+        # )
         with open(json_path, "r", encoding="utf-8") as f:
             generations = json.load(f)
             #print('generations',generations)
