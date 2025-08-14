@@ -59,6 +59,7 @@ if __name__ == '__main__':
     print(f'Number_correct: {number_correct}')
     print(f'Total: {total_number}')
     print(f'average execution time: {time/number_correct}')
+    print(f'average speed: {number_of_tokens / time}')
 
 
 
