@@ -25,6 +25,7 @@ if __name__ == '__main__':
     number_correct = 0
     number_of_tokens = 0
     whole_time = 0
+    whole_length = 0
     total_number = args.end - args.start
 
     for idx, number in enumerate(tqdm(range(args.start, args.end))):
@@ -46,7 +47,7 @@ if __name__ == '__main__':
             whole_time += generations[0]['execution_time']
 
             standard = generations[0]['answer']
-            # number_of_tokens += generations[0]['tokens_full_answer']
+            whole_length += generations[0]['tokens_full_answer']
         result = check_math_correctness(standard,predict)
         if result:
 
@@ -62,6 +63,6 @@ if __name__ == '__main__':
     print(f'average execution time: {time/number_correct}')
     print(f'average speed: {number_of_tokens / time}')
     print(f'average whole execution time: {whole_time/total_number}')
-
+    print(f'average whole execution time: {whole_time/whole_length}')
 
 
