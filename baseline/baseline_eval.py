@@ -42,7 +42,7 @@ if __name__ == '__main__':
             #print('generations',generations)
             predict = generations[0]['full_answer']
             #print(predict)
-            time += generations[0]['execution_time']
+            #time += generations[0]['execution_time']
 
             standard = generations[0]['answer']
             # number_of_tokens += generations[0]['tokens_full_answer']
