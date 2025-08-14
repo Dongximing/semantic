@@ -70,12 +70,12 @@ if __name__ == '__main__':
                     time += float(generations[0].get('execution_time').rstrip('s'))
                     number_of_tokens += length
                     details = generations[0]['detail']
-                    for detail in details:
-                        if 'spe_model' in detail:
-                            small_tokens += speculative_tokenizer(detail['spe_model'], return_tensors="pt")["input_ids"].shape[1]
-                        else:
-
-                            big_tokens += speculative_tokenizer(detail['target_model'], return_tensors="pt")["input_ids"].shape[1]
+                    # for detail in details:
+                    #     if 'spe_model' in detail:
+                    #         small_tokens += speculative_tokenizer(detail['spe_model'], return_tensors="pt")["input_ids"].shape[1]
+                    #     else:
+                    #
+                    #         big_tokens += speculative_tokenizer(detail['target_model'], return_tensors="pt")["input_ids"].shape[1]
             else:
                 if result:
                     number_of_tokens += generations[0].get('length_of_real_output')
@@ -95,5 +95,7 @@ if __name__ == '__main__':
     print(f'Total: {total_number}')
     print(f"wrong_list: {wrong_list}")
     print(f"small_tokens rate : ", small_tokens/(small_tokens+big_tokens))
+
+    print(f'average speed: {number_of_tokens / time}')
 
 
