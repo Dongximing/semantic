@@ -125,7 +125,7 @@ def inference_model_pickle(task_name: str, tokenizer, base_dir,model,
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", type=str, help="dataset", default='math-500')  # math-500
+    parser.add_argument("--dataset", type=str, help="dataset", default='amc23')  # math-500
     parser.add_argument("--seed", type=int, help="seed", default=123)
     parser.add_argument("--model", type=str, help="model", default="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
     parser.add_argument("--start", type=int, help="start", default=0)
