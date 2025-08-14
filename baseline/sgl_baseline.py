@@ -58,7 +58,7 @@ def predict(tokenizer, input_data, model):
 
     else:
         speculative_outputs = requests.post(
-            f"http://130.179.30.7:{30000}/generate",
+            f"http://130.179.30.15:{8080}/generate",
             json=json_data,
         )
 
