@@ -123,7 +123,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str, help="dataset", default='math-500')  # math-500
     parser.add_argument("--seed", type=int, help="seed", default=123)
-    parser.add_argument("--model", type=str, help="model", default="Qwen/QwQ-32B")
+    parser.add_argument("--model", type=str, help="model", default="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
     parser.add_argument("--start", type=int, help="start", default=0)
     parser.add_argument("--end", type=int, help="end", default=30)
     args = parser.parse_args()
@@ -136,14 +136,14 @@ if __name__ == "__main__":
         model_name = "QwQ-32B-AWQ"
     elif args.model == "Qwen/QwQ-32B":
         model_name = "QwQ-32B"
-    elif args.model == "DeepSeek-R1-Distill-1.5b":
+    elif args.model == "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B":
         model_name = "DeepSeek-R1-Distill-1.5b"
 
     Tokenizer = AutoTokenizer.from_pretrained('deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B')
 
 
 
-    base_dir = f'/home/cs/staff/shaowei/semantic/baseline/{model_name}_{args.dataset}_seed{args.seed}/'
+    base_dir = f'/data/semantic/baseline/{model_name}_{args.dataset}_seed{args.seed}/'
     inference_model_pickle(
         task_name=args.dataset,
         base_dir=base_dir,
