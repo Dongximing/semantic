@@ -1,7 +1,5 @@
 import sglang as sgl
 import os
-
-from sglang.srt.models.torch_native_llama import tp_size
 from tqdm import tqdm
 from datasets import load_dataset
 from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -118,6 +116,7 @@ if __name__ == "__main__":
         model_name = "DeepSeek-R1-Distill-1.5b"
 
     Tokenizer = AutoTokenizer.from_pretrained('deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B')
+    print('loading model')
     if args.model == "Qwen/QwQ-32B":
         llm = sgl.Engine(  model_path=args.model,        enable_return_hidden_states=True,
             mem_fraction_static=0.7,tp=2,
