@@ -39,13 +39,11 @@ def predict(tokenizer, input_data, model):
     sampling_params = {
         "temperature": 0.6,
         "top_p": 0.95,
-        "max_new_tokens": 1,
+        "max_new_tokens": 140000,
     }
     speculative_output = model.generate(
         [target_text], sampling_params=sampling_params, return_hidden_states=True
     )
-    print(speculative_output)
-
     speculative_real_output_text = speculative_output[0]['text']
     end_time = time.time()
     len_output = speculative_output[0]['meta_info']['completion_tokens']
