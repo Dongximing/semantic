@@ -101,6 +101,6 @@ if __name__ == '__main__':
     print(f"small_tokens rate : ", small_tokens/(small_tokens+big_tokens))
 
     print(f'average speed: {number_of_tokens / time}')
-    print(f'average whole execution time: {whole_time/whole_length}')
+    print(f'average whole execution time: {time/number_of_tokens}')
 
 
