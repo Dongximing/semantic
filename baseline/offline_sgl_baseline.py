@@ -118,6 +118,7 @@ if __name__ == "__main__":
     Tokenizer = AutoTokenizer.from_pretrained('deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B')
     llm = sgl.Engine(  model_path="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
 ,        enable_return_hidden_states=True,
+                       mem_fraction_static=0.7
     )
 
 
