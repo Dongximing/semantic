@@ -1,5 +1,7 @@
 import sglang as sgl
 import os
+
+from sglang.srt.models.torch_native_llama import tp_size
 from tqdm import tqdm
 from datasets import load_dataset
 from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -99,7 +101,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str, help="dataset", default='amc23')  # math-500
     parser.add_argument("--seed", type=int, help="seed", default=123)
-    parser.add_argument("--model", type=str, help="model", default="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
+    parser.add_argument("--model", type=str, help="model", default="Qwen/QwQ-32B")
     parser.add_argument("--start", type=int, help="start", default=0)
     parser.add_argument("--end", type=int, help="end", default=40)
     args = parser.parse_args()
@@ -116,9 +118,9 @@ if __name__ == "__main__":
         model_name = "DeepSeek-R1-Distill-1.5b"
 
     Tokenizer = AutoTokenizer.from_pretrained('deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B')
-    if args.model == "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B":
+    if args.model == "Qwen/QwQ-32B":
         llm = sgl.Engine(  model_path=args.model,        enable_return_hidden_states=True,
-            mem_fraction_static=0.7
+            mem_fraction_static=0.7,tp=2,
         )
     else:
         llm = sgl.Engine( model_path=args.model, enable_return_hidden_states=True,mem_fraction_static=0.8,)
