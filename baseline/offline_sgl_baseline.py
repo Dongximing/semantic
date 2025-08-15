@@ -127,7 +127,7 @@ if __name__ == "__main__":
         task_name=args.dataset,
         base_dir=base_dir,
         tokenizer=Tokenizer,
-        model=args.model,
+        model=llm,
         start=args.start,
         end=args.end,
         seed=args.seed,
