@@ -39,7 +39,7 @@ def predict(tokenizer, input_data, model):
     sampling_params = {
         "temperature": 0.6,
         "top_p": 0.95,
-        "max_new_tokens": 140000,
+        "max_new_tokens": 14000,
     }
     speculative_output = model.generate(
         [target_text], sampling_params=sampling_params, return_hidden_states=True
