@@ -42,7 +42,7 @@ def predict(tokenizer, input_data, model):
         "max_new_tokens": 1,
     }
     speculative_output = model.generate(
-        target_text, sampling_params=sampling_params, return_hidden_states=True
+        [target_text], sampling_params=sampling_params, return_hidden_states=True
     )
     print(speculative_output)
 
