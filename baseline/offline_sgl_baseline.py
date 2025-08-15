@@ -101,7 +101,7 @@ if __name__ == "__main__":
     parser.add_argument("--seed", type=int, help="seed", default=123)
     parser.add_argument("--model", type=str, help="model", default="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
     parser.add_argument("--start", type=int, help="start", default=0)
-    parser.add_argument("--end", type=int, help="end", default=30)
+    parser.add_argument("--end", type=int, help="end", default=40)
     args = parser.parse_args()
     seed_everything(args.seed)
     if args.model == "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B":
@@ -116,10 +116,12 @@ if __name__ == "__main__":
         model_name = "DeepSeek-R1-Distill-1.5b"
 
     Tokenizer = AutoTokenizer.from_pretrained('deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B')
-    llm = sgl.Engine(  model_path="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
-,        enable_return_hidden_states=True,
-                       mem_fraction_static=0.7
-    )
+    if args.model == "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B":
+        llm = sgl.Engine(  model_path=args.model,        enable_return_hidden_states=True,
+            mem_fraction_static=0.7
+        )
+    else:
+        llm = sgl.Engine( model_path=args.model, enable_return_hidden_states=True,mem_fraction_static=0.8,)
 
 
 
