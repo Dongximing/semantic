@@ -44,7 +44,7 @@ if __name__ == '__main__':
             #print('generations',generations)
             predict = generations[0]['full_answer']
             #print(predict)
-            whole_time += generations[0]['execution_time']
+
 
             standard = generations[0]['answer']
             whole_length += generations[0]['tokens_full_answer']
@@ -63,6 +63,6 @@ if __name__ == '__main__':
     print(f'average execution time: {time/number_correct}')
     print(f'average speed: {number_of_tokens / time}')
     print(f'average whole execution time: {whole_time/total_number}')
-    print(f'average whole execution time: {whole_time/whole_length}')
+    print(f'average whole execution time: {time/number_of_tokens}')
 
 
