@@ -43,6 +43,7 @@ if __name__ == '__main__':
             generations = json.load(f)
             #print('generations',generations)
             predict = generations[0]['full_answer']
+            whole_time+=generations[0]['execution_time']
             #print(predict)
 
 
@@ -64,5 +65,6 @@ if __name__ == '__main__':
     print(f'average speed: {number_of_tokens / time}')
     print(f'average whole execution time: {whole_time/total_number}')
     print(f'average whole execution time: {time/number_of_tokens}')
+    print(f'average whole execution time: {whole_time /whole_length }')
 
 
