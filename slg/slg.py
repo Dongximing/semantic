@@ -6,7 +6,7 @@ small_input  = 'How many positive whole-number divisors does 196 have?'
 sampling_params = {
     "temperature": 0.6,
     "top_p": 0.95,
-    "max_new_tokens":  8000,
+    "max_new_tokens":  8,
 
     "no_stop_trim": True
 }
