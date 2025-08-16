@@ -232,6 +232,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                     json=json_data_check,
                     timeout=120
                 )
+                print(checking_outputs)
                 checking_outputs = checking_outputs.json()
 
 
