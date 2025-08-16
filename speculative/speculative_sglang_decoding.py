@@ -21,7 +21,7 @@ SPEC_model = 1
 TARGET_probe = 2
 SPEC_probe = 3
 import requests
-
+TOKEN = "HuaweiDockerSquadAssemble1105.VeryComplicatedTokenThatNoOneCanGuessHaHa!"
 def speculative_accept(qi, pi, threshold_min=0.7):
 
     ratio = qi / pi if pi > 0 else 0
@@ -179,8 +179,12 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                     "return_hidden_states": True,
                 }
                 speculative_outputs = requests.post(
-                                    f"http://130.179.30.7:{8801}/generate",
+                                    f"https://lux-2-cyber-09.tailb940e6.ts.net/sglang2/generate",
                                     json=json_data,
+                    headers={
+                        "Authorization": f"Bearer {TOKEN}",
+                        "Content-Type": "application/json",
+                    },
                     timeout=120
                                      )
                 speculative_output = speculative_outputs.json()
@@ -220,7 +224,11 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                 }
 
                 checking_outputs = requests.post(
-                    f"http://130.179.30.15:{8080}/generate",
+                    f"https://lux-2-cyber-09.tailb940e6.ts.net/sglang1/generate",
+                    headers={
+                        "Authorization": f"Bearer {TOKEN}",
+                        "Content-Type": "application/json",
+                    },
                     json=json_data_check,
                     timeout=120
                 )
@@ -275,7 +283,11 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                             "return_hidden_states": False,
                         }
                         speculative_outputs = requests.post(
-                            f"http://130.179.30.7:{8801}/generate",
+                            f"https://lux-2-cyber-09.tailb940e6.ts.net/sglang2/generate",
+                            headers={
+                                "Authorization": f"Bearer {TOKEN}",
+                                "Content-Type": "application/json",
+                            },
                             json=json_data,
                             timeout=120
                         )
@@ -306,7 +318,11 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                 }
                 # print(json_data)
                 target_outputs = requests.post(
-                    f"http://130.179.30.15:{8080}/generate",
+                    f"https://lux-2-cyber-09.tailb940e6.ts.net/sglang1/generate",
+                    headers={
+                        "Authorization": f"Bearer {TOKEN}",
+                        "Content-Type": "application/json",
+                    },
                     json=json_data,
                     timeout=120
                 )
@@ -334,7 +350,11 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                         "return_hidden_states": False,
                     }
                     speculative_outputs = requests.post(
-                        f"http://130.179.30.7:{8801}/generate",
+                        f"https://lux-2-cyber-09.tailb940e6.ts.net/sglang2/generate",
+                        headers={
+                            "Authorization": f"Bearer {TOKEN}",
+                            "Content-Type": "application/json",
+                        },
                         json=json_data,
 
                     )
@@ -453,13 +473,13 @@ if __name__ == "__main__":
 
     model_target_probe = SemanticEntropyProbTarget(5120, 2048)
     model_target_probe.load_state_dict(torch.load(f'{args.target_probe}.pt'))
-    model_target_probe = model_target_probe.to('cuda:1')
+    model_target_probe = model_target_probe.to('cuda:0')
     model_target_probe.eval()
 
 
     model_spec_probe = SemanticEntropyProbSpec(1536, 512)
     model_spec_probe.load_state_dict(torch.load(f'{args.speculative_probe}.pt'))
-    model_spec_probe = model_spec_probe.to('cuda:1')
+    model_spec_probe = model_spec_probe.to('cuda:0')
     model_spec_probe.eval()
 
 

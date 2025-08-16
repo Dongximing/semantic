@@ -1,5 +1,7 @@
 import requests
+from openai import timeout
 
+token = "HuaweiDockerSquadAssemble1105.VeryComplicatedTokenThatNoOneCanGuessHaHa!"
 small_input  = 'How many positive whole-number divisors does 196 have?'
 sampling_params = {
     "temperature": 0.6,
@@ -14,9 +16,13 @@ json_data = {
 }
 for i in range(1000):
     speculative_outputs = requests.post(
-        "https://tqks84p4oltpp8-8800.proxy.runpod.net/generate",
+        "https://lux-2-cyber-09.tailb940e6.ts.net/sglang1/generate",
         json=json_data,
-        timeout=60
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+        },
+        timeout =60
 
     )
 

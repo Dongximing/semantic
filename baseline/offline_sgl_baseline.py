@@ -118,7 +118,7 @@ if __name__ == "__main__":
     Tokenizer = AutoTokenizer.from_pretrained('deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B')
     print('loading model')
     if args.model == "Qwen/QwQ-32B":
-        llm = sgl.Engine(  model_path=args.model,        enable_return_hidden_states=True,
+        llm = sgl.Engine(  model_path=args.model, enable_return_hidden_states=True,
             mem_fraction_static=0.7,tp_size=2,
         )
     else:
@@ -126,7 +126,7 @@ if __name__ == "__main__":
 
 
 
-    base_dir = f'/home/cs/staff/shaowei/semantic/baseline/offline_{model_name}_{args.dataset}_seed{args.seed}/'
+    base_dir = f'../baseline/offline_{model_name}_{args.dataset}_seed{args.seed}/'
     inference_model_pickle(
         task_name=args.dataset,
         base_dir=base_dir,
