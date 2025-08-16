@@ -473,13 +473,13 @@ if __name__ == "__main__":
 
     model_target_probe = SemanticEntropyProbTarget(5120, 2048)
     model_target_probe.load_state_dict(torch.load(f'{args.target_probe}.pt'))
-    model_target_probe = model_target_probe.to('cuda:0')
+    model_target_probe = model_target_probe.to('cuda:1')
     model_target_probe.eval()
 
 
     model_spec_probe = SemanticEntropyProbSpec(1536, 512)
     model_spec_probe.load_state_dict(torch.load(f'{args.speculative_probe}.pt'))
-    model_spec_probe = model_spec_probe.to('cuda:0')
+    model_spec_probe = model_spec_probe.to('cuda:1')
     model_spec_probe.eval()
 
 
@@ -528,10 +528,10 @@ if __name__ == "__main__":
     #     answer = problems_and_answers[number]['answer']
     #     process_file_to_json(dir_path, target_tokenizer, speculative_tokenizer, problem,answer,args.max_new_tokens,model_target_probe,model_spec_probe,number)
 
-    # common_errors_minus_100 = [
-    #     10, 28, 54, 104, 140, 164, 208,
-    #     224, 322, 344
-    # ]
+    common_errors_minus_100 = [
+        10, 28, 54, 104, 140, 164, 208,
+        224, 322, 344
+    ]
     #
     #
     # [198, 383, 435, 468]
@@ -539,8 +539,8 @@ if __name__ == "__main__":
 
     failed_total = []
     for idx, number in enumerate(tqdm(range(args.start_dataset, args.end_dataset))):
-        # if idx in common_errors_minus_100:
-        #     continue
+        if idx in common_errors_minus_100:
+            continue
         dirname = f'spec_{args.dataset}_{number}'
         dir_path = os.path.join(f"{args.data_dir}{args.seed}", dirname)
         problem = problems_and_answers[idx]['problem']
