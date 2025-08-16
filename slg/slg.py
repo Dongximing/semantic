@@ -16,7 +16,7 @@ json_data = {
 }
 for i in range(1000):
     speculative_outputs = requests.post(
-        "https://lux-2-cyber-09.tailb940e6.ts.net/sglang1/generate",
+        "https://lux-2-cyber-09.tailb940e6.ts.net/sglang2/generate",
         json=json_data,
         headers={
             "Authorization": f"Bearer {token}",
