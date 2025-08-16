@@ -52,13 +52,13 @@ def predict(tokenizer, input_data, model):
     }
     if model =='Qwen/QwQ-32B':
         speculative_outputs = requests.post(
-            f"http://130.179.30.15:{8080}/generate",
+            "https://lux-2-cyber-09.tailb940e6.ts.net/sglang1/generate",
             json=json_data,
         )
 
     else:
         speculative_outputs = requests.post(
-            f"http://130.179.30.15:{8080}/generate",
+            "https://lux-2-cyber-09.tailb940e6.ts.net/sglang2/generate",
             json=json_data,
         )
 
@@ -147,7 +147,7 @@ if __name__ == "__main__":
 
 
 
-    base_dir = f'/data/semantic/baseline/{model_name}_{args.dataset}_seed{args.seed}/'
+    base_dir = f'/data/semantic/baseline/h100_{model_name}_{args.dataset}_seed{args.seed}/'
     inference_model_pickle(
         task_name=args.dataset,
         base_dir=base_dir,
