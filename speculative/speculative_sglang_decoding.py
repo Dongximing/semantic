@@ -455,7 +455,7 @@ if __name__ == "__main__":
     parser.add_argument("--dataset", type=str,  help="dataset",default='math-500')#math-500
     parser.add_argument("--target_model", type=str,  help="target_model",default="Qwen/QwQ-32B")
     parser.add_argument("--speculative_model", type=str,  help="speculative_model", default="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
-    parser.add_argument("--data_dir", type=str,  help="data_dir",default='/data/semantic/speculative/sglang_new_spec_result_math-500_full_size_QwQ-32B_r132_deepseek1.5seed_')
+    parser.add_argument("--data_dir", type=str,  help="data_dir",default='/data/semantic/speculative/sglang_h100_spec_result_math-500_full_size_QwQ-32B_r132_deepseek1.5seed_')
     parser.add_argument("--start_dataset", type=int, help="the beginning of the dataset",default=0)
     parser.add_argument("--end_dataset", type=int, help="the end of the dataset",default=30)
     parser.add_argument("--target_probe", type=str, help="target_probe",default="/data/semantic/training/valid_new_2048_full_size_slg_qwq-32b_math-500_output_last_hidden_list_best_probe_mse")#aime_output_last_hidden_list_best_probe_mse
