@@ -22,7 +22,7 @@ TARGET_probe = 2
 SPEC_probe = 3
 import requests
 TOKEN = "HuaweiDockerSquadAssemble1105.VeryComplicatedTokenThatNoOneCanGuessHaHa!"
-def speculative_accept(qi, pi, threshold_min=0.7):
+def speculative_accept(qi, pi, threshold_min=0.5):
 
     ratio = qi / pi if pi > 0 else 0
     if ratio < threshold_min:

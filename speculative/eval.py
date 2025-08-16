@@ -102,5 +102,6 @@ if __name__ == '__main__':
 
     print(f'average speed: {number_of_tokens / time}')
     print(f'average whole execution time: {time/number_of_tokens}')
+    print(f'average whole execution time....: {whole_time/whole_length}')
 
 
