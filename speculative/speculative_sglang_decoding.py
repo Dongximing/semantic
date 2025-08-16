@@ -370,7 +370,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                 # if inferencing the model stops at the first time
 
                 if target_tokenizer.eos_token_id in target_tokenizer.encode(target_real_output):
-                    print('target_tokenizer.eos_token_id 281',target_tokenizer.eos_token_id)
+                    # print('target_tokenizer.eos_token_id 281',target_tokenizer.eos_token_id)
                     break
 
             # print(speculative_tokenizer.encode(generated_text[original_speculative_text_len:]))
