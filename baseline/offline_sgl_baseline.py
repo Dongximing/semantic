@@ -39,7 +39,7 @@ def predict(tokenizer, input_data, model):
     sampling_params = {
         "temperature": 0.6,
         "top_p": 0.95,
-        "max_new_tokens": 14000,
+        "max_new_tokens": 10,
     }
     speculative_output = model.generate(
         [target_text], sampling_params=sampling_params, return_hidden_states=True
@@ -122,7 +122,7 @@ if __name__ == "__main__":
             mem_fraction_static=0.7,
         )
     else:
-        llm = sgl.Engine( model_path=args.model, enable_return_hidden_states=True,mem_fraction_static=0.2,)
+        llm = sgl.Engine( model_path=args.model, enable_return_hidden_states=True,mem_fraction_static=0.2)
 
 
 
