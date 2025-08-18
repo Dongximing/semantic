@@ -12,7 +12,8 @@ done
 
 echo "Process $TARGET_PID has ended. Running your script..."
 #python sgl_baseline.py --seed 1234 --start 100 --end 500  --model deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B --dataset math-500
-python sgl_baseline.py --seed 1234 --start 100 --end 500 --model Qwen/QwQ-32B --dataset math-500
+python offline_sgl_baseline.py --seed 1234 --start 105 --end 110 --model Qwen/QwQ-32B --dataset math-500
+python offline_sgl_baseline.py --seed 1234 --start 105 --end 110 --model deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B --dataset math-500
 #python sgl_baseline.py --seed 5678 --start 100 --end 400 --model Qwen/QwQ-32B
 #python sgl_baseline.py --seed 9101112 --start 100 --end 400 --model Qwen/QwQ-32B
 
