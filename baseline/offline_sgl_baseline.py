@@ -119,10 +119,10 @@ if __name__ == "__main__":
     print('loading model')
     if args.model == "Qwen/QwQ-32B":
         llm = sgl.Engine(  model_path=args.model, enable_return_hidden_states=True,
-            mem_fraction_static=0.7,tp_size=2,
+            mem_fraction_static=0.7,
         )
     else:
-        llm = sgl.Engine( model_path=args.model, enable_return_hidden_states=True,mem_fraction_static=0.8,)
+        llm = sgl.Engine( model_path=args.model, enable_return_hidden_states=True,mem_fraction_static=0.2,)
 
 
 
