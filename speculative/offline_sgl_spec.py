@@ -392,8 +392,8 @@ if __name__ == "__main__":
     parser.add_argument("--seed", type=int, help="seed", default=301)
     args = parser.parse_args()
     seed_everything(args.seed)
-    target_model = sgl.Engine(model_path=args.target_model,enable_return_hidden_states=True,mem_fraction_static=0.6)
-    speculative_model = sgl.Engine(model_path=args.speculative_model,enable_return_hidden_states=True,mem_fraction_static=0.1)
+    target_model = sgl.Engine(model_path=args.target_model,enable_return_hidden_states=True,mem_fraction_static=0.7)
+    speculative_model = sgl.Engine(model_path=args.speculative_model,enable_return_hidden_states=True,mem_fraction_static=0.2)
 
 
     model_target_probe = SemanticEntropyProbTarget(5120, 2048)
