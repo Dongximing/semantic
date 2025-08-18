@@ -6,7 +6,7 @@ small_input  = 'How many positive whole-number divisors does 196 have?'
 sampling_params = {
     "temperature": 0.6,
     "top_p": 0.95,
-    "max_new_tokens":  8,
+    "max_new_tokens":  800,
 
     "no_stop_trim": True
 }
@@ -16,7 +16,7 @@ json_data = {
 }
 for i in range(1000):
     speculative_outputs = requests.post(
-        "https://lux-2-cyber-09.tailb940e6.ts.net/sglang2/generate",
+        "https://lux-2-cyber-09.tailb940e6.ts.net/sglang1/generate",
         json=json_data,
         headers={
             "Authorization": f"Bearer {token}",

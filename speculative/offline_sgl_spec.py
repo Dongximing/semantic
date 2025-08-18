@@ -379,9 +379,9 @@ if __name__ == "__main__":
     parser.add_argument("--dataset", type=str,  help="dataset",default='math-500')#math-500
     parser.add_argument("--target_model", type=str,  help="target_model",default="Qwen/QwQ-32B")
     parser.add_argument("--speculative_model", type=str,  help="speculative_model", default="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
-    parser.add_argument("--data_dir", type=str,  help="data_dir",default='/data/semantic/speculative/sglang_new_spec_result_math-500_full_size_QwQ-32B_r132_deepseek1.5seed_')
-    parser.add_argument("--start_dataset", type=int, help="the beginning of the dataset",default=0)
-    parser.add_argument("--end_dataset", type=int, help="the end of the dataset",default=30)
+    parser.add_argument("--data_dir", type=str,  help="data_dir",default='../speculative/sglang_new_spec_result_math-500_full_size_QwQ-32B_r132_deepseek1.5seed_')
+    parser.add_argument("--start_dataset", type=int, help="the beginning of the dataset",default=104)
+    parser.add_argument("--end_dataset", type=int, help="the end of the dataset",default=110)
     parser.add_argument("--target_probe", type=str, help="target_probe",default="../probe_weight_big/valid_new_2048_full_size_slg_qwq-32b_math-500_output_last_hidden_list_best_probe_mse")#aime_output_last_hidden_list_best_probe_mse
     parser.add_argument("--speculative_probe", type=str, help="speculative_probe",default="../probe_weight_small/s1_valid_new_deepseekr11.5b_s1_output_last_hidden_list_best_probe_mse")
     parser.add_argument("--target_temperature", type=float, help="target_temperature",default=0.1)
@@ -398,13 +398,13 @@ if __name__ == "__main__":
 
     model_target_probe = SemanticEntropyProbTarget(5120, 2048)
     model_target_probe.load_state_dict(torch.load(f'{args.target_probe}.pt'))
-    model_target_probe = model_target_probe.to('cuda:1')
+    model_target_probe = model_target_probe.to('cuda:0')
     model_target_probe.eval()
 
 
     model_spec_probe = SemanticEntropyProbSpec(1536, 512)
     model_spec_probe.load_state_dict(torch.load(f'{args.speculative_probe}.pt'))
-    model_spec_probe = model_spec_probe.to('cuda:1')
+    model_spec_probe = model_spec_probe.to('cuda:0')
     model_spec_probe.eval()
 
 
