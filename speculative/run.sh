@@ -23,9 +23,9 @@ echo "Process $TARGET_PID has ended. Running your script..."
 #python speculative_sglang_decoding.py --seed 7811   --dataset math-500 --start_dataset 100 --end_dataset 500
 #python speculative_sglang_decoding.py --seed 78   --dataset math-500 --start_dataset 118 --end_dataset 500
 #python speculative_sglang_decoding.py --seed 30010   --dataset math-500 --start_dataset 100 --end_dataset 500
-python speculative_sglang_decoding.py --seed 321   --dataset math-500 --start_dataset 180 --end_dataset 500
-python speculative_sglang_decoding.py --seed 654   --dataset math-500 --start_dataset 100 --end_dataset 500
-python speculative_sglang_decoding.py --seed 987   --dataset math-500 --start_dataset 100 --end_dataset 500
+python speculative_sglang_decoding.py --seed 123   --dataset amc23 --start_dataset 0 --end_dataset 40
+python speculative_sglang_decoding.py --seed 456   --dataset amc23 --start_dataset 0 --end_dataset 40
+python speculative_sglang_decoding.py --seed 789   --dataset amc23 --start_dataset 0 --end_dataset 40
 #python slg/generate_samples_sglang.py
 
 #python speculative_hf_decoding.py --seed 2004   --dataset aime --start_dataset 0 --end_dataset 30 --data_dir /data/semantic/speculative/speed_up_spec_result_aime-30_deepseek_r132_deepseek1.5seed_
