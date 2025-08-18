@@ -179,7 +179,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                     "return_hidden_states": True,
                 }
                 speculative_outputs = requests.post(
-                                    f"http://130.179.30.7:{8001}/generate",
+                                    f"http://130.179.30.7:{8801}/generate",
                                     json=json_data,
                     # headers={
                     #     "Authorization": f"Bearer {TOKEN}",
@@ -284,7 +284,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                             "return_hidden_states": False,
                         }
                         speculative_outputs = requests.post(
-                            f"http://130.179.30.7:{8001}/generate",
+                            f"http://130.179.30.7:{8801}/generate",
                             # headers={
                             #     "Authorization": f"Bearer {TOKEN}",
                             #     "Content-Type": "application/json",
@@ -351,7 +351,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                         "return_hidden_states": False,
                     }
                     speculative_outputs = requests.post(
-                        f"http://130.179.30.7:{8001}/generate",
+                        f"http://130.179.30.7:{8801}/generate",
                         # headers={
                         #     "Authorization": f"Bearer {TOKEN}",
                         #     "Content-Type": "application/json",
