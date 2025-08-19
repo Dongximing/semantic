@@ -1,6 +1,6 @@
 #!/bin/bash
 
-TARGET_PID=1233363
+TARGET_PID=316351
 CHECK_INTERVAL=10  # 每10秒检查一次
 
 echo "Waiting for process $TARGET_PID to finish..."
@@ -23,7 +23,7 @@ echo "Process $TARGET_PID has ended. Running your script..."
 #python speculative_sglang_decoding.py --seed 7811   --dataset math-500 --start_dataset 100 --end_dataset 500
 #python speculative_sglang_decoding.py --seed 78   --dataset math-500 --start_dataset 118 --end_dataset 500
 #python speculative_sglang_decoding.py --seed 30010   --dataset math-500 --start_dataset 100 --end_dataset 500
-python speculative_sglang_decoding.py --seed 123   --dataset amc23 --start_dataset 17 --end_dataset 40
+python speculative_sglang_decoding.py --seed 123   --dataset amc23 --start_dataset 0 --end_dataset 40
 python speculative_sglang_decoding.py --seed 456   --dataset amc23 --start_dataset 0 --end_dataset 40
 python speculative_sglang_decoding.py --seed 789   --dataset amc23 --start_dataset 0 --end_dataset 40
 #python slg/generate_samples_sglang.py
