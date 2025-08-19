@@ -35,7 +35,7 @@ def inference_model():
         lambda x: {'prompt': x['question'], 'solution': x['deepseek_thinking_trajectory']}
     )
 
-    tokenizer = AutoTokenizer.from_pretrained("", skip_special_tokens=True)
+    tokenizer = AutoTokenizer.from_pretrained("deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B", skip_special_tokens=True)
 
     # 新建存放子文件的文件夹
     out_dir = './data_s1_science/'
