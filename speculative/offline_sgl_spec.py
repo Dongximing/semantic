@@ -459,12 +459,18 @@ if __name__ == "__main__":
     #
     #
     # [198, 383, 435, 468]
+    if args.dataset == "math-500":
+        common_errors_minus_100 = [10, 28, 54, 104, 140, 164, 208, 224, 322, 344]
+    elif args.dataset == "aime":
+        common_errors_minus_100 = [2,3,13,20,21,28,29]
+    elif args.dataset == "amc23":   
+        common_errors_minus_100 = [18,20]
 
 
     failed_total = []
     for idx, number in enumerate(tqdm(range(args.start_dataset, args.end_dataset))):
-        # if idx in common_errors_minus_100:
-        #     continue
+        if idx in common_errors_minus_100:
+            continue
         dirname = f'spec_{args.dataset}_{number}'
         dir_path = os.path.join(f"{args.data_dir}{args.seed}", dirname)
         problem = problems_and_answers[idx]['problem']
