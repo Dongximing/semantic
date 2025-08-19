@@ -28,7 +28,7 @@ def predict(input_data, temperature):
         "temperature": temperature,
         "top_p": 0.95,
         "max_new_tokens": 500,
-        "stop_token_ids":[4710,382,1447,271,692,1939,2533,3593,13824,14190],
+        "stop_token_ids":[4710,382,1447,271,692,1939,2533,3593],
         "no_stop_trim": True
     }
     json_data_check = {
