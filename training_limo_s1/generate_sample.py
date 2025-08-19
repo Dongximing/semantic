@@ -9,7 +9,7 @@ from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import sys
 import argparse
-
+import requests
 STOP_TOKENS = [
     ' \n\n', '.\n\n', ':\n\n', '\n\n',
     ')\n\n', '?\n\n', ']\n\n', ').\n\n'
@@ -22,108 +22,66 @@ AIME_STOP_TOKENS = [
 
 
 def predict(tokenizer, model, input_data, temperature, return_full=False, return_latent=False,gpu=0):
-    max_new_tokens = 500
-    inputs = tokenizer(input_data, return_tensors="pt").to(f"cuda:{gpu}")
-    initial_length = len(inputs['input_ids'][0])
-    STOP = None
-    stopping_criteria = None
-    if AIME_STOP_TOKENS is not None:
-        from transformers import StoppingCriteria, StoppingCriteriaList
-        class StoppingCriteriaSub(StoppingCriteria):
-            def __init__(self, stops, tokenizer, initial_length=None):
-                super().__init__()
-                self.stops = stops
-                self.initial_length = initial_length
-                self.tokenizer = tokenizer
-                self.triggered_stop = None
 
-            def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor):
-                generation = self.tokenizer.decode(input_ids[0][self.initial_length:], skip_special_tokens=False)
-                for stop in self.stops:
-                    if stop in generation:
-                        self.triggered_stop = stop
-                        return True
-                return False
 
-        stopping_criteria_obj = StoppingCriteriaSub(
-            stops=AIME_STOP_TOKENS,
-            initial_length=initial_length,
-            tokenizer=tokenizer
+    sampling_params = {
+        "temperature": temperature,
+        "top_p": 0.95,
+        "max_new_tokens": 500,
+        "stop_token_ids":[4710,382,1447,271,692,1939,2533,3593,13824,14190],
+        "no_stop_trim": True
+    }
+    json_data_check = {
+        "text": [input_data],
+        "sampling_params": sampling_params,
+        "return_hidden_states": True,
+    }
+    checking_outputs = requests.post(
+        f"http://0.0.0.0:{8080}/generate",
+        json=json_data_check,
+    )
+    checking_outputs = checking_outputs.json()
+    checking_output = checking_outputs[0]
+    for i in range(len(checking_output["meta_info"]["hidden_states"])):
+        checking_output["meta_info"]["hidden_states"][i] = torch.tensor(
+            checking_output["meta_info"]["hidden_states"][i], dtype=torch.bfloat16
         )
-        stopping_criteria = StoppingCriteriaList([
-            stopping_criteria_obj
-        ])
+    hidden_states = torch.cat(
+        [
+            i.unsqueeze(0) if len(i.shape) == 1 else i
+            for i in checking_output["meta_info"]["hidden_states"]
+        ]
+    )
+    Completion_tokens = checking_output['meta_info']['completion_tokens']
 
-    with torch.no_grad():
-        outputs = model.generate(
-            **inputs,
-            max_new_tokens=max_new_tokens,
-            return_dict_in_generate=True,
-            output_scores=True,
-            output_hidden_states=True,
-            temperature=temperature,
-            top_p=0.9,
-            do_sample=True,
-            stopping_criteria=stopping_criteria,
-            pad_token_id=tokenizer.eos_token_id,
-        )
-    full_answer = tokenizer.decode(outputs.sequences[0], skip_special_tokens=True)
-    real_answer = tokenizer.decode(outputs.sequences[0][initial_length:], skip_special_tokens=True)
-    triggered_stop = stopping_criteria_obj.triggered_stop
-    answer = full_answer
-    if full_answer.startswith(input_data):
-        answer = full_answer[len(input_data):]
 
-    # hidden states
-    if 'decoder_hidden_states' in outputs.keys():
-        hidden = outputs.decoder_hidden_states
-    else:
-        hidden = outputs.hidden_states
+    real_answer = checking_output['text']
+    # print('checking_output',real_answer)
+    hidden_states = hidden_states[-Completion_tokens:,:] #len *hidden
 
-    last_input = hidden[-1]
-    last_token_embedding = torch.stack([layer[:, -1, :] for layer in last_input]).cpu()
-    sec_last_input = hidden[-2]
-    sec_last_token_embedding = torch.stack([layer[:, -1, :] for layer in sec_last_input]).cpu()
-    last_tok_bef_gen_input = hidden[0]
-    last_tok_bef_gen_embedding = torch.stack([layer[:, -1, :] for layer in last_tok_bef_gen_input]).cpu()
-    output_last_hidden_list = torch.stack([layer[-1][:, -1, :] for layer in hidden]).cpu()
 
-    last_output = hidden[-1]
-    last_output = last_output[-1]
-    last_hidden_state = last_output[:, -1, :].cpu()
+    last_token_hidden = hidden_states[-1]
+    sec_last_input = hidden_states[-2]
+    last_tok_bef_gen_input = hidden_states[0]
+    output_hidden_states = hidden_states
 
-    sec_last_input = hidden[-2]
-    sec_last_input = sec_last_input[-1]
-    sec_last_hidden_state = sec_last_input[:, -1, :].cpu()
-
-    last_input_token = hidden[0]
-    last_input_token = last_input_token[-1]
-    last_input_token_state = last_input_token[:, -1, :].cpu()
-
-    # token log likelihood, probs, ppl
-    transition_scores = model.compute_transition_scores(
-        outputs.sequences, outputs.scores, normalize_logits=True)
-    log_likelihoods = [score.item() for score in transition_scores[0]]
-    probs = [np.exp(x) for x in transition_scores[0].tolist()]
-    mean_neg_logprob = -np.mean(transition_scores[0].cpu().numpy())
-    ppl = np.exp(mean_neg_logprob)
 
     hidden_states = (
-        last_hidden_state, sec_last_hidden_state, last_input_token_state,
-        last_token_embedding, sec_last_token_embedding, last_tok_bef_gen_embedding, output_last_hidden_list
+        last_token_hidden,sec_last_input,last_tok_bef_gen_input,output_hidden_states
     )
-    # print('real_answer',real_answer)
-    return (real_answer, answer, log_likelihoods, probs, ppl, triggered_stop, hidden_states)
+    return (real_answer, hidden_states)
 
 
-def process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_generations,gpu):
+
+
+def process_file_to_pickle(json_path, out_pkl_path,  num_generations):
     with open(json_path, 'r', encoding='utf-8') as f:
         alldata = json.load(f)
     all_generations = []
 
     log_file = out_pkl_path.replace('.pkl', '.log')
-    n = int(len(alldata))-1
-    data = alldata[:n]
+    n = int(len(alldata))
+    data = alldata[:n - 1]
     print(len(data))
 
     for index, element in enumerate(data):
@@ -138,62 +96,39 @@ def process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_genera
             try:
                 if i == 0:
                     (
-                        real_answer, predicted_answer, log_likelihoods, probs, ppl, triggered_stop,
-                        (last_hidden_state, sec_last_hidden_state, last_input_token_state,
-                         embedding, emb_last_before_gen, emb_before_eos, output_last_hidden_list)
-                    ) = predict(tokenizer, model, input_text, temperature=0.1, return_full=False, return_latent=True,gpu=gpu)
+                        most_real_answer,
+                        ( most_last_token_hidden,most_sec_last_input,most_last_tok_bef_gen_input,most_output_hidden_states)
+                    ) = predict( input_text,temperature=0.1)
                 else:
                     (
-                        real_answer, predicted_answer, log_likelihoods, probs, ppl, triggered_stop,
-                        (last_hidden_state, sec_last_hidden_state, last_input_token_state,
-                         embedding, emb_last_before_gen, emb_before_eos, output_last_hidden_list)
-                    ) = predict(tokenizer, model, input_text, temperature=0.6, return_full=False, return_latent=True,gpu=gpu)
+                        real_answer,
+                        ( last_token_hidden,sec_last_input,last_tok_bef_gen_input,output_hidden_states)
+                    ) = predict(input_text,temperature=0.6)
 
-                log_entry.update({
-                    "status": "success",
-                    "predicted_answer_preview": str(predicted_answer)[:80] + (
-                        "..." if predicted_answer and len(predicted_answer) > 80 else ""),
-                    "ppl": float(ppl) if ppl is not None else None,
-                    "log_likelihoods_len": len(log_likelihoods) if log_likelihoods is not None else 0,
-                })
+
                 if i == 0:
                     all_generations.append({
                         "most_input_text": input_text,
-                        'most_real_answer': real_answer,
-                        "most_predicted_answer": predicted_answer,
-                        "most_last_hidden_state": last_hidden_state.cpu(),
-                        "most_sec_last_hidden_state": sec_last_hidden_state.cpu(),
-                        "most_last_input_token_state": last_input_token_state.cpu(),
-                        "most_output_last_hidden_list": output_last_hidden_list.cpu(),
-                        "most_ppl": ppl,
-                        "most_log_likelihoods": log_likelihoods,
-                        "most_probs": probs,
-                        "most_embedding": embedding.cpu(),
-                        "most_emb_last_before_gen": emb_last_before_gen.cpu(),
-                        "most_emb_before_eos": emb_before_eos,
+                        'most_real_answer': most_real_answer,
+                        "most_last_hidden_state": most_last_token_hidden.cpu(),
+                        "most_sec_last_hidden_state": most_sec_last_input.cpu(),
+                        "most_last_input_token_state": most_last_tok_bef_gen_input.cpu(),
+                        "most_output_last_hidden_list": most_output_hidden_states.cpu(),
+
                         "most_generation_index": -1,
                         "most_sample_index": index,
-                        'triggered_stop': triggered_stop
                     })
                 else:
 
                     all_generations.append({
                         "input_text": input_text,
                         'real_answer': real_answer,
-                        "predicted_answer": predicted_answer,
-                        "last_hidden_state": last_hidden_state.cpu(),
-                        "sec_last_hidden_state": sec_last_hidden_state.cpu(),
-                        "last_input_token_state": last_input_token_state.cpu(),
-                        "output_last_hidden_list": output_last_hidden_list.cpu(),
-                        "ppl": ppl,
-                        "log_likelihoods": log_likelihoods,
-                        "probs": probs,
-                        "embedding": embedding.cpu(),
-                        "emb_last_before_gen": emb_last_before_gen.cpu(),
-                        "emb_before_eos": emb_before_eos,
+                        "last_hidden_state": last_token_hidden.cpu(),
+                        "sec_last_hidden_state": sec_last_input.cpu(),
+                        "last_input_token_state": last_tok_bef_gen_input.cpu(),
+                        "output_last_hidden_list": output_hidden_states.cpu(),
                         "generation_index": i - 1,
                         "sample_index": index,
-                        'triggered_stop': triggered_stop
                     })
             except Exception as e:
                 log_entry.update({
@@ -242,13 +177,14 @@ def process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_genera
     print(f"Saved {out_pkl_path} with {len(all_generations)} generations.")
 
 
+
 # wail /home/cs/staff/shaowei/hf/math-result_left
 # quail /data/ximing/math-result_left
-def inference_model_pickle( model, tokenizer, base_dir,
-                           start=31, end=50, num_generations=20,gpu=0):
+def inference_model_pickle(task_name: str, base_dir,
+                           start=9, end=50, num_generations=20):
     for number in tqdm(range(start, end)):
 
-        dirname = f'data-877_{number}'
+        dirname = f'data-105_{number}'
         dir_path = os.path.join(base_dir, dirname)
         json_path = os.path.join(dir_path, f'generation.json')
         out_pkl_path = os.path.join(dir_path, f'new_generations_{number}.pkl')
@@ -261,7 +197,7 @@ def inference_model_pickle( model, tokenizer, base_dir,
             continue
 
         print(f"[Info] Processing file: {json_path}")
-        process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_generations,gpu)
+        process_file_to_pickle(json_path, out_pkl_path, num_generations)
 
     print("[Info] Processing completed.")
 
@@ -269,25 +205,14 @@ def inference_model_pickle( model, tokenizer, base_dir,
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", type=str, default="deepseek-ai/DeepSeek-R1-Distill-Qwen-32B")
-    parser.add_argument("--gpu", type=int, default=1)
-    parser.add_argument("--start", type=int, help="dataset", default=700)
-    parser.add_argument("--end", type=int, help="dataset", default=877)  #
+    parser.add_argument("--start", type=int, help="dataset", default=0)
+    parser.add_argument("--end", type=int, help="dataset", default=105)  #
     parser.add_argument("--base_dir", type=str, help="dataset",
-                        default='/data/semantic/training_limo_s1/data_s1_100_big')
+                        default='/data/semantic/training_limo_s1/data_s1_200_science_big')
     args = parser.parse_args()
-    tokenizer = AutoTokenizer.from_pretrained(
-        args.model,
-        trust_remote_code=True
-    )
-    model = AutoModelForCausalLM.from_pretrained(
-        args.model,
-        torch_dtype=torch.float16,
-        device_map=f"cuda:{args.gpu}",
-    )
-    tokenizer.pad_token_id = tokenizer.eos_token_id
     # /home/cs/staff/shaowei/semantic/aime
     # /data/ximing/aime
     # /home/cs/staff/shaowei/semantic/deepseek-32b_r1_awq_math
-    inference_model_pickle( model=model, base_dir=args.base_dir, tokenizer=tokenizer,
-                           start=args.start, end=args.end,gpu=args.gpu)
+    inference_model_pickle(task_name=args.task, base_dir=args.base_dir,
+                           start=args.start, end=args.end)
     print("done")
