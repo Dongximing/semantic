@@ -208,7 +208,7 @@ if __name__ == "__main__":
     parser.add_argument("--start", type=int, help="dataset", default=0)
     parser.add_argument("--end", type=int, help="dataset", default=105)  #
     parser.add_argument("--base_dir", type=str, help="dataset",
-                        default='/data/semantic/training_limo_s1/data_s1_200_science_big')
+                        default='/data/semantic/training_limo_s1/data_s1_200_science')
     args = parser.parse_args()
     # /home/cs/staff/shaowei/semantic/aime
     # /data/ximing/aime
