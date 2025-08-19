@@ -56,7 +56,7 @@ def predict(input_data, temperature):
 
 
     real_answer = checking_output['text']
-    # print('checking_output',real_answer)
+    print('checking_output',real_answer)
     hidden_states = hidden_states[-Completion_tokens:,:] #len *hidden
 
 
