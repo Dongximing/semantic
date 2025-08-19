@@ -513,11 +513,11 @@ if __name__ == "__main__":
     else:
         problems_and_answers = [{"problem": item["problem"], "answer": item["answer"]} for item in ds]
     if args.seed == 123:
-        wronglist = [4, 6, 7, 10, 18, 20, 27, 31]
+        wrong_list = [4, 6, 7, 10, 18, 20, 27, 31]
     elif args.seed == 456:
-        wronglist = [6, 10, 13, 15, 18, 20, 28, 31, 37]
+        wrong_list = [6, 10, 13, 15, 18, 20, 28, 31, 37]
     elif args.seed == 789:
-        wronglist = [6, 7, 10, 12, 13, 18, 20, 28,]
+        wrong_list = [6, 7, 10, 12, 13, 18, 20, 28,]
 
     for idx, number in enumerate(tqdm(wrong_list, total=len(wrong_list))):
     
