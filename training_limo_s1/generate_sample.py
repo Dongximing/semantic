@@ -213,6 +213,6 @@ if __name__ == "__main__":
     # /home/cs/staff/shaowei/semantic/aime
     # /data/ximing/aime
     # /home/cs/staff/shaowei/semantic/deepseek-32b_r1_awq_math
-    inference_model_pickle(task_name=args.task, base_dir=args.base_dir,
+    inference_model_pickle(task_name='science', base_dir=args.base_dir,
                            start=args.start, end=args.end)
     print("done")
