@@ -184,7 +184,7 @@ def inference_model_pickle(task_name: str, base_dir,
                            start=9, end=50, num_generations=20):
     for number in tqdm(range(start, end)):
 
-        dirname = f'data-105_{number}'
+        dirname = f'data-877_{number}'
         dir_path = os.path.join(base_dir, dirname)
         json_path = os.path.join(dir_path, f'generation.json')
         out_pkl_path = os.path.join(dir_path, f'new_generations_{number}.pkl')
