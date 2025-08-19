@@ -9,7 +9,7 @@ from datasets import load_dataset
 from tqdm import tqdm
 import sys
 MATH_PROMPT = "\nPlease reason step by step, and put your final answer within \\boxed{}."
-
+GPQA_PROMPT = "\nPlease reason step by step, and put your final answer within \\boxed{}."
 AIME_STOP_TOKENS = [
     ' \n\n', '.\n\n', ':\n\n', '\n\n',
     ')\n\n', '?\n\n', ']\n\n', ').\n\n',
@@ -35,10 +35,10 @@ def inference_model():
         lambda x: {'prompt': x['question'], 'solution': x['deepseek_thinking_trajectory']}
     )
 
-    tokenizer = AutoTokenizer.from_pretrained("unsloth/DeepSeek-R1-Distill-Qwen-3", skip_special_tokens=True)
+    tokenizer = AutoTokenizer.from_pretrained("", skip_special_tokens=True)
 
     # 新建存放子文件的文件夹
-    out_dir = './data_s1/'
+    out_dir = './data_s1_science/'
     os.makedirs(out_dir, exist_ok=True)
 
     for idx, item in enumerate(tqdm(filtered_dataset)):
