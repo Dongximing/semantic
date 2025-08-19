@@ -524,7 +524,7 @@ if __name__ == "__main__":
         print("doing wrong number:", number)
         dirname = f'spec_{args.dataset}_{number}'
         dir_path = os.path.join(f"{args.data_dir}{args.seed}", dirname)
-        number = number-100
+        # number = number-100
         problem = problems_and_answers[number]['problem']
         #print(f"{number}: {problem}")
         answer = problems_and_answers[number]['answer']
