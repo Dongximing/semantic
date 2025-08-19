@@ -21,7 +21,7 @@ AIME_STOP_TOKENS = [
 
 
 
-def predict(tokenizer, model, input_data, temperature, return_full=False, return_latent=False,gpu=0):
+def predict(input_data, temperature):
 
 
     sampling_params = {
