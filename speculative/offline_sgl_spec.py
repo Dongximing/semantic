@@ -155,11 +155,21 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                     )
                 else:
                     small_input  = generated_text
+                json_data = {
+                    "text": [small_input],
+                    "sampling_params": sampling_params,
+                    "return_hidden_states": True,
+                }
+                speculative_outputs = requests.post(
+                                    f"http://0.0.0.0:{8801}/generate",
+                                    json=json_data,
+                    timeout=120
+                                     )
 
-
-                speculative_output = speculative_model.generate(
-                    [small_input], sampling_params=sampling_params, return_hidden_states=True
-                )
+                # speculative_output = speculative_model.generate(
+                #     [small_input], sampling_params=sampling_params, return_hidden_states=True
+                # )
+                speculative_output = speculative_outputs.json()
                 speculative_real_output_text = speculative_output[0]['text']
                 speculative_output = speculative_output[0]
                 for i in range(len(speculative_output["meta_info"]["hidden_states"])):
@@ -190,14 +200,22 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
 
 
 
-                checking_sampling_params = {
-                    "temperature": 0.1,
-                    "max_new_tokens": 1
+                json_data_check = {
+                    "text": [checking_target_text],
+                    "sampling_params": {"temperature": 0.1,"max_new_tokens": 1},
+                    "return_hidden_states": True,
                 }
 
-                checking_outputs = target_model.generate(
-                    [checking_target_text], sampling_params=checking_sampling_params, return_hidden_states=True
+                checking_outputs = requests.post(
+                    f"http://0.0.0.0:{8080}/generate",
+                    # headers={
+                    #     "Authorization": f"Bearer {TOKEN}",
+                    #     "Content-Type": "application/json",
+                    # },
+                    json=json_data_check,
+                    timeout=120
                 )
+                checking_outputs = checking_outputs.json()
                 checking_output = checking_outputs[0]
                 for i in range(len(checking_output["meta_info"]["hidden_states"])):
                     checking_output["meta_info"]["hidden_states"][i] = torch.tensor(
@@ -219,9 +237,9 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
 
 
                 with torch.no_grad():
-                    prob_target = model_target_probe(target_pooling_hidden_information.float().to(f"cuda:{0}"))
+                    prob_target = model_target_probe(target_pooling_hidden_information.float().to(f"cuda:{6}"))
                 with torch.no_grad():
-                    prob_spec = model_spec_probe(pooling_hidden_information.float().to(f"cuda:{0}"))
+                    prob_spec = model_spec_probe(pooling_hidden_information.float().to(f"cuda:{6}"))
 
                 prob_target = prob_target.item()
                 prob_spec = prob_spec.item()
@@ -238,11 +256,21 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                             "max_new_tokens": 2000,
 
                         }
-                        speculative_output = speculative_model.generate(
-                            [generated_text], sampling_params=sampling_params_end, return_hidden_states=True
+                        json_data = {
+                            "text": [generated_text],
+                            "sampling_params": sampling_params_end,
+                            "return_hidden_states": False,
+                        }
+                        speculative_outputs = requests.post(
+                            f"http://0.0.0.0:{8801}/generate",
+                
+                            json=json_data,
+                            timeout=120
                         )
-                        detail.append({'spe_model': speculative_output[0]['text']})
-                        generated_text = generated_text + speculative_output[0]['text']
+          
+                        detail.append({'spe_model': speculative_outputs.json()[0]['text']})
+                        generated_text = generated_text + speculative_outputs.json()[0]['text']
+
 
                         break
                 else:
@@ -259,9 +287,20 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                 # record the usage of the target model;
                 begin = False
                 try_correct_num = try_correct_num + 1
-                target_outputs = target_model.generate(
-                    [generated_text], sampling_params=sampling_params, return_hidden_states=False
+                json_data = {
+                    "text": [generated_text],
+                    "sampling_params": sampling_params,
+                    "return_hidden_states": False,
+                }
+                # print(json_data)
+                target_outputs = requests.post(
+                    f"http://0.0.0.0:{8080}/generate", 
+                    json=json_data,
+                    timeout=120
                 )
+                # print(target_outputs.status_code)
+                # print(target_outputs.text)
+                target_outputs = target_outputs.json()
 
 
                 target_real_output = target_outputs[0]['text']
@@ -276,12 +315,24 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                         target_tokenizer(generated_text, return_tensors="pt")['input_ids'][0,
                         original_target_prompt_len:].tolist()
                     )
-                    speculative_outputs = speculative_model.generate(
-                        [small_input+target_real_output], sampling_params=sampling_params_end, return_hidden_states=False
-                    )
-                    detail.append({'spe_model': speculative_outputs[0]['text']})
 
-                    generated_text = generated_text+speculative_outputs[0]['text']
+                    json_data = {
+                        "text": [small_input+target_real_output],
+                        "sampling_params": sampling_params_end,
+                        "return_hidden_states": False,
+                    }
+                    speculative_outputs = requests.post(
+                        f"http://0.0.0.0:{8801}/generate",
+                        # headers={
+                        #     "Authorization": f"Bearer {TOKEN}",
+                        #     "Content-Type": "application/json",
+                        # },
+                        json=json_data,
+
+                    )
+                    detail.append({'spe_model': speculative_outputs.json()[0]['text']})
+
+                    generated_text = generated_text+speculative_outputs.json()[0]['text']
 
                     break
                 generated_text = generated_text + target_real_output
@@ -392,19 +443,19 @@ if __name__ == "__main__":
     parser.add_argument("--seed", type=int, help="seed", default=301)
     args = parser.parse_args()
     seed_everything(args.seed)
-    target_model = sgl.Engine(model_path=args.target_model,enable_return_hidden_states=True,mem_fraction_static=0.7)
-    speculative_model = sgl.Engine(model_path=args.speculative_model,enable_return_hidden_states=True,mem_fraction_static=0.2)
+    target_model = sgl.Engine(model_path=args.target_model,enable_return_hidden_states=True,mem_fraction_static=0.85)
+    speculative_model = sgl.Engine(model_path=args.speculative_model,enable_return_hidden_states=True,mem_fraction_static=0.1)
 
 
     model_target_probe = SemanticEntropyProbTarget(5120, 2048)
     model_target_probe.load_state_dict(torch.load(f'{args.target_probe}.pt'))
-    model_target_probe = model_target_probe.to('cuda:0')
+    model_target_probe = model_target_probe.to('cuda:7')
     model_target_probe.eval()
 
 
     model_spec_probe = SemanticEntropyProbSpec(1536, 512)
     model_spec_probe.load_state_dict(torch.load(f'{args.speculative_probe}.pt'))
-    model_spec_probe = model_spec_probe.to('cuda:0')
+    model_spec_probe = model_spec_probe.to('cuda:7')
     model_spec_probe.eval()
 
 
