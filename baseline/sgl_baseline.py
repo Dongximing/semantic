@@ -52,13 +52,13 @@ def predict(tokenizer, input_data, model):
     }
     if model =='Qwen/QwQ-32B':
         speculative_outputs = requests.post(
-            "https://lux-2-cyber-09.tailb940e6.ts.net/sglang1/generate",
+            "http://0.0.0.0:{8800}/generate",
             json=json_data,
         )
 
     else:
         speculative_outputs = requests.post(
-            "https://lux-2-cyber-09.tailb940e6.ts.net/sglang2/generate",
+            "http://0.0.0.0:{8801}/generate"",
             json=json_data,
         )
 
