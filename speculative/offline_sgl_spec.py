@@ -82,7 +82,7 @@ class StoppingCriteriaSub(StoppingCriteria):
 
 
 
-def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_tokens,model_target_probe,model_spec_probe,target_model,speculative_model):
+def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_tokens,model_target_probe,model_spec_probe):
         # add prompt before inferencing the model
         messages = [
             {"role": "user", "content": problem + MATH_PROMPT}
@@ -207,7 +207,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                 }
 
                 checking_outputs = requests.post(
-                    f"http://0.0.0.0:{8080}/generate",
+                    f"http://0.0.0.0:{8800}/generate",
                     # headers={
                     #     "Authorization": f"Bearer {TOKEN}",
                     #     "Content-Type": "application/json",
@@ -237,9 +237,9 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
 
 
                 with torch.no_grad():
-                    prob_target = model_target_probe(target_pooling_hidden_information.float().to(f"cuda:{6}"))
+                    prob_target = model_target_probe(target_pooling_hidden_information.float().to(f"cuda:{7}"))
                 with torch.no_grad():
-                    prob_spec = model_spec_probe(pooling_hidden_information.float().to(f"cuda:{6}"))
+                    prob_spec = model_spec_probe(pooling_hidden_information.float().to(f"cuda:{7}"))
 
                 prob_target = prob_target.item()
                 prob_spec = prob_spec.item()
@@ -294,7 +294,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                 }
                 # print(json_data)
                 target_outputs = requests.post(
-                    f"http://0.0.0.0:{8080}/generate", 
+                    f"http://0.0.0.0:{8800}/generate", 
                     json=json_data,
                     timeout=120
                 )
@@ -368,8 +368,6 @@ def process_file_to_json(
     model_target_probe,
     model_spec_probe,
     idx,
-    target_model,
-    speculative_model
 ):
     all_generations = []
     failed_list = []
@@ -383,8 +381,7 @@ def process_file_to_json(
             problem,
             max_new_tokens,
             model_target_probe,
-            model_spec_probe,    target_model,
-    speculative_model
+            model_spec_probe,
         )
 
         # end_time = time.time()
@@ -443,8 +440,8 @@ if __name__ == "__main__":
     parser.add_argument("--seed", type=int, help="seed", default=301)
     args = parser.parse_args()
     seed_everything(args.seed)
-    target_model = sgl.Engine(model_path=args.target_model,enable_return_hidden_states=True,mem_fraction_static=0.85)
-    speculative_model = sgl.Engine(model_path=args.speculative_model,enable_return_hidden_states=True,mem_fraction_static=0.1)
+    # target_model = sgl.Engine(model_path=args.target_model,enable_return_hidden_states=True,mem_fraction_static=0.85)
+    # speculative_model = sgl.Engine(model_path=args.speculative_model,enable_return_hidden_states=True,mem_fraction_static=0.1)
 
 
     model_target_probe = SemanticEntropyProbTarget(5120, 2048)
@@ -527,5 +524,5 @@ if __name__ == "__main__":
         problem = problems_and_answers[idx]['problem']
         answer = problems_and_answers[idx]['answer']
 
-        failed = process_file_to_json(dir_path,  target_tokenizer, speculative_tokenizer,problem,answer,args.max_new_tokens,model_target_probe,model_spec_probe,number,target_model,speculative_model)
+        failed = process_file_to_json(dir_path, target_tokenizer, speculative_tokenizer,problem,answer,args.max_new_tokens,model_target_probe,model_spec_probe,number)
         failed_total.extend(failed)
