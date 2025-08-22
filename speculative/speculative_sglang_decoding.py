@@ -501,11 +501,11 @@ if __name__ == "__main__":
         raise ValueError(f"Unknown task: {args.dataset}")
 
     ds = ds.select(range(args.start_dataset, args.end_dataset))
-    # if args.dataset == "amc23":
-    #     problems_and_answers = [{"problem": item["question"], "answer": item["answer"]} for item in ds]
-    # else:
-    #     problems_and_answers = [{"problem": item["problem"], "answer": item["answer"]} for item in ds]
-    # if args.seed == 123:
+    if args.dataset == "amc23":
+        problems_and_answers = [{"problem": item["question"], "answer": item["answer"]} for item in ds]
+    else:
+        problems_and_answers = [{"problem": item["problem"], "answer": item["answer"]} for item in ds]
+    #if args.seed == 123:
     #     wrong_list = [4, 6, 7, 10, 18, 20, 27, 31]
     # elif args.seed == 456:
     #     wrong_list = [6, 10, 13, 15, 18, 20, 28, 31, 37]
