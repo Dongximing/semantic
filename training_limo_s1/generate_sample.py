@@ -37,7 +37,7 @@ def predict(input_data, temperature):
         "return_hidden_states": True,
     }
     checking_outputs = requests.post(
-        f"http://130.179.30.7:{8801}/generate",
+        f"http://130.179.30.15:{8080}/generate",
         json=json_data_check,
     )
     checking_outputs = checking_outputs.json()
@@ -207,7 +207,7 @@ if __name__ == "__main__":
     parser.add_argument("--start", type=int, help="dataset", default=0)
     parser.add_argument("--end", type=int, help="dataset", default=105)  #
     parser.add_argument("--base_dir", type=str, help="dataset",
-                        default='/data/semantic/training_limo_s1/data_s1_200_science_small')
+                        default='/data/semantic/training_limo_s1/data_s1_200_science')
     args = parser.parse_args()
     # /home/cs/staff/shaowei/semantic/aime
     # /data/ximing/aime
