@@ -97,7 +97,7 @@ if __name__ == '__main__':
     print(f'Number_correct: {number_correct}')
     print(f'Total: {total_number}')
     print(f"wrong_list: {wrong_list}")
-    print(f"small_tokens rate : ", small_tokens/(small_tokens+big_tokens))
+    print(f"large_tokens rate : ", 1-small_tokens/(small_tokens+big_tokens))
     print(f"average time : {whole_time/(args.end-args.start)}")
     print(f'average speed: {number_of_tokens / time}')
     print(f'average whole execution time: {time/number_of_tokens}')

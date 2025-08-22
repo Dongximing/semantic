@@ -64,22 +64,6 @@ class SemanticEntropyProbSpec(nn.Module):
         out = torch.sigmoid(self.fc3(h))
         return out.squeeze(-1)
 
-class StoppingCriteriaSub(StoppingCriteria):
-    def __init__(self, stops, tokenizer, initial_length=None):
-        super().__init__()
-        self.stops = stops
-        self.initial_length = initial_length
-        self.tokenizer = tokenizer
-        self.triggered_stop = None
-
-    def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor):
-        generation = self.tokenizer.decode(input_ids[0][self.initial_length:], skip_special_tokens=False)
-        for stop in self.stops:
-            if stop in generation:
-                self.triggered_stop = stop
-                return True
-        return False
-
 
 
 def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_tokens,model_target_probe,model_spec_probe):
@@ -196,7 +180,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                 if use_target:
                     checking_target_text =  generated_text + speculative_real_output_text
                 else:
-                    checking_target_text =  target_text  + target_tokenizer.decode(target_tokenizer(small_input+speculative_real_output_text,return_tensors="pt")['input_ids'][0,original_target_prompt_len:].tolist())
+                    checking_target_text =  target_text + target_tokenizer.decode(target_tokenizer(small_input+speculative_real_output_text,return_tensors="pt")['input_ids'][0,original_target_prompt_len:].tolist())
 
 
 
@@ -207,11 +191,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                 }
 
                 checking_outputs = requests.post(
-                    f"http://0.0.0.0:{8800}/generate",
-                    # headers={
-                    #     "Authorization": f"Bearer {TOKEN}",
-                    #     "Content-Type": "application/json",
-                    # },
+                    f"http://0.0.0.0:{8806}/generate",
                     json=json_data_check,
                     timeout=120
                 )
@@ -294,7 +274,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                 }
                 # print(json_data)
                 target_outputs = requests.post(
-                    f"http://0.0.0.0:{8800}/generate", 
+                    f"http://0.0.0.0:{8806}/generate", 
                     json=json_data,
                     timeout=120
                 )
@@ -323,10 +303,6 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                     }
                     speculative_outputs = requests.post(
                         f"http://0.0.0.0:{8801}/generate",
-                        # headers={
-                        #     "Authorization": f"Bearer {TOKEN}",
-                        #     "Content-Type": "application/json",
-                        # },
                         json=json_data,
 
                     )
@@ -427,9 +403,9 @@ if __name__ == "__main__":
     parser.add_argument("--dataset", type=str,  help="dataset",default='math-500')#math-500
     parser.add_argument("--target_model", type=str,  help="target_model",default="Qwen/QwQ-32B")
     parser.add_argument("--speculative_model", type=str,  help="speculative_model", default="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
-    parser.add_argument("--data_dir", type=str,  help="data_dir",default='../speculative/sglang_full_size_QwQ-32B_r132_deepseek1.5seed_')
-    parser.add_argument("--start_dataset", type=int, help="the beginning of the dataset",default=105)
-    parser.add_argument("--end_dataset", type=int, help="the end of the dataset",default=110)
+    parser.add_argument("--data_dir", type=str,  help="data_dir",default='../speculative/test_sglang_full_size_QwQ-32B_r132_deepseek1.5seed_')
+    parser.add_argument("--start_dataset", type=int, help="the beginning of the dataset",default=444)
+    parser.add_argument("--end_dataset", type=int, help="the end of the dataset",default=445)
     parser.add_argument("--target_probe", type=str, help="target_probe",default="../probe_weight_big/valid_new_2048_full_size_slg_qwq-32b_math-500_output_last_hidden_list_best_probe_mse")#aime_output_last_hidden_list_best_probe_mse
     parser.add_argument("--speculative_probe", type=str, help="speculative_probe",default="../probe_weight_small/s1_valid_new_deepseekr11.5b_s1_output_last_hidden_list_best_probe_mse")
     parser.add_argument("--target_temperature", type=float, help="target_temperature",default=0.1)
@@ -474,12 +450,16 @@ if __name__ == "__main__":
         ds = load_dataset("HuggingFaceH4/aime_2024", split="train")
     elif args.dataset == "amc23":
         ds = load_dataset("zwhe99/amc23", split="test")
+    elif args.dataset == "gpqa":
+        ds = load_dataset("Idavidrein/gpqa", split="train")
 
     else:
         raise ValueError(f"Unknown task: {args.dataset}")
 
     ds = ds.select(range(args.start_dataset, args.end_dataset))
     if args.dataset == "amc23":
+        problems_and_answers = [{"problem": item["question"], "answer": item["answer"]} for item in ds]
+    elif args.dataset == "gpqa":
         problems_and_answers = [{"problem": item["question"], "answer": item["answer"]} for item in ds]
     else:
         problems_and_answers = [{"problem": item["problem"], "answer": item["answer"]} for item in ds]
@@ -507,18 +487,18 @@ if __name__ == "__main__":
     #
     #
     # [198, 383, 435, 468]
-    if args.dataset == "math-500":
-        common_errors_minus_100 = [10, 28, 54, 104, 140, 164, 208, 224, 322, 344]
-    elif args.dataset == "aime":
-        common_errors_minus_100 = [2,3,13,20,21,28,29]
-    elif args.dataset == "amc23":   
-        common_errors_minus_100 = [18,20]
+    # if args.dataset == "math-500":
+    #     common_errors_minus_100 = [10, 28, 54, 104, 140, 164, 208, 224, 322, 344]
+    # elif args.dataset == "aime":
+    #     common_errors_minus_100 = [2,3,13,20,21,28,29]
+    # elif args.dataset == "amc23":   
+    #     common_errors_minus_100 = [18,20]
 
 
     failed_total = []
     for idx, number in enumerate(tqdm(range(args.start_dataset, args.end_dataset))):
-        if idx in common_errors_minus_100:
-            continue
+        # if idx in common_errors_minus_100:
+        #     continue
         dirname = f'spec_{args.dataset}_{number}'
         dir_path = os.path.join(f"{args.dataset}{args.data_dir}{args.seed}", dirname)
         problem = problems_and_answers[idx]['problem']

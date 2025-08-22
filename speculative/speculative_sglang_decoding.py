@@ -234,9 +234,6 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                 )
                 #print(checking_outputs)
                 checking_outputs = checking_outputs.json()
-
-
-
                 checking_output = checking_outputs[0]
                 for i in range(len(checking_output["meta_info"]["hidden_states"])):
                     checking_output["meta_info"]["hidden_states"][i] = torch.tensor(
@@ -285,10 +282,6 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                         }
                         speculative_outputs = requests.post(
                             f"http://130.179.30.7:{8801}/generate",
-                            # headers={
-                            #     "Authorization": f"Bearer {TOKEN}",
-                            #     "Content-Type": "application/json",
-                            # },
                             json=json_data,
                             timeout=120
                         )
@@ -457,8 +450,8 @@ if __name__ == "__main__":
     parser.add_argument("--target_model", type=str,  help="target_model",default="Qwen/QwQ-32B")
     parser.add_argument("--speculative_model", type=str,  help="speculative_model", default="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
     parser.add_argument("--data_dir", type=str,  help="data_dir",default='/data/semantic/speculative/sglang_spec_result_acm_full_size_QwQ-32B_r132_deepseek1.5seed_')
-    parser.add_argument("--start_dataset", type=int, help="the beginning of the dataset",default=0)
-    parser.add_argument("--end_dataset", type=int, help="the end of the dataset",default=30)
+    parser.add_argument("--start_dataset", type=int, help="the beginning of the dataset",default=444)
+    parser.add_argument("--end_dataset", type=int, help="the end of the dataset",default=445)
     parser.add_argument("--target_probe", type=str, help="target_probe",default="/data/semantic/training/valid_new_2048_full_size_slg_qwq-32b_math-500_output_last_hidden_list_best_probe_mse")#aime_output_last_hidden_list_best_probe_mse
     parser.add_argument("--speculative_probe", type=str, help="speculative_probe",default="/home/shaowei/new_probe/s1_valid_new_1.5bdeepseek_s1_output_last_hidden_list_best_probe_mse")
     parser.add_argument("--target_temperature", type=float, help="target_temperature",default=0.1)
@@ -508,27 +501,27 @@ if __name__ == "__main__":
         raise ValueError(f"Unknown task: {args.dataset}")
 
     ds = ds.select(range(args.start_dataset, args.end_dataset))
-    if args.dataset == "amc23":
-        problems_and_answers = [{"problem": item["question"], "answer": item["answer"]} for item in ds]
-    else:
-        problems_and_answers = [{"problem": item["problem"], "answer": item["answer"]} for item in ds]
-    if args.seed == 123:
-        wrong_list = [4, 6, 7, 10, 18, 20, 27, 31]
-    elif args.seed == 456:
-        wrong_list = [6, 10, 13, 15, 18, 20, 28, 31, 37]
-    elif args.seed == 789:
-        wrong_list = [6, 7, 10, 12, 13, 18, 20, 28,]
+    # if args.dataset == "amc23":
+    #     problems_and_answers = [{"problem": item["question"], "answer": item["answer"]} for item in ds]
+    # else:
+    #     problems_and_answers = [{"problem": item["problem"], "answer": item["answer"]} for item in ds]
+    # if args.seed == 123:
+    #     wrong_list = [4, 6, 7, 10, 18, 20, 27, 31]
+    # elif args.seed == 456:
+    #     wrong_list = [6, 10, 13, 15, 18, 20, 28, 31, 37]
+    # elif args.seed == 789:
+    #     wrong_list = [6, 7, 10, 12, 13, 18, 20, 28,]
 
-    for idx, number in enumerate(tqdm(wrong_list, total=len(wrong_list))):
+    # for idx, number in enumerate(tqdm(wrong_list, total=len(wrong_list))):
     
-        print("doing wrong number:", number)
-        dirname = f'spec_{args.dataset}_{number}'
-        dir_path = os.path.join(f"{args.data_dir}{args.seed}", dirname)
-        # number = number-100
-        problem = problems_and_answers[number]['problem']
-        #print(f"{number}: {problem}")
-        answer = problems_and_answers[number]['answer']
-        process_file_to_json(dir_path, target_tokenizer, speculative_tokenizer, problem,answer,args.max_new_tokens,model_target_probe,model_spec_probe,number)
+    #     print("doing wrong number:", number)
+    #     dirname = f'spec_{args.dataset}_{number}'
+    #     dir_path = os.path.join(f"{args.data_dir}{args.seed}", dirname)
+    #     # number = number-100
+    #     problem = problems_and_answers[number]['problem']
+    #     #print(f"{number}: {problem}")
+    #     answer = problems_and_answers[number]['answer']
+    #     process_file_to_json(dir_path, target_tokenizer, speculative_tokenizer, problem,answer,args.max_new_tokens,model_target_probe,model_spec_probe,number)
 
     # common_errors_minus_100 = [
     #     10, 28, 54, 104, 140, 164, 208,
@@ -539,14 +532,14 @@ if __name__ == "__main__":
     # [198, 383, 435, 468]
 
 
-    # failed_total = []
-    # for idx, number in enumerate(tqdm(range(args.start_dataset, args.end_dataset))):
-    #     # if idx in common_errors_minus_100:
-    #     #     continue
-    #     dirname = f'spec_{args.dataset}_{number}'
-    #     dir_path = os.path.join(f"{args.data_dir}{args.seed}", dirname)
-    #     problem = problems_and_answers[idx]['problem']
-    #     answer = problems_and_answers[idx]['answer']
+    failed_total = []
+    for idx, number in enumerate(tqdm(range(args.start_dataset, args.end_dataset))):
+        # if idx in common_errors_minus_100:
+        #     continue
+        dirname = f'spec_{args.dataset}_{number}'
+        dir_path = os.path.join(f"{args.data_dir}{args.seed}", dirname)
+        problem = problems_and_answers[idx]['problem']
+        answer = problems_and_answers[idx]['answer']
 
-    #     failed = process_file_to_json(dir_path,  target_tokenizer, speculative_tokenizer, problem,answer,args.max_new_tokens,model_target_probe,model_spec_probe,number)
-    #     failed_total.extend(failed)
+        failed = process_file_to_json(dir_path,  target_tokenizer, speculative_tokenizer, problem,answer,args.max_new_tokens,model_target_probe,model_spec_probe,number)
+        failed_total.extend(failed)
