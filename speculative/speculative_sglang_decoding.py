@@ -81,22 +81,6 @@ class SemanticEntropyProbSpec(nn.Module):
         out = torch.sigmoid(self.fc3(h))
         return out.squeeze(-1)
 
-class StoppingCriteriaSub(StoppingCriteria):
-    def __init__(self, stops, tokenizer, initial_length=None):
-        super().__init__()
-        self.stops = stops
-        self.initial_length = initial_length
-        self.tokenizer = tokenizer
-        self.triggered_stop = None
-
-    def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor):
-        generation = self.tokenizer.decode(input_ids[0][self.initial_length:], skip_special_tokens=False)
-        for stop in self.stops:
-            if stop in generation:
-                self.triggered_stop = stop
-                return True
-        return False
-
 
 
 def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_tokens,model_target_probe,model_spec_probe):
@@ -345,10 +329,6 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                     }
                     speculative_outputs = requests.post(
                         f"http://130.179.30.7:{8801}/generate",
-                        # headers={
-                        #     "Authorization": f"Bearer {TOKEN}",
-                        #     "Content-Type": "application/json",
-                        # },
                         json=json_data,
 
                     )

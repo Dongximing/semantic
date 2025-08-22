@@ -487,12 +487,12 @@ if __name__ == "__main__":
     #
     #
     # [198, 383, 435, 468]
-    # if args.dataset == "math-500":
-    #     common_errors_minus_100 = [10, 28, 54, 104, 140, 164, 208, 224, 322, 344]
-    # elif args.dataset == "aime":
-    #     common_errors_minus_100 = [2,3,13,20,21,28,29]
-    # elif args.dataset == "amc23":   
-    #     common_errors_minus_100 = [18,20]
+    if args.dataset == "math-500":
+        common_errors_minus_100 = [10, 28, 54, 104, 140, 164, 208, 224, 322, 344]
+    elif args.dataset == "aime":
+        common_errors_minus_100 = [2,3,13,20,21,28,29]
+    elif args.dataset == "amc23":   
+        common_errors_minus_100 = [18,20]
 
 
     failed_total = []
