@@ -181,10 +181,10 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                 speculative_outputs = requests.post(
                                     f"https://lux-2-cyber-09.tailb940e6.ts.net/sglang2/generate",
                                     json=json_data,
-                    headers={
-                        "Authorization": f"Bearer {TOKEN}",
-                        "Content-Type": "application/json",
-                    },
+                    # headers={
+                    #     "Authorization": f"Bearer {TOKEN}",
+                    #     "Content-Type": "application/json",
+                    # },
                     timeout=120
                                      )
                 speculative_output = speculative_outputs.json()
@@ -225,10 +225,10 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
 
                 checking_outputs = requests.post(
                     f"https://lux-2-cyber-09.tailb940e6.ts.net/sglang1/generate",
-                    headers={
-                        "Authorization": f"Bearer {TOKEN}",
-                        "Content-Type": "application/json",
-                    },
+                    # headers={
+                    #     "Authorization": f"Bearer {TOKEN}",
+                    #     "Content-Type": "application/json",
+                    # },
                     json=json_data_check,
                     timeout=120
                 )
@@ -285,10 +285,10 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                         }
                         speculative_outputs = requests.post(
                             f"https://lux-2-cyber-09.tailb940e6.ts.net/sglang2/generate",
-                            headers={
-                                "Authorization": f"Bearer {TOKEN}",
-                                "Content-Type": "application/json",
-                            },
+                            # headers={
+                            #     "Authorization": f"Bearer {TOKEN}",
+                            #     "Content-Type": "application/json",
+                            # },
                             json=json_data,
                             timeout=120
                         )
@@ -320,10 +320,10 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                 # print(json_data)
                 target_outputs = requests.post(
                     f"https://lux-2-cyber-09.tailb940e6.ts.net/sglang1/generate",
-                    headers={
-                        "Authorization": f"Bearer {TOKEN}",
-                        "Content-Type": "application/json",
-                    },
+                    # headers={
+                    #     "Authorization": f"Bearer {TOKEN}",
+                    #     "Content-Type": "application/json",
+                    # },
                     json=json_data,
                     timeout=120
                 )
@@ -352,10 +352,10 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                     }
                     speculative_outputs = requests.post(
                         f"https://lux-2-cyber-09.tailb940e6.ts.net/sglang2/generate",
-                        headers={
-                            "Authorization": f"Bearer {TOKEN}",
-                            "Content-Type": "application/json",
-                        },
+                        # headers={
+                        #     "Authorization": f"Bearer {TOKEN}",
+                        #     "Content-Type": "application/json",
+                        # },
                         json=json_data,
 
                     )
