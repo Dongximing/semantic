@@ -26,7 +26,9 @@ if __name__ == '__main__':
     number_of_tokens = 0
     whole_time = 0
     whole_length = 0
+    whole_number_of_tokens = 0 
     total_number = args.end - args.start
+    wrong_list = []
 
     for idx, number in enumerate(tqdm(range(args.start, args.end))):
 
@@ -43,30 +45,29 @@ if __name__ == '__main__':
             continue
         with open(json_path, "r", encoding="utf-8") as f:
             generations = json.load(f)
-            #print('generations',generations)
             predict = generations[0]['full_answer']
             whole_time+=generations[0]['execution_time']
-            #print(predict)
-
-
+            whole_number_of_tokens += generations[0]['tokens_full_answer']
             standard = generations[0]['answer']
             whole_length += generations[0]['tokens_full_answer']
         result = check_math_correctness(standard,predict)
         if result:
-
             number_of_tokens += generations[0]['tokens_full_answer']
             time += generations[0]['execution_time']
             number_correct += 1
         else:
-            print(f'Error in {dirname}')
+            wrong_list.append(number)
     print(f'Accuracy: {number_correct / total_number} in {args.dataset}')
     print("Number of tokens: ", number_of_tokens/number_correct)
+    print(f'whole length: {whole_number_of_tokens / total_number} in {args.dataset}')
     print(f'Number_correct: {number_correct}')
     print(f'Total: {total_number}')
-    print(f'average execution time: {time/number_correct}')
-    print(f'average speed: {number_of_tokens / time}')
+    print(f'average correct execution time: {time/number_correct}')
+    print(f'average correct speed: {number_of_tokens / time}')
     print(f'average whole execution time: {whole_time/total_number}')
-    print(f'average whole execution time: {time/number_of_tokens}')
-    print(f'average whole execution time: {whole_time /whole_length }')
+    print(f'average correct execution time per token : {time/number_of_tokens}')
+    print(f'average whole execution time per token: {whole_time /whole_length }')
+    print(f'wrong_list: {wrong_list}')
+    print('\n\n\n\n')
 
 
