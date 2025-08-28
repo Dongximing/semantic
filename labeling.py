@@ -160,9 +160,9 @@ def get_semantic_ids(strings_list, model,prefix, strict_entailment=True, tokeniz
     return semantic_set_ids
 def process_file_to_pickle(json_path, out_pkl_path):
 
-    # tokenizer = AutoTokenizer.from_pretrained("microsoft/deberta-v2-xlarge-mnli")
-    # model = AutoModelForSequenceClassification.from_pretrained(
-    #     "microsoft/deberta-v2-xlarge-mnli").to("cuda:2")
+    tokenizer = AutoTokenizer.from_pretrained("microsoft/deberta-v2-xlarge-mnli")
+    model = AutoModelForSequenceClassification.from_pretrained(
+        "microsoft/deberta-v2-xlarge-mnli").to("cuda:2")
 
     group_size = 21
     with open(json_path, "rb") as f:
@@ -173,61 +173,61 @@ def process_file_to_pickle(json_path, out_pkl_path):
 
 
             group = generations[i:i + group_size]
-            # answer_lists = [g.get('real_answer') for g in group[1:]]
-            #
-            #
-            #
-            # valid_answers = [ans for ans in answer_lists if ans is not None]
-            #
-            # if valid_answers:
-            #     logger.info(f'answer_lists: \n\n\n\n{answer_lists}\n\n\n\n')
-            #
-            #     # cluster_ids_openai = get_semantic_ids(strings_list=valid_answers, model=model,tokenizer=tokenizer,
-            #     #                                prefix=group[0]['most_input_text'],method='openai')
-            #     # print('cluster_ids_openai',cluster_ids_openai)
-            #     cluster_ids = get_semantic_ids(strings_list=valid_answers, model=model, tokenizer=tokenizer,
-            #                                    prefix=group[0]['most_input_text'], method='deberta')
-            #     logger.info(f'cluster_ids: \n\n\n\n{cluster_ids}\n\n\n\n')
-            # else:
-            #     cluster_ids = []
-            #
-            # cluster_gpt = []
-            # cid = 0
-            # for idx, ans in enumerate(answer_lists):
-            #     if ans is None:
-            #         cluster_gpt.append(None)
-            #     else:
-            #         cluster_gpt.append(cluster_ids[cid])
-            #         cid += 1
-            # if len(valid_answers)>0:
-            #     #print('label',cluster_assignment_entropy([c for c in cluster_gpt if c is not None]))
-            #     group[0]['cluster_assignment_entropy_deberta'] = cluster_assignment_entropy([c for c in cluster_gpt if c is not None])
-            # else:
-            #     group[0]['cluster_assignment_entropy_deberta'] = None
-            #
-            #
-            #
-            # for local_idx, g in enumerate(group[1:]):
-            #     g['clustering-gpt-prompty_deberta'] = cluster_gpt[local_idx]
-
-
-            labels = []
-            for local_idx, g in enumerate(group[1:]):
-                label = g['clustering-gpt-prompty_deberta']
-
-                if label is not None:
-                    labels.append(label)
-            print(labels)
-            label_counts = Counter(labels)
-            print(label_counts)
-            total = len(labels)
-            for g in group[1:]:
-                label = g['clustering-gpt-prompty_deberta']
-
-                if label is not None:
-                    g['probability_of_deberta'] = label_counts[label] / total
+            answer_lists = [g.get('real_answer') for g in group[1:]]
+            
+            
+            
+            valid_answers = [ans for ans in answer_lists if ans is not None]
+            
+            if valid_answers:
+                logger.info(f'answer_lists: \n\n\n\n{answer_lists}\n\n\n\n')
+            
+                # cluster_ids_openai = get_semantic_ids(strings_list=valid_answers, model=model,tokenizer=tokenizer,
+                #                                prefix=group[0]['most_input_text'],method='openai')
+                # print('cluster_ids_openai',cluster_ids_openai)
+                cluster_ids = get_semantic_ids(strings_list=valid_answers, model=model, tokenizer=tokenizer,
+                                               prefix=group[0]['most_input_text'], method='deberta')
+                logger.info(f'cluster_ids: \n\n\n\n{cluster_ids}\n\n\n\n')
+            else:
+                cluster_ids = []
+            
+            cluster_gpt = []
+            cid = 0
+            for idx, ans in enumerate(answer_lists):
+                if ans is None:
+                    cluster_gpt.append(None)
                 else:
-                    g['probability_of_deberta'] = None
+                    cluster_gpt.append(cluster_ids[cid])
+                    cid += 1
+            if len(valid_answers)>0:
+                #print('label',cluster_assignment_entropy([c for c in cluster_gpt if c is not None]))
+                group[0]['cluster_assignment_entropy_deberta'] = cluster_assignment_entropy([c for c in cluster_gpt if c is not None])
+            else:
+                group[0]['cluster_assignment_entropy_deberta'] = None
+            
+            
+            
+            for local_idx, g in enumerate(group[1:]):
+                g['clustering-gpt-prompty_deberta'] = cluster_gpt[local_idx]
+
+
+            # labels = []
+            # for local_idx, g in enumerate(group[1:]):
+            #     label = g['clustering-gpt-prompty_deberta']
+
+            #     if label is not None:
+            #         labels.append(label)
+            # print(labels)
+            # label_counts = Counter(labels)
+            # print(label_counts)
+            # total = len(labels)
+            # for g in group[1:]:
+            #     label = g['clustering-gpt-prompty_deberta']
+
+            #     if label is not None:
+            #         g['probability_of_deberta'] = label_counts[label] / total
+            #     else:
+            #         g['probability_of_deberta'] = None
 
 
             all_generations.extend(group)
@@ -247,11 +247,11 @@ def inference_model_pickle(
     for number in tqdm(range(start, end)):
         # if number in wrong:
         #     continue
-        dirname = f'data-500-temp0_{number}'
+        dirname = f'data-877_{number}'
         dir_path = os.path.join(base_dir, dirname)
-        json_path = os.path.join(dir_path, f'new_generations_with_entropy{number}.pkl') #new_generations_
+        json_path = os.path.join(dir_path, f'new_generations_{number}.pkl') #new_generations_ #  new_generations_with_entropy
 
-        out_pkl_path = os.path.join(dir_path, f'new_generations_with_entropy_prob{number}.pkl') #new_generations_with_entropy_prob
+        out_pkl_path = os.path.join(dir_path, f'new_generations_with_entropy{number}.pkl') #new_generations_with_entropy_prob
         if not os.path.exists(json_path):
             logger.warning(f"{json_path} does not exist, skipping.")
             continue
@@ -259,12 +259,18 @@ def inference_model_pickle(
             logger.warning(f"{out_pkl_path} already exists, skipping.")
             continue
 
-        process_file_to_pickle(json_path, out_pkl_path)
+        try:
+            process_file_to_pickle(json_path, out_pkl_path)
+   
+            os.remove(json_path)
+            logger.info(f"Removed {json_path} after processing.")
+        except Exception as e:
+        l   ogger.error(f"Error processing {json_path}: {e}")
 
 if __name__ == "__main__":
     argparse = argparse.ArgumentParser()
-    argparse.add_argument('--base_dir', type=str, default='/data/semantic/qwq32b_math')
+    argparse.add_argument('--base_dir', type=str, default='/shared_workspace_mfs/ximing/data_s1_200_segments_math/data_s1_200_segments_math_small')
     argparse.add_argument('--start', type=int, default=0)
-    argparse.add_argument('--end', type=int, default=25)
+    argparse.add_argument('--end', type=int, default=583)
     args = argparse.parse_args()
     inference_model_pickle(base_dir=args.base_dir, start=args.start, end=args.end)

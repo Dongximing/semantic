@@ -30,7 +30,7 @@ def collect_stop_segments(token_ids, stop_ids):
 def inference_model():
     # 加载并筛选数据
     dataset = load_dataset("simplescaling/s1K-1.1")["train"]
-    filtered_dataset = dataset.filter(lambda x: x['cot_type'] == 'science')
+    filtered_dataset = dataset.filter(lambda x: x['cot_type'] == 'math')
     filtered_dataset = filtered_dataset.map(
         lambda x: {'prompt': x['question'], 'solution': x['deepseek_thinking_trajectory']}
     )
@@ -38,7 +38,7 @@ def inference_model():
     tokenizer = AutoTokenizer.from_pretrained("deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B", skip_special_tokens=True)
 
     # 新建存放子文件的文件夹
-    out_dir = './data_s1_science/'
+    out_dir = './data_s1_math_qwq/'
     os.makedirs(out_dir, exist_ok=True)
 
     for idx, item in enumerate(tqdm(filtered_dataset)):

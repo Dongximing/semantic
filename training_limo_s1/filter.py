@@ -3,8 +3,8 @@ import shutil
 import json
 from tqdm import tqdm
 
-src_dir = './data_s1_science'
-dst_dir = './data_s1_200_science'
+src_dir = './data_s1_math_qwq'
+dst_dir = './data_s1_200_math_qwq'
 os.makedirs(dst_dir, exist_ok=True)
 
 # 遍历所有子文件夹

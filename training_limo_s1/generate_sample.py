@@ -37,7 +37,7 @@ def predict(input_data, temperature):
         "return_hidden_states": True,
     }
     checking_outputs = requests.post(
-        f"http://130.179.30.15:{8080}/generate",
+        f"http://0.0.0.0:{8803}/generate",
         json=json_data_check,
     )
     checking_outputs = checking_outputs.json()
@@ -56,6 +56,7 @@ def predict(input_data, temperature):
 
 
     real_answer = checking_output['text']
+   
     hidden_states = hidden_states[-Completion_tokens:,:] #len *hidden
 
 
@@ -203,11 +204,11 @@ def inference_model_pickle(task_name: str, base_dir,
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model", type=str, default="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
-    parser.add_argument("--start", type=int, help="dataset", default=0)
-    parser.add_argument("--end", type=int, help="dataset", default=105)  #
+    parser.add_argument("--model", type=str, default="qwq")
+    parser.add_argument("--start", type=int, help="dataset", default=800)
+    parser.add_argument("--end", type=int, help="dataset", default=877)  #
     parser.add_argument("--base_dir", type=str, help="dataset",
-                        default='/data/semantic/training_limo_s1/data_s1_200_science')
+                        default='/shared_workspace_mfs/ximing/data_s1_200_math_qwq')
     args = parser.parse_args()
     # /home/cs/staff/shaowei/semantic/aime
     # /data/ximing/aime
