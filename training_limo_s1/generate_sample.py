@@ -21,7 +21,7 @@ AIME_STOP_TOKENS = [
 
 
 
-def predict(input_data, temperature):
+def predict(input_data, model,temperature):
 
 
     sampling_params = {
@@ -36,10 +36,18 @@ def predict(input_data, temperature):
         "sampling_params": sampling_params,
         "return_hidden_states": True,
     }
-    checking_outputs = requests.post(
-        f"http://130.179.30.15:{8080}/generate",
-        json=json_data_check,
-    )
+    if model == "DeepSeek-R1-Distill-Qwen-32B":
+        checking_outputs = requests.post(
+            f"http://0.0.0.0:{8002}/generate",
+            json=json_data_check,
+        )
+    elif model == "DeepSeek-R1-Distill-Qwen-1.5B":
+
+         checking_outputs = requests.post(
+            f"http://0.0.0.0:{8005}/generate",
+            json=json_data_check,
+        )
+
     checking_outputs = checking_outputs.json()
     checking_output = checking_outputs[0]
     for i in range(len(checking_output["meta_info"]["hidden_states"])):
@@ -52,6 +60,7 @@ def predict(input_data, temperature):
             for i in checking_output["meta_info"]["hidden_states"]
         ]
     )
+    print(hidden_states.shape)
     Completion_tokens = checking_output['meta_info']['completion_tokens']
 
 
@@ -73,7 +82,7 @@ def predict(input_data, temperature):
 
 
 
-def process_file_to_pickle(json_path, out_pkl_path,  num_generations):
+def process_file_to_pickle(json_path, out_pkl_path,  num_generations,model):
     with open(json_path, 'r', encoding='utf-8') as f:
         alldata = json.load(f)
     all_generations = []
@@ -97,12 +106,12 @@ def process_file_to_pickle(json_path, out_pkl_path,  num_generations):
                     (
                         most_real_answer,
                         ( most_last_token_hidden,most_sec_last_input,most_last_tok_bef_gen_input,most_output_hidden_states)
-                    ) = predict( input_text,temperature=0.1)
+                    ) = predict( input_text,model,temperature=0.1)
                 else:
                     (
                         real_answer,
                         ( last_token_hidden,sec_last_input,last_tok_bef_gen_input,output_hidden_states)
-                    ) = predict(input_text,temperature=0.6)
+                    ) = predict(input_text,model,temperature=0.6)
 
 
                 if i == 0:
@@ -180,7 +189,7 @@ def process_file_to_pickle(json_path, out_pkl_path,  num_generations):
 # wail /home/cs/staff/shaowei/hf/math-result_left
 # quail /data/ximing/math-result_left
 def inference_model_pickle(task_name: str, base_dir,
-                           start=9, end=50, num_generations=20):
+                           start=9, end=50, num_generations=20,model="DeepSeek-R1-Distill-Qwen-32B"):
     for number in tqdm(range(start, end)):
 
         dirname = f'data-877_{number}'
@@ -196,22 +205,22 @@ def inference_model_pickle(task_name: str, base_dir,
             continue
 
         print(f"[Info] Processing file: {json_path}")
-        process_file_to_pickle(json_path, out_pkl_path, num_generations)
+        process_file_to_pickle(json_path, out_pkl_path, num_generations,model)
 
     print("[Info] Processing completed.")
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model", type=str, default="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
-    parser.add_argument("--start", type=int, help="dataset", default=0)
-    parser.add_argument("--end", type=int, help="dataset", default=105)  #
+    parser.add_argument("--model", type=str, default="DeepSeek-R1-Distill-Qwen-32B", help="model name")
+    parser.add_argument("--start", type=int, help="dataset", default=100)
+    parser.add_argument("--end", type=int, help="dataset", default=200)  #
     parser.add_argument("--base_dir", type=str, help="dataset",
-                        default='/data/semantic/training_limo_s1/data_s1_200_science')
+                        default='/shared_workspace_mfs/ximing/data_s1_200_segments_math')  # /home/cs/staff/shaowei/semantic/aime
     args = parser.parse_args()
     # /home/cs/staff/shaowei/semantic/aime
     # /data/ximing/aime
     # /home/cs/staff/shaowei/semantic/deepseek-32b_r1_awq_math
-    inference_model_pickle(task_name='science', base_dir=args.base_dir,
-                           start=args.start, end=args.end)
+    inference_model_pickle(task_name='math', base_dir=args.base_dir,
+                           start=args.start, end=args.end,model=args.model)
     print("done")

@@ -43,15 +43,19 @@ class SemanticEntropyModel(nn.Module):
     def __init__(self, input_dim, hidden_dim, dropout=0.3):
         super().__init__()
         self.fc1 = nn.Linear(input_dim, hidden_dim)
-        self.dropout = nn.Dropout(dropout)
-        self.fc2 = nn.Linear(hidden_dim, 256)
-        self.fc3 = nn.Linear(256, 1)
+        self.dropout1 = nn.Dropout(dropout)
+        self.fc2 = nn.Linear(hidden_dim, 512)
+        self.dropout2 = nn.Dropout(dropout)
+        self.fc3 = nn.Linear(512, 256)   # 新增的一层
+        self.fc4 = nn.Linear(256, 1)
 
     def forward(self, x):
         h = F.relu(self.fc1(x))
-        h = self.dropout(h)
+        h = self.dropout1(h)
         h = F.relu(self.fc2(h))
-        out = torch.sigmoid(self.fc3(h))
+        h = self.dropout2(h)
+        h = F.relu(self.fc3(h))
+        out = torch.sigmoid(self.fc4(h))
         return out.squeeze(-1)
 
 
@@ -149,7 +153,7 @@ def train_probe_regression(
             best_epoch = epoch
             early_stop_counter = 0
             best_preds = preds.copy()
-            torch.save(model.state_dict(), f's1_valid_new_{model_name}_{dataset_name}_{method}_best_probe_mse.pt')
+            torch.save(model.state_dict(), f's1_valid_h100_{model_name}_{dataset_name}_{method}_best_probe_mse.pt')
         else:
             early_stop_counter += 1
             if early_stop_counter >= early_stop_rounds:
@@ -170,7 +174,7 @@ def train_probe_regression(
     return history
 
 def create_Xs_and_ys(datasets, scores, val_test_splits=[0.2, 0.1], random_state=42):
-    X = np.array([d[0] for d in datasets])
+    X = np.array([d[0].to(torch.float16).cpu().numpy() for d in datasets])
     y = np.array(scores)
 
     valid_size, test_size = val_test_splits
@@ -194,7 +198,7 @@ def create_Xs_and_ys(datasets, scores, val_test_splits=[0.2, 0.1], random_state=
 def main(dataset,method,data_dir,model_name):
 
     start = 0
-    end = 877
+    end = 175
     X, Y = [], []
     #skip_numbers = [1, 9, 10, 17, 18, 19, 21, 26, 30, 32, 36, 41, 43, 62, 64, 71, 80, 82, 88, 94, 96, 97]
     #skip_numbers = [1, 9, 11, 17, 18, 19, 21, 25, 26, 41, 43, 50, 51, 63, 64, 66, 71, 80, 82, 88, 94, 96, 97]
@@ -226,7 +230,7 @@ def main(dataset,method,data_dir,model_name):
 
     # 模型与训练
     INPUT_DIM = X_train.shape[1]
-    HIDDEN_DIM = 2048
+    HIDDEN_DIM = 1024
     model = SemanticEntropyModel(INPUT_DIM, HIDDEN_DIM)
     history = train_probe_regression(
         model, train_loader, val_loader, epochs=100, lr=1e-3,
@@ -235,7 +239,7 @@ def main(dataset,method,data_dir,model_name):
     )
 
 
-    model.load_state_dict(torch.load(f's1_valid_new_{model_name}_{dataset}_{method}_best_probe_mse.pt'))
+    model.load_state_dict(torch.load(f's1_valid_h100_{model_name}_{dataset}_{method}_best_probe_mse.pt'))
     model.eval()
     all_preds, all_targets = [], []
     with torch.no_grad():
@@ -269,10 +273,10 @@ def main(dataset,method,data_dir,model_name):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     # "last_hidden_state", "last_second_token", "last_input_token", "output_last_hidden_list"
-    parser.add_argument("--dataset", type=str, required=True, help="dataset")
-    parser.add_argument("--model", type=str, required=True, help="model")
-    parser.add_argument("--method", type=str, required=True, help="method for X")
-    parser.add_argument("--data_dir", type=str, required=True, help="method for X")
+    parser.add_argument("--dataset", type=str,  help="dataset",default="math")
+    parser.add_argument("--model", type=str,  help="model",default="r1.5b")
+    parser.add_argument("--method", type=str,  help="method for X",default='output_last_hidden_list')
+    parser.add_argument("--data_dir", type=str,  help="method for X")
     args = parser.parse_args()
     main(args.dataset,args.method,args.data_dir,args.model)
 
