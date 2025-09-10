@@ -1,0 +1,28 @@
+nohup: ignoring input
+Traceback (most recent call last):
+  File "/home/ximing/myenv/lib/python3.10/site-packages/transformers/utils/hub.py", line 478, in cached_files
+    hf_hub_download(
+  File "/home/ximing/myenv/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/home/ximing/myenv/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1010, in hf_hub_download
+    return _hf_hub_download_to_cache_dir(
+  File "/home/ximing/myenv/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1127, in _hf_hub_download_to_cache_dir
+    os.makedirs(os.path.dirname(blob_path), exist_ok=True)
+  File "/usr/lib/python3.10/os.py", line 225, in makedirs
+    mkdir(name, mode)
+PermissionError: [Errno 13] Permission denied: '/home/ximing/.cache/huggingface/hub/models--deepseek-ai--DeepSeek-R1-Distill-Qwen-32B/blobs'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/ximing/semantic/speculative/offline_sgl_spec3.py", line 446, in <module>
+    target_tokenizer = transformers.AutoTokenizer.from_pretrained(
+  File "/home/ximing/myenv/lib/python3.10/site-packages/transformers/models/auto/tokenization_auto.py", line 1058, in from_pretrained
+    tokenizer_config = get_tokenizer_config(pretrained_model_name_or_path, **kwargs)
+  File "/home/ximing/myenv/lib/python3.10/site-packages/transformers/models/auto/tokenization_auto.py", line 890, in get_tokenizer_config
+    resolved_config_file = cached_file(
+  File "/home/ximing/myenv/lib/python3.10/site-packages/transformers/utils/hub.py", line 321, in cached_file
+    file = cached_files(path_or_repo_id=path_or_repo_id, filenames=[filename], **kwargs)
+  File "/home/ximing/myenv/lib/python3.10/site-packages/transformers/utils/hub.py", line 523, in cached_files
+    raise OSError(
+OSError: PermissionError at /home/ximing/.cache/huggingface/hub/models--deepseek-ai--DeepSeek-R1-Distill-Qwen-32B/blobs when downloading deepseek-ai/DeepSeek-R1-Distill-Qwen-32B. Check cache directory permissions. Common causes: 1) another user is downloading the same model (please wait); 2) a previous download was canceled and the lock file needs manual removal.
