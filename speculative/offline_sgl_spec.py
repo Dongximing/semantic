@@ -92,6 +92,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
             "temperature": 0.6,
             "top_p": 0.95,
             "max_new_tokens": 500,
+            "min_new_tokens": 50,
             "stop_token_ids": [4710, 382, 1447, 271, 692, 1939, 2533, 3593],
             "no_stop_trim": True
         }
@@ -413,7 +414,7 @@ if __name__ == "__main__":
     parser.add_argument("--dataset", type=str,  help="dataset",default='math-500')#math-500
     parser.add_argument("--target_model", type=str,  help="target_model",default="deepseek-ai/DeepSeek-R1-Distill-Qwen-32B")
     parser.add_argument("--speculative_model", type=str,  help="speculative_model", default="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
-    parser.add_argument("--data_dir", type=str,  help="data_dir",default='../speculative/redo_new_sglang_full_size_DeepSeek-R1-Distill-32B_deepseek1.5seed_')
+    parser.add_argument("--data_dir", type=str,  help="data_dir",default='../speculative/min_50_new_token_sglang_full_size_DeepSeek-R1-Distill-32B_deepseek1.5seed_')
     parser.add_argument("--start_dataset", type=int, help="the beginning of the dataset",default=444)
     parser.add_argument("--end_dataset", type=int, help="the end of the dataset",default=445)
     parser.add_argument("--target_probe", type=str, help="target_probe",default="/home/ximing/semantic/speculative/weight/s1_valid_h100_32r1b-200data_math_output_last_hidden_list_best_probe_mse")#aime_output_last_hidden_list_best_probe_mse
@@ -466,7 +467,7 @@ if __name__ == "__main__":
     ds = ds.select(range(args.start_dataset, args.end_dataset))
     if args.dataset == "amc23":
         problems_and_answers = [{"problem": item["question"], "answer": item["answer"]} for item in ds]
-    elif args.dataset == "gpqa":
+    elif args.dataset == "gpqa": 
         problems_and_answers = [{"problem": item["question"], "answer": item["answer"]} for item in ds]
     else:
         problems_and_answers = [{"problem": item["problem"], "answer": item["answer"]} for item in ds]

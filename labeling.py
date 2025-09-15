@@ -141,23 +141,7 @@ def get_semantic_ids(strings_list, model,prefix, strict_entailment=True, tokeniz
         return semantically_equivalent
 
     # Initialise all ids with -1.
-    semantic_set_ids = [-1] * len(strings_list)
-    # Keep track of current id.
-    next_id = 0
-    for i, string1 in enumerate(strings_list):
-        # Check if string1 already has an id assigned.
-        if semantic_set_ids[i] == -1:
-            # If string1 has not been assigned an id, assign it next_id.
-            semantic_set_ids[i] = next_id
-            for j in range(i+1, len(strings_list)):
-                # Search through all remaining strings. If they are equivalent to string1, assign them the same id.
-                if are_equivalent(string1, strings_list[j],prefix):
-                    semantic_set_ids[j] = next_id
-            next_id += 1
-
-    assert -1 not in semantic_set_ids
-
-    return semantic_set_ids
+nvtop
 def process_file_to_pickle(json_path, out_pkl_path):
 
     tokenizer = AutoTokenizer.from_pretrained("microsoft/deberta-v2-xlarge-mnli")

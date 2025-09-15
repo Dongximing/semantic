@@ -32,7 +32,6 @@ def speculative_accept(qi, pi, threshold_min=0.7):
     return r < threshold
 
 
-
 class SemanticEntropyProbTarget(nn.Module):
     def __init__(self, input_dim, hidden_dim, dropout=0.3):
         super().__init__()
@@ -92,6 +91,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
         sampling_params = {
             "temperature": 0.6,
             "top_p": 0.95,
+            "min_new_tokens": 50,
             "max_new_tokens": 500,
             "stop_token_ids": [4710, 382, 1447, 271, 692, 1939, 2533, 3593],
             "no_stop_trim": True
@@ -148,7 +148,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                 }
                 speculative_outputs_start = time.time()
                 speculative_outputs = requests.post(
-                                    f"http://0.0.0.0:{8005}/generate",
+                                    f"http://0.0.0.0:{8006}/generate",
                                     json=json_data,
                     timeout=120
                                      )
@@ -168,8 +168,8 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                     ]
                 )
                 Completion_tokens = speculative_output['meta_info']['completion_tokens']
-                pooling_hidden_information = pooling_hidden_information[-1:, :]
-                #pooling_hidden_information = pooling_hidden_information.mean(dim=0, keepdim=True)
+                pooling_hidden_information = pooling_hidden_information[-Completion_tokens:, :]
+                pooling_hidden_information = pooling_hidden_information.mean(dim=0, keepdim=True)
 
                 if len(speculative_real_output_text) ==0:
                     break
@@ -187,7 +187,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
 
                 json_data_check = {
                     "text": [checking_target_text],
-                    "sampling_params": {"temperature": 0.6,"max_new_tokens": 0},
+                    "sampling_params": {"temperature": 0.1,"max_new_tokens": 1},
                     "return_hidden_states": True,
                 }
                 checking_start = time.time()
@@ -212,11 +212,11 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                 )
 
                 computing_prob_start = time.time()
-                target_pooling_hidden_information = hidden_states[-1:, :]
+                target_pooling_hidden_information = hidden_states[-target_tokenizer_input_len-1:-1, :]
                 # print('target_pooling_hidden_information shape', target_pooling_hidden_information.shape)
                 if target_pooling_hidden_information.shape[0] == 0:
                     break
-                #target_pooling_hidden_information = target_pooling_hidden_information.mean(dim=0, keepdim=True) # len *hidden
+                target_pooling_hidden_information = target_pooling_hidden_information.mean(dim=0, keepdim=True) # len *hidden
                 #print('target_tokenizer_input_len',target_tokenizer_input_len)
 
 
@@ -229,7 +229,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                 prob_spec = prob_spec.item()
                 computing_prob_time = time.time()-computing_prob_start
                 time_detial.append({'computing_prob_time':computing_prob_time})
-                if speculative_accept(round(prob_target,3),round(prob_spec,3),threshold_min=0.7):
+                if speculative_accept(prob_target,prob_spec):
                     detail.append({'spe_model':speculative_real_output_text})
                     correct_spe_number +=1
                     use_target = False
@@ -248,7 +248,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                         }
                         speculative_outputs_ending_start = time.time()
                         speculative_outputs = requests.post(
-                            f"http://0.0.0.0:{8005}/generate",
+                            f"http://0.0.0.0:{8006}/generate",
                 
                             json=json_data,
                             timeout=120
@@ -309,7 +309,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                     }
                     traget_ending_start = time.time()
                     speculative_outputs = requests.post(
-                        f"http://0.0.0.0:{8005}/generate",
+                        f"http://0.0.0.0:{8006}/generate",
                         json=json_data,
 
                     )
@@ -414,11 +414,11 @@ if __name__ == "__main__":
     parser.add_argument("--dataset", type=str,  help="dataset",default='math-500')#math-500
     parser.add_argument("--target_model", type=str,  help="target_model",default="deepseek-ai/DeepSeek-R1-Distill-Qwen-32B")
     parser.add_argument("--speculative_model", type=str,  help="speculative_model", default="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
-    parser.add_argument("--data_dir", type=str,  help="data_dir",default='../speculative/onlylasthidden_withouthreshold_new_accept_orginal_combine_fulltraining_lable_DeepSeek-R1-Distill-32B_deepseek1.5seed_')
+    parser.add_argument("--data_dir", type=str,  help="data_dir",default='../speculative/min_50_new_token_sglang_full_size_DeepSeek-R1-Distill-32B_deepseek1.5seed_')
     parser.add_argument("--start_dataset", type=int, help="the beginning of the dataset",default=444)
     parser.add_argument("--end_dataset", type=int, help="the end of the dataset",default=445)
-    parser.add_argument("--target_probe", type=str, help="target_probe",default="/home/ximing/semantic/training_limo_s1/s1_valid_h100_32b_math_last_hidden_state_best_probe_mse")#aime_output_last_hidden_list_best_probe_mse
-    parser.add_argument("--speculative_probe", type=str, help="speculative_probe",default="/home/ximing/semantic/training_limo_s1/s1_valid_h100_1.5b_math_last_hidden_state_best_probe_mse")
+    parser.add_argument("--target_probe", type=str, help="target_probe",default="/home/ximing/semantic/speculative/weight/s1_valid_h100_32r1b-200data_math_output_last_hidden_list_best_probe_mse")#aime_output_last_hidden_list_best_probe_mse
+    parser.add_argument("--speculative_probe", type=str, help="speculative_probe",default="/home/ximing/semantic/speculative/weight/s1_valid_h100_r1.5b_math_output_last_hidden_list_best_probe_mse")
     parser.add_argument("--target_temperature", type=float, help="target_temperature",default=0.1)
     parser.add_argument("--speculative_temperature", type=float, help="speculative_temperature",default=0.6)
     parser.add_argument("--max_new_tokens", type=int, help="max_new_tokens",default=14000)
@@ -427,9 +427,6 @@ if __name__ == "__main__":
     parser.add_argument("--seed", type=int, help="seed", default=301)
     args = parser.parse_args()
     seed_everything(args.seed)
-    # target_model = sgl.Engine(model_path=args.target_model,enable_return_hidden_states=True,mem_fraction_static=0.85)
-    # speculative_model = sgl.Engine(model_path=args.speculative_model,enable_return_hidden_states=True,mem_fraction_static=0.1)
-
 
     model_target_probe = SemanticEntropyProbTarget(5120, 2048)
     model_target_probe.load_state_dict(torch.load(f'{args.target_probe}.pt'))
@@ -437,7 +434,7 @@ if __name__ == "__main__":
     model_target_probe.eval()
 
 
-    model_spec_probe = SemanticEntropyProbSpec(1536, 2048)
+    model_spec_probe = SemanticEntropyProbSpec(1536, 1024)
     model_spec_probe.load_state_dict(torch.load(f'{args.speculative_probe}.pt'))
     model_spec_probe = model_spec_probe.to('cuda:4')
     model_spec_probe.eval()
@@ -475,12 +472,18 @@ if __name__ == "__main__":
     else:
         problems_and_answers = [{"problem": item["problem"], "answer": item["answer"]} for item in ds]
 
+    if args.seed == 3210:
+        wrong_list =  [100, 101, 103, 110, 126, 136, 138, 154, 164, 166, 168, 198, 204, 205, 206, 213, 217, 219, 236, 240, 264, 284, 285, 286, 288, 292, 297, 298, 303, 306, 308, 324, 326, 340, 347, 352, 365, 369, 381, 383, 392, 396, 400, 402, 409, 419, 422, 425, 432, 444, 456, 460]
+    if args.seed == 6540:
+        wrong_list = [100, 101, 103, 104, 108, 110, 113, 128, 154, 166, 189, 198, 204, 205, 217, 219, 236, 239, 240, 264, 267, 284, 286, 295, 298, 301, 306, 308, 320, 323, 324, 327, 340, 349, 352, 369, 383, 392, 394, 398, 400, 403, 419, 422, 425]
+    if args.seed == 9870:
+        wrong_list = [100, 101, 103, 108, 110, 119, 126, 128, 138, 145, 152, 154, 158, 166, 170, 198, 204, 205, 206, 217, 222, 232, 236, 240, 246, 264, 284, 285, 286, 295, 296, 298, 302, 303, 306, 308, 324, 332, 340, 351]
 
     failed_total = []
-    for idx, number in enumerate(tqdm(range(args.start_dataset, args.end_dataset))):
+    for idx, number in enumerate(tqdm(wrong_list)):
         dirname = f'spec_{args.dataset}_{number}'
         dir_path = os.path.join(f"{args.dataset}{args.data_dir}{args.seed}", dirname)
-        problem = problems_and_answers[idx]['problem']
-        answer = problems_and_answers[idx]['answer']
+        problem = problems_and_answers[number-100]['problem']
+        answer = problems_and_answers[number-100]['answer']
         failed = process_file_to_json(dir_path, target_tokenizer, speculative_tokenizer,problem,answer,args.max_new_tokens,model_target_probe,model_spec_probe,number)
         failed_total.extend(failed)
