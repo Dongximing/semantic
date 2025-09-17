@@ -91,8 +91,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
         sampling_params = {
             "temperature": 0.6,
             "top_p": 0.95,
-            "max_new_tokens": 500,
-            "min_new_tokens": 50,
+            "max_new_tokens": 500,            
             "stop_token_ids": [4710, 382, 1447, 271, 692, 1939, 2533, 3593],
             "no_stop_trim": True
         }
@@ -110,16 +109,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
 
 
         def checking_is_finish(generated_ids, max_new_tokens, use_target):
-            if use_target:
-                if len(target_tokenizer.encode(generated_ids))- original_target_prompt_len < max_new_tokens:
-                    return True
-                else:
-                    return False
-            else:
-                if len(target_tokenizer.encode(generated_ids))- original_target_prompt_len < max_new_tokens:
-                    return True
-                else:
-                    return False
+            return len(target_tokenizer.encode(generated_ids)) - original_target_prompt_len < max_new_tokens
 
         speculative_real_output_text = ''
         prob_target = 0
@@ -197,7 +187,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                     timeout=120
                 )
                 checking_time = time.time()-checking_start
-                time_detial.append({'checking_time':checking_time})
+                time_detial.append({'checking_time':checking_time,'Completion_tokens':Completion_tokens,'average_token_ckecing':checking_time/Completion_tokens})
                 checking_outputs = checking_outputs.json()
                 checking_output = checking_outputs[0]
                 for i in range(len(checking_output["meta_info"]["hidden_states"])):
@@ -221,9 +211,8 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
 
 
                 with torch.no_grad():
-                    prob_target = model_target_probe(target_pooling_hidden_information.float().to(f"cuda:{7}"))
-                with torch.no_grad():
-                    prob_spec = model_spec_probe(pooling_hidden_information.float().to(f"cuda:{7}"))
+                    prob_target = model_target_probe(target_pooling_hidden_information.float().to(f"cuda:{1}"))
+                    prob_spec = model_spec_probe(pooling_hidden_information.float().to(f"cuda:{1}"))
 
                 prob_target = prob_target.item()
                 prob_spec = prob_spec.item()
@@ -249,7 +238,6 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                         speculative_outputs_ending_start = time.time()
                         speculative_outputs = requests.post(
                             f"http://0.0.0.0:{8008}/generate",
-                
                             json=json_data,
                             timeout=120
                         )
@@ -301,7 +289,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                         target_tokenizer(generated_text, return_tensors="pt")['input_ids'][0,
                         original_target_prompt_len:].tolist()
                     )
-                    
+                    detail.append({'target_model': target_real_output})
                     json_data = {
                         "text": [small_input+target_real_output],
                         "sampling_params": sampling_params_end,
@@ -414,7 +402,7 @@ if __name__ == "__main__":
     parser.add_argument("--dataset", type=str,  help="dataset",default='math-500')#math-500
     parser.add_argument("--target_model", type=str,  help="target_model",default="deepseek-ai/DeepSeek-R1-Distill-Qwen-32B")
     parser.add_argument("--speculative_model", type=str,  help="speculative_model", default="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
-    parser.add_argument("--data_dir", type=str,  help="data_dir",default='../speculative/min_50_new_token_sglang_full_size_DeepSeek-R1-Distill-32B_deepseek1.5seed_')
+    parser.add_argument("--data_dir", type=str,  help="data_dir",default='../get_checking_time/min_50_new_token_sglang_full_size_DeepSeek-R1-Distill-32B_deepseek1.5seed_')
     parser.add_argument("--start_dataset", type=int, help="the beginning of the dataset",default=444)
     parser.add_argument("--end_dataset", type=int, help="the end of the dataset",default=445)
     parser.add_argument("--target_probe", type=str, help="target_probe",default="/home/ximing/semantic/speculative/weight/s1_valid_h100_32r1b-200data_math_output_last_hidden_list_best_probe_mse")#aime_output_last_hidden_list_best_probe_mse
@@ -430,13 +418,13 @@ if __name__ == "__main__":
 
     model_target_probe = SemanticEntropyProbTarget(5120, 2048)
     model_target_probe.load_state_dict(torch.load(f'{args.target_probe}.pt'))
-    model_target_probe = model_target_probe.to('cuda:7')
+    model_target_probe = model_target_probe.to('cuda:1')
     model_target_probe.eval()
 
 
     model_spec_probe = SemanticEntropyProbSpec(1536, 1024)
     model_spec_probe.load_state_dict(torch.load(f'{args.speculative_probe}.pt'))
-    model_spec_probe = model_spec_probe.to('cuda:7')
+    model_spec_probe = model_spec_probe.to('cuda:1')
     model_spec_probe.eval()
 
 
