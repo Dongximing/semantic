@@ -23,8 +23,8 @@ SPEC_probe = 1
 def speculative_accept(qi, pi, threshold_min=0.7):
 
     ratio = qi / pi if pi > 0 else 0
-    if ratio < threshold_min:
-        return False
+    # if ratio < threshold_min:
+    #     return False
     threshold = min(1.0, ratio)
     r = random.uniform(0, 1)
     return r < threshold
@@ -94,7 +94,7 @@ STOP_TOKENS = [
 
 def generate_with_partial_kv(
         model, tokenizer, input_ids, past_key_values=None, max_new_tokens=10,
-        temperature=1.0, top_k=50, top_p=0.95,checking = False,quick_end = False
+        temperature=1.0, top_k=50, top_p=0.95,checking = False,quick_end = False,first_time = False
 ):
 
 
@@ -194,10 +194,10 @@ def generate_with_partial_kv(
         print("output_last_hidden_list.shape", output_last_hidden_list.shape)
         output_last_hidden_list = output_last_hidden_list.mean(dim=0, keepdim=True)  # [1,D]
     if checking:
-        # print('checking_past_key_values',checking_past_key_values[0][0].shape[2])
+        print('checking_past_key_values',checking_past_key_values[0][0].shape[2])
         return None,checking_past_key_values,output_last_hidden_list
     else:
-        return generated_ids, past_key_values,output_last_hidden_list,checking_past_key_values
+        return generated_ids, past_key_values,output_last_hidden_list
 
 
 def speculative_decoding(target_model, target_tokenizer, speculative_model,speculative_tokenizer,problem,max_new_tokens,model_target_probe,model_spec_probe):
@@ -233,7 +233,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
         # 'begin' implicate the first time we start the speculative model.
         detail = []
         begin = True
-        use_target, quick_end = True, False
+        use_target,first_time_small, quick_end = True, True, False
         previous_original_target_text_len = original_target_text_len
 
         def checking_is_finish(generated_ids, max_new_tokens, use_target):
@@ -261,38 +261,44 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                     real_target_output = target_tokenizer.decode(generated_ids[0,previous_original_target_text_len:],skip_special_tokens=True)
                     detail.append({'target_model':real_target_output,'why_is_not_good':speculative_real_output,"score_target":round(prob_target, 2),"score_spec":round(prob_spec, 2)})
                     speculative_tokenizer_input = speculative_tokenizer(real_target_output, return_tensors="pt")['input_ids'].to(speculative_model.device)
+                    special_token_id = 151646
+                    if speculative_tokenizer_input[0, 0].item() == special_token_id:
+                        ##print('yes there is special_token_id')
+                        speculative_tokenizer_input = speculative_tokenizer_input[:, 1:]
                     generated_ids = torch.cat([start_speculative_text_inputs,speculative_tokenizer_input], dim=-1)
+                    
                 small_input_ids = generated_ids
 
                ## small model generation
                 previous_spec_kv = copy.deepcopy(spec_kv)
                 if quick_end:
-                    print('speculative_tokenizer token in 269:\n',speculative_tokenizer.decode(small_input_ids[0]))
-                    generated_ids, checking_spec_kv,pooling_hidden_information,_ = generate_with_partial_kv(
+                    ##print('speculative_tokenizer token in 269:\n',speculative_tokenizer.decode(small_input_ids[0]))
+
+                    generated_ids, checking_spec_kv,pooling_hidden_information = generate_with_partial_kv(
                     speculative_model, speculative_tokenizer, small_input_ids , spec_kv,
-                    max_new_tokens=2000, temperature=0.6, top_k=50, top_p=0.95,checking=False,quick_end = True
+                    max_new_tokens=2000, temperature=0.6, top_k=50, top_p=0.95,checking=False,quick_end = True,first_time = False
                 )
-                    print('speculative_tokenizer token in 274:\n',speculative_tokenizer.decode(generated_ids[0]))
+                    ##print('speculative_tokenizer token in 274:\n',speculative_tokenizer.decode(generated_ids[0]))
                     break
                 else:
-                    print('speculative_tokenizer token in 277:\n',speculative_tokenizer.decode(small_input_ids[0]))
-                    print('lenth speculative_tokenizer token in 279:\n',small_input_ids.shape[1])
-                    if spec_kv is not None and spec_kv[0][0] is not None:
-                        print('spec_kv[0][0].shape[2] in 278', spec_kv[0][0].shape[2])
-                    else:
-                        print('spec_kv is None or spec_kv[0][0] is None at first time')
-
-
-                    checking_generated_ids, checking_spec_kv,pooling_hidden_information,checking_past_key_values = generate_with_partial_kv(
+                    ##print('speculative_tokenizer token in 277:\n',speculative_tokenizer.decode(small_input_ids[0]))
+                    ##print('lenth speculative_tokenizer token in 279:\n',small_input_ids.shape[1])
+                    # if spec_kv is not None and spec_kv[0][0] is not None:
+                    #     print('spec_kv[0][0].shape[2] in 278', spec_kv[0][0].shape[2])
+                    # else:
+                    #     print('spec_kv is None or spec_kv[0][0] is None at first time')
+                    
+                    
+                    checking_generated_ids, checking_spec_kv,pooling_hidden_information = generate_with_partial_kv(
                         speculative_model, speculative_tokenizer, small_input_ids , spec_kv,
-                        max_new_tokens=SPECULATIVE_OUTPUT_LENGTH, temperature=0.6, top_k=50, top_p=0.95,checking=False
+                        max_new_tokens=SPECULATIVE_OUTPUT_LENGTH, temperature=0.6, top_k=50, top_p=0.95,checking=False,
                     )
                     speculative_real_output = speculative_tokenizer.decode(checking_generated_ids[0,small_input_ids.shape[1]:])
-                    print("checking_generated_ids[0,small_input_ids.shape[1]:]\n",speculative_real_output)
+                    ##print("checking_generated_ids[0,small_input_ids.shape[1]:]\n",speculative_real_output)
                     special_token_id = 151646
                     target_tokenizer_input = target_tokenizer(speculative_real_output, return_tensors="pt")['input_ids']
                     if target_tokenizer_input[0, 0].item() == special_token_id:
-                        print('yes there is special_token_id')
+                        ##print('yes there is special_token_id')
                         target_tokenizer_input = target_tokenizer_input[:, 1:]
 
                     target_tokenizer_input = target_tokenizer_input.to(
@@ -311,16 +317,15 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
           
 
                     previous = copy.deepcopy(valid_tgt_kv)
-                    print('checking target kv cache',previous[0][0].shape[2])
+                    # print('checking target kv cache',previous[0][0].shape[2])
                     _, checking_tgt_kv, target_pooling_hidden_information = generate_with_partial_kv(
                     target_model, target_tokenizer, checking_target_ids , valid_tgt_kv,
                         max_new_tokens=0, temperature=0.6, top_k=50, top_p=0.95, checking=True
                     )
-                    print('checking target kv cache after getting hidden state',checking_tgt_kv[0][0].shape[2])
+                    # print('checking target kv cache after getting hidden state',checking_tgt_kv[0][0].shape[2])
 
                     with torch.no_grad():
                         prob_target = model_target_probe(target_pooling_hidden_information.float().to(f"cuda:{1}"))
-                    with torch.no_grad():
                         prob_spec = model_spec_probe(pooling_hidden_information.float().to(f"cuda:{1}"))
                     # if the prob of the target model is higher than the prob of the speculative model, we use the speculative model to keep going.
                     # if the prob of the target model is lower than the prob of the speculative model, we use the target model to generate the current part.
@@ -348,7 +353,7 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
                         else:
                             generated_ids = previous_checking_target_ids
 
-                        spec_kv = copy.deepcopy(checking_past_key_values)
+                        spec_kv = copy.deepcopy(previous_spec_kv)
                         valid_tgt_kv = copy.deepcopy(previous)
 
                         use_target = True
@@ -361,16 +366,17 @@ def speculative_decoding(target_model, target_tokenizer, speculative_model,specu
             if use_target:
                 # record the usage of the target model;
                 begin = False
+                print('--------------------------------rollback--------------')
                 try_correct_num = try_correct_num + 1
                 print('generated_ids token in 326:\n',target_tokenizer.decode(generated_ids[0]))
                 print('len(generated_ids[0]) in 327',generated_ids.shape[1])
-                if valid_tgt_kv is not None and valid_tgt_kv[0][0] is not None:
-                        print('valid_tgt_kv[0][0].shape[2] in 368', valid_tgt_kv[0][0].shape[2])
-                else:
+                # if valid_tgt_kv is not None and valid_tgt_kv[0][0] is not None:
+                #         print('valid_tgt_kv[0][0].shape[2] in 368', valid_tgt_kv[0][0].shape[2])
+                # else:
                         print('valid_tgt_kv is None or valid_tgt_kv[0][0] is None at first time')
 
                 previous_original_target_text_len = generated_ids.shape[1]
-                generated_ids, valid_tgt_kv,_,_ = generate_with_partial_kv(
+                generated_ids, valid_tgt_kv,_= generate_with_partial_kv(
                 target_model, target_tokenizer, generated_ids.to(f"cuda:{TARGET_model}"), valid_tgt_kv,
                     max_new_tokens=change_tokens, temperature=0.6, top_k=50, top_p=0.95,checking=False
                 )
@@ -441,12 +447,12 @@ def process_file_to_json(dir_path, target_model, target_tokenizer,speculative_mo
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", type=str,  help="dataset",default='amc23')#math-500
+    parser.add_argument("--dataset", type=str,  help="dataset",default='math-500')#math-500
     parser.add_argument("--target_model", type=str,  help="target_model",default="deepseek-ai/DeepSeek-R1-Distill-Qwen-32B")
     parser.add_argument("--speculative_model", type=str,  help="speculative_model", default="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
     parser.add_argument("--data_dir", type=str,  help="data_dir",default='../hf/min_50_new_token_sglang_full_size_DeepSeek-R1-Distill-32B_deepseek1.5seed_')
     parser.add_argument("--start_dataset", type=int, help="the beginning of the dataset",default=0)
-    parser.add_argument("--end_dataset", type=int, help="the end of the dataset",default=1)
+    parser.add_argument("--end_dataset", type=int, help="the end of the dataset",default=50)
     parser.add_argument("--target_probe", type=str, help="target_probe",default="/home/ximing/semantic/speculative/weight/s1_valid_h100_32r1b-200data_math_output_last_hidden_list_best_probe_mse")#aime_output_last_hidden_list_best_probe_mse
     parser.add_argument("--speculative_probe", type=str, help="speculative_probe",default="/home/ximing/semantic/speculative/weight/s1_valid_h100_r1.5b_math_output_last_hidden_list_best_probe_mse")
     parser.add_argument("--target_temperature", type=float, help="target_temperature",default=0.1)
@@ -516,7 +522,7 @@ if __name__ == "__main__":
 
     for idx, number in enumerate(tqdm(range(args.start_dataset, args.end_dataset))):
         dirname = f'spec_{args.dataset}_{number}'
-        dir_path = os.path.join(f"{args.data_dir}{args.seed}", dirname)
+        dir_path = os.path.join(f"{args.dataset}{args.data_dir}{args.seed}", dirname)
         problem = problems_and_answers[idx]['problem']
         answer = problems_and_answers[idx]['answer']
         process_file_to_json(dir_path, target_model, target_tokenizer,speculative_model, speculative_tokenizer, problem,answer,args.max_new_tokens,model_target_probe,model_spec_probe)

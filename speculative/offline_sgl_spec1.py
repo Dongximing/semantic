@@ -25,8 +25,6 @@ import requests
 def speculative_accept(qi, pi, threshold_min=0.7):
 
     ratio = qi / pi if pi > 0 else 0
-    if ratio < threshold_min:
-        return False
     threshold = min(1.0, ratio)
     r = random.uniform(0, 1)
     return r < threshold
@@ -91,14 +89,15 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
         sampling_params = {
             "temperature": 0.6,
             "top_p": 0.95,
-            "min_new_tokens": 50,
             "max_new_tokens": 500,
+            "min_new_tokens": 200,
             "stop_token_ids": [4710, 382, 1447, 271, 692, 1939, 2533, 3593],
             "no_stop_trim": True
         }
 
         start_target_model_inputs = target_tokenizer(target_text, return_tensors="pt")
         original_target_prompt_len = start_target_model_inputs["input_ids"].shape[1]
+
 
         start_speculative_text_inputs = speculative_tokenizer(speculative_text, return_tensors="pt")
         original_speculative_text_len = start_speculative_text_inputs["input_ids"].shape[1]
@@ -110,16 +109,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
 
 
         def checking_is_finish(generated_ids, max_new_tokens, use_target):
-            if use_target:
-                if len(target_tokenizer.encode(generated_ids))- original_target_prompt_len < max_new_tokens:
-                    return True
-                else:
-                    return False
-            else:
-                if len(target_tokenizer.encode(generated_ids))- original_target_prompt_len < max_new_tokens:
-                    return True
-                else:
-                    return False
+            return len(target_tokenizer.encode(generated_ids)) - original_target_prompt_len < max_new_tokens
 
         speculative_real_output_text = ''
         prob_target = 0
@@ -133,8 +123,6 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                 use_target = True
             if not begin:
                 if use_target:
-                    detail.append({'target_model': target_real_output, 'why_is_not_gd': speculative_real_output_text,
-                                   "score_target": round(prob_target, 2), "score_spec": round(prob_spec, 2)})
                     small_input = speculative_text + target_tokenizer.decode(
                         target_tokenizer(generated_text, return_tensors="pt")['input_ids'][0,
                         original_target_prompt_len:].tolist()
@@ -146,9 +134,10 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                     "sampling_params": sampling_params,
                     "return_hidden_states": True,
                 }
+                ####print("small input in 138 \n", small_input)
                 speculative_outputs_start = time.time()
                 speculative_outputs = requests.post(
-                                    f"http://0.0.0.0:{8007}/generate",
+                                    f"http://0.0.0.0:{8004}/generate",
                                     json=json_data,
                     timeout=120
                                      )
@@ -156,6 +145,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                 time_detial.append({'speculative_outputs_time':speculative_outputs_time})
                 speculative_output = speculative_outputs.json()
                 speculative_real_output_text = speculative_output[0]['text']
+                ##print("speculative_real_output_text in 149 \n", speculative_real_output_text)
                 speculative_output = speculative_output[0]
                 for i in range(len(speculative_output["meta_info"]["hidden_states"])):
                     speculative_output["meta_info"]["hidden_states"][i] = torch.tensor(
@@ -184,7 +174,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                     checking_target_text =  target_text + target_tokenizer.decode(target_tokenizer(small_input+speculative_real_output_text,return_tensors="pt")['input_ids'][0,original_target_prompt_len:].tolist())
 
 
-
+                ##print("checking_target_text in 188 \n", checking_target_text)
                 json_data_check = {
                     "text": [checking_target_text],
                     "sampling_params": {"temperature": 0.1,"max_new_tokens": 1},
@@ -192,7 +182,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                 }
                 checking_start = time.time()
                 checking_outputs = requests.post(
-                    f"http://0.0.0.0:{8002}/generate",
+                    f"http://0.0.0.0:{8003}/generate",
                     json=json_data_check,
                     timeout=120
                 )
@@ -213,23 +203,22 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
 
                 computing_prob_start = time.time()
                 target_pooling_hidden_information = hidden_states[-target_tokenizer_input_len-1:-1, :]
-                # print('target_pooling_hidden_information shape', target_pooling_hidden_information.shape)
+                # ##print('target_pooling_hidden_information shape', target_pooling_hidden_information.shape)
                 if target_pooling_hidden_information.shape[0] == 0:
                     break
                 target_pooling_hidden_information = target_pooling_hidden_information.mean(dim=0, keepdim=True) # len *hidden
-                #print('target_tokenizer_input_len',target_tokenizer_input_len)
+                ###print('target_tokenizer_input_len',target_tokenizer_input_len)
 
 
                 with torch.no_grad():
-                    prob_target = model_target_probe(target_pooling_hidden_information.float().to(f"cuda:{6}"))
-                with torch.no_grad():
-                    prob_spec = model_spec_probe(pooling_hidden_information.float().to(f"cuda:{6}"))
+                    prob_target = model_target_probe(target_pooling_hidden_information.float().to(f"cuda:{3}"))
+                    prob_spec = model_spec_probe(pooling_hidden_information.float().to(f"cuda:{3}"))
 
                 prob_target = prob_target.item()
                 prob_spec = prob_spec.item()
                 computing_prob_time = time.time()-computing_prob_start
                 time_detial.append({'computing_prob_time':computing_prob_time})
-                if speculative_accept(prob_target,prob_spec):
+                if speculative_accept(0.2,0.1):
                     detail.append({'spe_model':speculative_real_output_text})
                     correct_spe_number +=1
                     use_target = False
@@ -248,8 +237,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                         }
                         speculative_outputs_ending_start = time.time()
                         speculative_outputs = requests.post(
-                            f"http://0.0.0.0:{8007}/generate",
-                
+                            f"http://0.0.0.0:{8004}/generate",
                             json=json_data,
                             timeout=120
                         )
@@ -261,9 +249,9 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
 
                         break
                 else:
-                    generated_text = target_text + speculative_tokenizer.decode(
-    speculative_tokenizer(small_input, return_tensors="pt")['input_ids'][0,original_speculative_text_len :].tolist()
-)
+                    generated_text = checking_target_text
+                    
+
                     use_target = True
 
 
@@ -271,25 +259,40 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
             # Let the target model finish the generation.
             # At the beginning of the generation, Let the target model generate the first part of completion.
             if use_target:
+                
                 # record the usage of the target model;
                 begin = False
                 try_correct_num = try_correct_num + 1
+                ##print("generated_text in 265 \n", generated_text)
+                sampling_params_ig = {
+            "temperature": 0.6,
+            "top_p": 0.95,
+            "max_new_tokens": 50,
+            "min_new_tokens": 20,
+            "stop_token_ids": [4710, 382, 1447, 271, 692, 1939, 2533, 3593],
+            "no_stop_trim": True
+        }
+
                 json_data = {
                     "text": [generated_text],
-                    "sampling_params": sampling_params,
+                    "sampling_params": sampling_params_ig,
                     "return_hidden_states": False,
                 }
-                # print(json_data)
+                # ##print(json_data)
                 target_outputs_start = time.time()
                 target_outputs = requests.post(
-                    f"http://0.0.0.0:{8002}/generate", 
+                    f"http://0.0.0.0:{8003}/generate", 
                     json=json_data,
                     timeout=120
                 )
+                
                 target_outputs_time = time.time()-target_outputs_start
                 time_detial.append({'target_outputs_time':target_outputs_time})
                 target_outputs = target_outputs.json()
                 target_real_output = target_outputs[0]['text']
+                detail.append({'target_model': target_real_output, 'why_is_not_gd': speculative_real_output_text,
+                                   "score_target": round(prob_target, 2), "score_spec": round(prob_spec, 2)})
+                ##print("target_real_output in 282 \n", target_real_output)
                 if '</think>' in target_real_output:
                     sampling_params_end = {
                         "temperature": 0.6,
@@ -301,7 +304,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                         target_tokenizer(generated_text, return_tensors="pt")['input_ids'][0,
                         original_target_prompt_len:].tolist()
                     )
-                    
+                    detail.append({'target_model': target_real_output})
                     json_data = {
                         "text": [small_input+target_real_output],
                         "sampling_params": sampling_params_end,
@@ -309,7 +312,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                     }
                     traget_ending_start = time.time()
                     speculative_outputs = requests.post(
-                        f"http://0.0.0.0:{8007}/generate",
+                        f"http://0.0.0.0:{8004}/generate",
                         json=json_data,
 
                     )
@@ -317,7 +320,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                     time_detial.append({'traget_ending_time':traget_ending_time})
                     detail.append({'spe_model': speculative_outputs.json()[0]['text']})
 
-                    generated_text = generated_text+speculative_outputs.json()[0]['text']
+                    generated_text = small_input+ target_real_output+ speculative_outputs.json()[0]['text']
 
                     break
                 generated_text = generated_text + target_real_output
@@ -326,7 +329,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
           
 
                 if target_tokenizer.eos_token_id in target_tokenizer.encode(target_real_output):
-                    print('target_tokenizer.eos_token_id 281',target_tokenizer.eos_token_id)
+                    ##print('target_tokenizer.eos_token_id 281',target_tokenizer.eos_token_id)
                     break
 
         
@@ -372,7 +375,7 @@ def process_file_to_json(
         # end_time = time.time()
 
         generated_text, try_correct_num, correct_spe_number, detail, length_of_output,times,total_time,time_detial = result
-        print("real_answer\n", generated_text)
+        ##print("real_answer\n", generated_text)
 
         all_generations.append({
             "input_text": problem,
@@ -394,8 +397,8 @@ def process_file_to_json(
             json.dump(all_generations, f, ensure_ascii=False, indent=2)
 
     except Exception as e:
-        print(f"[Index {idx}] Failed with error: {e}")
-        print("Sleeping 10 seconds before moving on...")
+        ##print(f"[Index {idx}] Failed with error: {e}")
+        ##print("Sleeping 10 seconds before moving on...")
         time.sleep(1)
         failed_list.append(idx)
     return failed_list
@@ -414,7 +417,7 @@ if __name__ == "__main__":
     parser.add_argument("--dataset", type=str,  help="dataset",default='math-500')#math-500
     parser.add_argument("--target_model", type=str,  help="target_model",default="deepseek-ai/DeepSeek-R1-Distill-Qwen-32B")
     parser.add_argument("--speculative_model", type=str,  help="speculative_model", default="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
-    parser.add_argument("--data_dir", type=str,  help="data_dir",default='../speculative/min_50_new_token_sglang_full_size_DeepSeek-R1-Distill-32B_deepseek1.5seed_')
+    parser.add_argument("--data_dir", type=str,  help="data_dir",default='../test222221/new_token_sglang_full_size_DeepSeek-R1-Distill-32B_deepseek1.5seed_')
     parser.add_argument("--start_dataset", type=int, help="the beginning of the dataset",default=444)
     parser.add_argument("--end_dataset", type=int, help="the end of the dataset",default=445)
     parser.add_argument("--target_probe", type=str, help="target_probe",default="/home/ximing/semantic/speculative/weight/s1_valid_h100_32r1b-200data_math_output_last_hidden_list_best_probe_mse")#aime_output_last_hidden_list_best_probe_mse
@@ -430,13 +433,13 @@ if __name__ == "__main__":
 
     model_target_probe = SemanticEntropyProbTarget(5120, 2048)
     model_target_probe.load_state_dict(torch.load(f'{args.target_probe}.pt'))
-    model_target_probe = model_target_probe.to('cuda:6')
+    model_target_probe = model_target_probe.to('cuda:3')
     model_target_probe.eval()
 
 
     model_spec_probe = SemanticEntropyProbSpec(1536, 1024)
     model_spec_probe.load_state_dict(torch.load(f'{args.speculative_probe}.pt'))
-    model_spec_probe = model_spec_probe.to('cuda:6')
+    model_spec_probe = model_spec_probe.to('cuda:3')
     model_spec_probe.eval()
 
 
@@ -467,7 +470,7 @@ if __name__ == "__main__":
     ds = ds.select(range(args.start_dataset, args.end_dataset))
     if args.dataset == "amc23":
         problems_and_answers = [{"problem": item["question"], "answer": item["answer"]} for item in ds]
-    elif args.dataset == "gpqa":
+    elif args.dataset == "gpqa": 
         problems_and_answers = [{"problem": item["question"], "answer": item["answer"]} for item in ds]
     else:
         problems_and_answers = [{"problem": item["problem"], "answer": item["answer"]} for item in ds]
