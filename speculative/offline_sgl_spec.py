@@ -92,6 +92,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
             "temperature": 0.6,
             "top_p": 0.95,
             "max_new_tokens": 500,
+            "min_new_tokens": 50,
             "stop_token_ids": [4710, 382, 1447, 271, 692, 1939, 2533, 3593],
             "no_stop_trim": True
         }
@@ -188,7 +189,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                     timeout=120
                 )
                 checking_time = time.time()-checking_start
-                time_detial.append({'checking_time':checking_time})
+                time_detial.append({'checking_time':checking_time,'Completion_tokens':Completion_tokens,'average_token_ckecing':checking_time/Completion_tokens})
                 checking_outputs = checking_outputs.json()
                 checking_output = checking_outputs[0]
                 for i in range(len(checking_output["meta_info"]["hidden_states"])):
@@ -238,7 +239,8 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                         }
                         speculative_outputs_ending_start = time.time()
                         speculative_outputs = requests.post(
-                            f"http://0.0.0.0:{8002}/generate",
+                            f"http://0.0.0.0:{8008}/generate",
+                
                             json=json_data,
                             timeout=120
                         )
@@ -402,7 +404,7 @@ if __name__ == "__main__":
     parser.add_argument("--dataset", type=str,  help="dataset",default='math-500')#math-500
     parser.add_argument("--target_model", type=str,  help="target_model",default="deepseek-ai/DeepSeek-R1-Distill-Qwen-32B")
     parser.add_argument("--speculative_model", type=str,  help="speculative_model", default="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
-    parser.add_argument("--data_dir", type=str,  help="data_dir",default='../new_method/new_token_sglang_full_size_DeepSeek-R1-Distill-32B_deepseek1.5seed_')
+    parser.add_argument("--data_dir", type=str,  help="data_dir",default='../speculative/min_50_new_token_sglang_full_size_DeepSeek-R1-Distill-32B_deepseek1.5seed_')
     parser.add_argument("--start_dataset", type=int, help="the beginning of the dataset",default=444)
     parser.add_argument("--end_dataset", type=int, help="the end of the dataset",default=445)
     parser.add_argument("--target_probe", type=str, help="target_probe",default="/home/ximing/semantic/speculative/weight/s1_valid_h100_32r1b-200data_math_output_last_hidden_list_best_probe_mse")#aime_output_last_hidden_list_best_probe_mse

@@ -9,10 +9,10 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 import argparse
 import numpy as np
 import random
-import torch
 import time
 
 MATH_PROMPT = "\nPlease reason step by step, and put your final answer within \\boxed{}."
+
 def seed_everything(seed):
     torch.manual_seed(seed)
     np.random.seed(seed)
@@ -23,57 +23,69 @@ def seed_everything(seed):
         torch.backends.cudnn.deterministic = True
         torch.backends.cudnn.benchmark = False
 
-
 NUMBER = 0
 
-def predict(tokenizer, model, input_data, temperature):
+def predict(tokenizer, model, assistant_tokenizer, assistant_model, input_data, temperature):
     max_new_tokens = 14000
     messages = [
         {"role": "user", "content": input_data + MATH_PROMPT}
     ]
-    # apply the pattern for speculative model and target model
-    target_text = tokenizer.apply_chat_template(  # big
+    # Apply the pattern for speculative model and target model
+    target_text = tokenizer.apply_chat_template(
         messages,
         tokenize=False,
         add_generation_prompt=True
     )
-    inputs = tokenizer(target_text, return_tensors="pt").to(f"cuda:{5}")
+    # Ensure attention_mask is generated and padding is handled
+    inputs = tokenizer(
+        target_text,
+        return_tensors="pt",
+        padding=True,
+        return_attention_mask=True
+    ).to("cuda:7")
     initial_length = len(inputs['input_ids'][0])
-    start_time  = time.time()
+    start_time = time.time()
     with torch.no_grad():
         outputs = model.generate(
-            **inputs,
+            input_ids=inputs['input_ids'],
+            attention_mask=inputs['attention_mask'],  # Explicitly pass attention_mask
+            assistant_model=assistant_model,
+            tokenizer=tokenizer,
+            assistant_tokenizer=assistant_tokenizer,
             max_new_tokens=max_new_tokens,
             temperature=temperature,
             do_sample=True,
+            pad_token_id=tokenizer.pad_token_id  # Explicitly set pad_token_id
         )
     execution_time = time.time() - start_time
 
     full_answer = tokenizer.decode(outputs[0], skip_special_tokens=True)
     full_answer_len = outputs.shape[1]
     real_answer = tokenizer.decode(outputs[0][initial_length:], skip_special_tokens=True)
-    return real_answer, full_answer, input_data,full_answer_len,execution_time
+    return real_answer, full_answer, input_data, full_answer_len, execution_time
 
-def process_file_to_json(save_path, tokenizer, model, problem, answer):
+def process_file_to_json(dir_path, model, assistant_model, tokenizer, assistant_tokenizer, problem, answer, save_path):
     all_generations = []
     try:
-        real_answer, full_answer, input_data,full_answer_len,execution_time = predict(tokenizer, model, problem, temperature=0.6)
+        real_answer, full_answer, input_data, full_answer_len, execution_time = predict(
+            tokenizer, model, assistant_tokenizer, assistant_model, problem, temperature=0.6
+        )
         all_generations.append({
             "input_text": input_data,
             "real_answer": real_answer,
             "full_answer": full_answer,
-            "tokens_full_answer":full_answer_len,
+            "tokens_full_answer": full_answer_len,
             "answer": answer,
-            "execution_time":execution_time
+            "execution_time": execution_time
         })
     except Exception as e:
-        print('ggggg')
+        print(f"Error processing problem: {traceback.format_exc()}")
         all_generations.append({
             "input_text": problem,
             "real_answer": None,
             "full_answer": None,
             "answer": answer,
-            "tokens_full_answer":None,
+            "tokens_full_answer": None,
             "error": traceback.format_exc()
         })
 
@@ -82,19 +94,18 @@ def process_file_to_json(save_path, tokenizer, model, problem, answer):
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(all_generations, f, ensure_ascii=False, indent=2)
 
-def inference_model_pickle(task_name: str, model, tokenizer, base_dir,
-                           start=0, end=10,seed=42):
+def inference_model_pickle(task_name: str, model, assistant_model, assistant_tokenizer, tokenizer, base_dir, start=0, end=10, seed=42):
     if task_name == "math-500":
         ds = load_dataset("HuggingFaceH4/MATH-500")['test']
     elif task_name == "aime":
         ds = load_dataset("HuggingFaceH4/aime_2024", split="train")
-    elif args.dataset == "amc23":
+    elif task_name == "amc23":
         ds = load_dataset("zwhe99/amc23", split="test")
     else:
         raise ValueError(f"Unknown task: {task_name}")
 
     ds = ds.select(range(start, end))
-    if args.dataset == "amc23":
+    if task_name == "amc23":
         problems_and_answers = [{"problem": item["question"], "answer": item["answer"]} for item in ds]
     else:
         problems_and_answers = [{"problem": item["problem"], "answer": item["answer"]} for item in ds]
@@ -102,45 +113,64 @@ def inference_model_pickle(task_name: str, model, tokenizer, base_dir,
     for idx, number in enumerate(tqdm(range(start, end))):
         dirname = f'seed_{seed}_baseline_{task_name}_{number}'
         dir_path = os.path.join(base_dir, dirname)
+        save_path = dir_path  # Define save_path as dir_path for each problem
         problem = problems_and_answers[idx]['problem']
         answer = problems_and_answers[idx]['answer']
-        process_file_to_json(dir_path, tokenizer, model, problem, answer)
+        process_file_to_json(dir_path, model, assistant_model, tokenizer, assistant_tokenizer, problem, answer, save_path)
 
     print("[Info] Processing completed.")
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", type=str, help="dataset", default='math-500')  # math-500
+    parser.add_argument("--dataset", type=str, help="dataset", default='math-500')
     parser.add_argument("--seed", type=int, help="seed", default=123)
-    parser.add_argument("--model", type=str, help="model", default="deepseek-ai/DeepSeek-R1-Distill-Qwen-32B")
+    parser.add_argument("--model", type=str, help="model", default="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
     parser.add_argument("--start", type=int, help="start", default=0)
     parser.add_argument("--end", type=int, help="end", default=50)
     args = parser.parse_args()
     seed_everything(args.seed)
+
     if args.model == "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B":
         model_name = "DeepSeek-R1-Distill-Qwen-32B"
-    if args.model == "unsloth/DeepSeek-R1-Distill-Qwen-32B-bnb-4bit":
-        model_name = "DeepSeek-R1-Distill-Qwen-32B-bnb-4bit"
+    elif args.model == "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B":
+        model_name = "DeepSeek-R1-Distill-Qwen-1.5B"
     elif args.model == "Qwen/QwQ-32B-AWQ":
         model_name = "QwQ-32B-AWQ"
     elif args.model == "Qwen/QwQ-32B":
         model_name = "QwQ-32B"
-    tokenizer = AutoTokenizer.from_pretrained(
-        pretrained_model_name_or_path=args.model,
-        trust_remote_code=True
-    )
+    else:
+        model_name = args.model
+
+    assistant_checkpoint = 'deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B'
+    checkpoint = 'deepseek-ai/DeepSeek-R1-Distill-Qwen-32B'
+    assistant_tokenizer = AutoTokenizer.from_pretrained(assistant_checkpoint)
+    tokenizer = AutoTokenizer.from_pretrained(checkpoint)
+
+    # Set pad_token_id to eos_token_id to avoid warning
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
+    if assistant_tokenizer.pad_token is None:
+        assistant_tokenizer.pad_token = assistant_tokenizer.eos_token
+
     model = AutoModelForCausalLM.from_pretrained(
-        pretrained_model_name_or_path=args.model,
+        checkpoint,
         torch_dtype=torch.float16,
         device_map="auto",
-        max_memory={5:"79GB"}
+        max_memory={7: "70GB"}
+    )
+    assistant_model = AutoModelForCausalLM.from_pretrained(
+        assistant_checkpoint,
+        torch_dtype=torch.float16,
+        device_map="auto",
+        max_memory={7: "9GB"}
     )
 
-    base_dir = f'/home/ximing/{model_name}_{args.dataset}_seed{args.seed}/'
+    base_dir = f'/home/ximing/spec_hf{model_name}_{args.dataset}_seed{args.seed}/'
     inference_model_pickle(
         task_name=args.dataset,
         model=model,
+        assistant_model=assistant_model,
+        assistant_tokenizer=assistant_tokenizer,
         tokenizer=tokenizer,
         base_dir=base_dir,
         start=args.start,

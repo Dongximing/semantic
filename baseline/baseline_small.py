@@ -37,7 +37,7 @@ def predict(tokenizer, model, input_data, temperature):
         tokenize=False,
         add_generation_prompt=True
     )
-    inputs = tokenizer(target_text, return_tensors="pt").to(f"cuda:{5}")
+    inputs = tokenizer(target_text, return_tensors="pt").to(f"cuda:{6}")
     initial_length = len(inputs['input_ids'][0])
     start_time  = time.time()
     with torch.no_grad():
@@ -113,15 +113,15 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str, help="dataset", default='math-500')  # math-500
     parser.add_argument("--seed", type=int, help="seed", default=123)
-    parser.add_argument("--model", type=str, help="model", default="deepseek-ai/DeepSeek-R1-Distill-Qwen-32B")
+    parser.add_argument("--model", type=str, help="model", default="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
     parser.add_argument("--start", type=int, help="start", default=0)
     parser.add_argument("--end", type=int, help="end", default=50)
     args = parser.parse_args()
     seed_everything(args.seed)
     if args.model == "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B":
         model_name = "DeepSeek-R1-Distill-Qwen-32B"
-    if args.model == "unsloth/DeepSeek-R1-Distill-Qwen-32B-bnb-4bit":
-        model_name = "DeepSeek-R1-Distill-Qwen-32B-bnb-4bit"
+    if args.model == "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B":
+        model_name = "DeepSeek-R1-Distill-Qwen-1.5B"
     elif args.model == "Qwen/QwQ-32B-AWQ":
         model_name = "QwQ-32B-AWQ"
     elif args.model == "Qwen/QwQ-32B":
@@ -134,7 +134,7 @@ if __name__ == "__main__":
         pretrained_model_name_or_path=args.model,
         torch_dtype=torch.float16,
         device_map="auto",
-        max_memory={5:"79GB"}
+        max_memory={6:"79GB"}
     )
 
     base_dir = f'/home/ximing/{model_name}_{args.dataset}_seed{args.seed}/'
