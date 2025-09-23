@@ -22,7 +22,7 @@ TARGET_probe = 2
 SPEC_probe = 3
 import requests
 
-def speculative_accept(qi, pi, threshold_min=0.3):
+def speculative_accept(qi, pi, threshold_min=0.9):
 
     ratio = qi / pi if pi > 0 else 0
     if ratio < threshold_min:
@@ -73,7 +73,6 @@ class SemanticEntropyProbSpec(nn.Module):
 
 def speculative_decoding(llm_big,llm_small,target_tokenizer,speculative_tokenizer,problem,max_new_tokens,model_target_probe,model_spec_probe):
         # add prompt before inferencing the model
-        print(problem)
         time_detial = []
         messages = [
             {"role": "user", "content": problem + MATH_PROMPT}
@@ -227,8 +226,8 @@ def speculative_decoding(llm_big,llm_small,target_tokenizer,speculative_tokenize
 
 
                 with torch.no_grad():
-                    prob_target = model_target_probe(target_pooling_hidden_information.float().to(f"cuda:{1}"))
-                    prob_spec = model_spec_probe(pooling_hidden_information.float().to(f"cuda:{1}"))
+                    prob_target = model_target_probe(target_pooling_hidden_information.float().to(f"cuda:{7}"))
+                    prob_spec = model_spec_probe(pooling_hidden_information.float().to(f"cuda:{7}"))
 
                 prob_target = prob_target.item()
                 prob_spec = prob_spec.item()
@@ -408,12 +407,12 @@ def process_file_to_json(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", type=str,  help="dataset",default='aime')#math-500
+    parser.add_argument("--dataset", type=str,  help="dataset",default='math-500')#math-500
     parser.add_argument("--target_model", type=str,  help="target_model",default="deepseek-ai/DeepSeek-R1-Distill-Qwen-32B")
     parser.add_argument("--speculative_model", type=str,  help="speculative_model", default="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
     parser.add_argument("--data_dir", type=str,  help="data_dir",default='../speculative/rrecord_timefull_size_DeepSeek-R1-Distill-32B_deepseek1.5seed_')
-    parser.add_argument("--start_dataset", type=int, help="the beginning of the dataset",default=0)
-    parser.add_argument("--end_dataset", type=int, help="the end of the dataset",default=30)
+    parser.add_argument("--start_dataset", type=int, help="the beginning of the dataset",default=100)
+    parser.add_argument("--end_dataset", type=int, help="the end of the dataset",default=500)
     parser.add_argument("--target_probe", type=str, help="target_probe",default="/home/ximing/semantic/speculative/weight/s1_valid_h100_32r1b-200data_math_output_last_hidden_list_best_probe_mse")#aime_output_last_hidden_list_best_probe_mse
     parser.add_argument("--speculative_probe", type=str, help="speculative_probe",default="/home/ximing/semantic/speculative/weight/s1_valid_h100_r1.5b_math_output_last_hidden_list_best_probe_mse")
     parser.add_argument("--target_temperature", type=float, help="target_temperature",default=0.1)
@@ -421,12 +420,12 @@ if __name__ == "__main__":
     parser.add_argument("--max_new_tokens", type=int, help="max_new_tokens",default=14000)
     parser.add_argument("--top_p", type=float, help="top_p",default=0.9)
     parser.add_argument("--top_k", type=int, help="top_k",default=50)
-    parser.add_argument("--seed", type=int, help="seed", default=9870)
+    parser.add_argument("--seed", type=int, help="seed", default=3210)
     args = parser.parse_args()
     seed_everything(args.seed)
     # from sglang.srt.server_args import ServerArgs
     # print(ServerArgs.__init__.__annotations__)
-    os.environ["CUDA_VISIBLE_DEVICES"] = "1"  # 实际对应物理 GPU 1
+    os.environ["CUDA_VISIBLE_DEVICES"] = "7"  # 实际对应物理 GPU 1
     llm_small = sgl.Engine(
     model_path="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
     enable_return_hidden_states=True,
@@ -435,7 +434,7 @@ if __name__ == "__main__":
     
 )
 
-    os.environ["CUDA_VISIBLE_DEVICES"] = "0"  # 实际对应物理 GPU 0
+    os.environ["CUDA_VISIBLE_DEVICES"] = "6"  # 实际对应物理 GPU 0
     llm_big = sgl.Engine(
     model_path="deepseek-ai/DeepSeek-R1-Distill-Qwen-32B",
     enable_return_hidden_states=True,
@@ -445,15 +444,14 @@ if __name__ == "__main__":
 
     model_target_probe = SemanticEntropyProbTarget(5120, 2048)
     model_target_probe.load_state_dict(torch.load(f'{args.target_probe}.pt'))
-    model_target_probe = model_target_probe.to('cuda:1')
+    model_target_probe = model_target_probe.to('cuda:7')
     model_target_probe.eval()
 
 
     model_spec_probe = SemanticEntropyProbSpec(1536, 1024)
     model_spec_probe.load_state_dict(torch.load(f'{args.speculative_probe}.pt'))
-    model_spec_probe = model_spec_probe.to('cuda:1')
+    model_spec_probe = model_spec_probe.to('cuda:7')
     model_spec_probe.eval()
-    
 
     
 
@@ -489,23 +487,13 @@ if __name__ == "__main__":
         problems_and_answers = [{"problem": item["question"], "answer": item["answer"]} for item in ds]
     else:
         problems_and_answers = [{"problem": item["problem"], "answer": item["answer"]} for item in ds]
-    # if args.seed == 6540:
-    #     wrong_list = [100, 101, 110, 118, 120, 126, 134, 136, 145, 147, 154, 163, 166, 168, 177, 198, 204, 205, 217, 219, 228, 232, 240, 242, 264, 284, 286, 295, 298, 303, 306, 308, 324, 333, 340, 352, 364, 379, 383, 392, 398, 400, 401, 403, 419, 422, 431, 444, 456, 468, 473, 478, 481, 486, 491]
-    # elif args.seed == 3210:
-    #     wrong_list = [100, 103, 104, 110, 126, 128, 136, 145, 154, 168, 198, 204, 205, 214, 217, 219, 232, 236, 239, 240, 242, 248, 264, 267, 282, 284, 286, 295, 296, 298, 301, 303, 306, 308, 320, 324, 340, 349, 351, 355, 381, 383, 392, 400, 403, 412, 419, 421, 422, 425, 444, 460, 466, 478, 481, 490, 497]
-    # else:
-    #     wrong_list = [101, 108, 109, 110, 119, 126, 138, 145, 150, 154, 158, 161, 166, 198, 204, 205, 213, 217, 219, 222, 240, 264, 284, 285, 286, 298, 303, 306, 308, 320, 324, 326, 340, 349, 369, 381, 383, 400, 412, 419, 421, 422, 423, 444, 456, 460, 461, 473, 490, 494, 497]
-    if args.seed == 3210:
-        wrong_list =  [1, 4, 11, 13, 15, 16, 26, 27]
-    if args.seed == 9870:
-        wrong_list = [ 13, 18,  20, 22]
-    if args.seed == 6540:
-        wrong_list =   [1, 5, 6, 10, 13, 15, 17, 18, 19, 20, 21, 22, 25, 27]
+
+
     failed_total = []
-    for idx, number in enumerate(tqdm(wrong_list)):
+    for idx, number in enumerate(tqdm(range(args.start_dataset, args.end_dataset))):
         dirname = f'spec_{args.dataset}_{number}'
         dir_path = os.path.join(f"{args.dataset}{args.data_dir}{args.seed}", dirname)
-        problem = problems_and_answers[number]['problem']
-        answer = problems_and_answers[number]['answer']
+        problem = problems_and_answers[idx]['problem']
+        answer = problems_and_answers[idx]['answer']
         failed = process_file_to_json(dir_path,llm_big,llm_small, target_tokenizer, speculative_tokenizer,problem,answer,args.max_new_tokens,model_target_probe,model_spec_probe,number)
         failed_total.extend(failed)

@@ -149,6 +149,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                 speculative_output = speculative_outputs.json()
                 speculative_real_output_text = speculative_output[0]['text']
                 speculative_output = speculative_output[0]
+                extract_time_small = time.time()
                 for i in range(len(speculative_output["meta_info"]["hidden_states"])):
                     speculative_output["meta_info"]["hidden_states"][i] = torch.tensor(
                         speculative_output["meta_info"]["hidden_states"][i], dtype=torch.bfloat16
@@ -162,7 +163,8 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                 Completion_tokens = speculative_output['meta_info']['completion_tokens']
                 pooling_hidden_information = pooling_hidden_information[-Completion_tokens:, :]
                 pooling_hidden_information = pooling_hidden_information.mean(dim=0, keepdim=True)
-
+                exetract_small = time.time() - extract_time_small
+                time_detial.append({'exetract_small':exetract_small})
                 if len(speculative_real_output_text) ==0:
                     break
 
@@ -192,6 +194,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                 time_detial.append({'checking_time':checking_time,'Completion_tokens':Completion_tokens,'average_token_ckecing':checking_time/Completion_tokens})
                 checking_outputs = checking_outputs.json()
                 checking_output = checking_outputs[0]
+                extract_time_big = time.time()
                 for i in range(len(checking_output["meta_info"]["hidden_states"])):
                     checking_output["meta_info"]["hidden_states"][i] = torch.tensor(
                         checking_output["meta_info"]["hidden_states"][i], dtype=torch.bfloat16
@@ -205,6 +208,8 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
 
                 computing_prob_start = time.time()
                 target_pooling_hidden_information = hidden_states[-target_tokenizer_input_len-1:-1, :]
+                exetract_big = time.time()-extract_time_big
+                time_detial.append({'exetract_big':exetract_big})
                 # print('target_pooling_hidden_information shape', target_pooling_hidden_information.shape)
                 if target_pooling_hidden_information.shape[0] == 0:
                     break
@@ -239,7 +244,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
                         }
                         speculative_outputs_ending_start = time.time()
                         speculative_outputs = requests.post(
-                            f"http://0.0.0.0:{8008}/generate",
+                            f"http://0.0.0.0:{8002}/generate",
                 
                             json=json_data,
                             timeout=120
@@ -347,47 +352,47 @@ def process_file_to_json(
     all_generations = []
     failed_list = []
 
-    try:
+    # try:
         # start_time = time.time()
 
-        result = speculative_decoding(
-            target_tokenizer,
-            speculative_tokenizer,
-            problem,
-            max_new_tokens,
-            model_target_probe,
-            model_spec_probe,
-        )
+    result = speculative_decoding(
+        target_tokenizer,
+        speculative_tokenizer,
+        problem,
+        max_new_tokens,
+        model_target_probe,
+        model_spec_probe,
+    )
 
-        # end_time = time.time()
+    # end_time = time.time()
 
-        generated_text, try_correct_num, correct_spe_number, detail, length_of_output,times,total_time,time_detial = result
-        print("real_answer\n", generated_text)
+    generated_text, try_correct_num, correct_spe_number, detail, length_of_output,times,total_time,time_detial = result
+    print("real_answer\n", generated_text)
 
-        all_generations.append({
-            "input_text": problem,
-            "real_answer": generated_text,
-            "try_correct_num": try_correct_num,
-            "standard_answer": answer,
-            "execution_time": f"{times:.2f}s",
-            "correct_spe_number": correct_spe_number,
-            "total_time": f"{total_time:.2f}s",
-            "time_detail": time_detial,
-            "detail": detail,
-            "length_of_output": length_of_output,
-            "index": idx
-        })
+    all_generations.append({
+        "input_text": problem,
+        "real_answer": generated_text,
+        "try_correct_num": try_correct_num,
+        "standard_answer": answer,
+        "execution_time": f"{times:.2f}s",
+        "correct_spe_number": correct_spe_number,
+        "total_time": f"{total_time:.2f}s",
+        "time_detail": time_detial,
+        "detail": detail,
+        "length_of_output": length_of_output,
+        "index": idx
+    })
 
-        os.makedirs(dir_path, exist_ok=True)
-        out_path = os.path.join(dir_path, "spec_generation.json")
-        with open(out_path, "w", encoding="utf-8") as f:
-            json.dump(all_generations, f, ensure_ascii=False, indent=2)
+    os.makedirs(dir_path, exist_ok=True)
+    out_path = os.path.join(dir_path, "spec_generation.json")
+    with open(out_path, "w", encoding="utf-8") as f:
+        json.dump(all_generations, f, ensure_ascii=False, indent=2)
 
-    except Exception as e:
-        print(f"[Index {idx}] Failed with error: {e}")
-        print("Sleeping 10 seconds before moving on...")
-        time.sleep(1)
-        failed_list.append(idx)
+    # except Exception as e:
+    #     print(f"[Index {idx}] Failed with error: {e}")
+    #     print("Sleeping 10 seconds before moving on...")
+    #     time.sleep(1)
+    #     failed_list.append(idx)
     return failed_list
 
 
@@ -401,12 +406,12 @@ def process_file_to_json(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", type=str,  help="dataset",default='math-500')#math-500
+    parser.add_argument("--dataset", type=str,  help="dataset",default='amc23')#math-500
     parser.add_argument("--target_model", type=str,  help="target_model",default="deepseek-ai/DeepSeek-R1-Distill-Qwen-32B")
     parser.add_argument("--speculative_model", type=str,  help="speculative_model", default="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
-    parser.add_argument("--data_dir", type=str,  help="data_dir",default='../speculative/min_50_new_token_sglang_full_size_DeepSeek-R1-Distill-32B_deepseek1.5seed_')
-    parser.add_argument("--start_dataset", type=int, help="the beginning of the dataset",default=444)
-    parser.add_argument("--end_dataset", type=int, help="the end of the dataset",default=445)
+    parser.add_argument("--data_dir", type=str,  help="data_dir",default='../speculative/record_timefull_size_DeepSeek-R1-Distill-32B_deepseek1.5seed_')
+    parser.add_argument("--start_dataset", type=int, help="the beginning of the dataset",default=0)
+    parser.add_argument("--end_dataset", type=int, help="the end of the dataset",default=10)
     parser.add_argument("--target_probe", type=str, help="target_probe",default="/home/ximing/semantic/speculative/weight/s1_valid_h100_32r1b-200data_math_output_last_hidden_list_best_probe_mse")#aime_output_last_hidden_list_best_probe_mse
     parser.add_argument("--speculative_probe", type=str, help="speculative_probe",default="/home/ximing/semantic/speculative/weight/s1_valid_h100_r1.5b_math_output_last_hidden_list_best_probe_mse")
     parser.add_argument("--target_temperature", type=float, help="target_temperature",default=0.1)

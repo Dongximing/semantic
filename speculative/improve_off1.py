@@ -22,7 +22,7 @@ TARGET_probe = 2
 SPEC_probe = 3
 import requests
 
-def speculative_accept(qi, pi, threshold_min=0.3):
+def speculative_accept(qi, pi, threshold_min=0.7):
 
     ratio = qi / pi if pi > 0 else 0
     if ratio < threshold_min:
@@ -73,7 +73,6 @@ class SemanticEntropyProbSpec(nn.Module):
 
 def speculative_decoding(llm_big,llm_small,target_tokenizer,speculative_tokenizer,problem,max_new_tokens,model_target_probe,model_spec_probe):
         # add prompt before inferencing the model
-        print(problem)
         time_detial = []
         messages = [
             {"role": "user", "content": problem + MATH_PROMPT}
@@ -118,136 +117,62 @@ def speculative_decoding(llm_big,llm_small,target_tokenizer,speculative_tokenize
         prob_target = 0
         prob_spec = 0
         target_real_output = ''
+        keep_doing =False
         generated_text = target_text
         start_time = time.time()
+        out_of_loop = False
         while checking_is_finish(generated_text,max_new_tokens,use_target):
             # we start at the target model.
+            save_probe = [] 
             if begin:
                 use_target = True
             if not begin:
                 if use_target:
-                    detail.append({'target_model': target_real_output, 'why_is_not_gd': speculative_real_output_text,
-                                   "score_target": round(prob_target, 2), "score_spec": round(prob_spec, 2)})
+                 
                     small_input = speculative_text + target_tokenizer.decode(
                         target_tokenizer(generated_text, return_tensors="pt")['input_ids'][0,
                         original_target_prompt_len:].tolist()
                     )
                 else:
                     small_input  = generated_text
-         
-                speculative_outputs_start = time.time()
-                speculative_outputs = llm_small.generate([small_input], sampling_params=sampling_params, return_hidden_states=True)
-     
-                speculative_outputs_time = time.time()-speculative_outputs_start
-                time_detial.append({'speculative_outputs_time':speculative_outputs_time})
-                speculative_output = speculative_outputs[0]
-                speculative_real_output_text = speculative_output['text']
-                if '</think>' in speculative_real_output_text:
-                        sampling_params_end = {
-                            "temperature": 0.6,
-                            "top_p": 0.95,
-                            "max_new_tokens": 2000,
-
-                        }
-
-                        speculative_outputs_ending_start = time.time()
-                        speculative_outputs = llm_small.generate(
-                            [generated_text],
-                            sampling_params = sampling_params_end,
-                            return_hidden_states =False,     
+                check_small_input = small_input
+                checking_list = [] 
+                if use_target:
+                    checking_target_text =  generated_text
+                else:
+                    checking_target_text =  target_text
+                for i in range(3):    
+                    speculative_outputs_start = time.time()
+                    speculative_outputs = llm_small.generate([small_input], sampling_params=sampling_params, return_hidden_states=True)
+                    speculative_outputs_time = time.time()-speculative_outputs_start
+                    time_detial.append({'speculative_outputs_time':speculative_outputs_time})
+                    speculative_output = speculative_outputs[0]
+                    speculative_real_output_text = speculative_output['text']
+                    for i in range(len(speculative_output["meta_info"]["hidden_states"])):
+                        speculative_output["meta_info"]["hidden_states"][i] = torch.tensor(
+                            speculative_output["meta_info"]["hidden_states"][i], dtype=torch.bfloat16
                         )
-                        speculative_outputs_ending =time.time()-speculative_outputs_ending_start
-                        time_detial.append({'speculative_outputs_ending':speculative_outputs_ending})
-                        detail.append({'spe_model': speculative_outputs[0]['text']})
-                        generated_text = generated_text + speculative_outputs[0]['text']
-
-
-                        break
-
-                extract_time_small = time.time()
-                for i in range(len(speculative_output["meta_info"]["hidden_states"])):
-                    speculative_output["meta_info"]["hidden_states"][i] = torch.tensor(
-                        speculative_output["meta_info"]["hidden_states"][i], dtype=torch.bfloat16
-                    )
-                pooling_hidden_information = torch.cat(
+                    pooling_hidden_information = torch.cat(
                     [
                         i.unsqueeze(0) if len(i.shape) == 1 else i
                         for i in speculative_output["meta_info"]["hidden_states"]
                     ]
-                )
-                Completion_tokens = speculative_output['meta_info']['completion_tokens']
-                pooling_hidden_information = pooling_hidden_information[-Completion_tokens:, :]
-                # print('pooling_hidden_information',pooling_hidden_information.shape)
-                pooling_hidden_information = pooling_hidden_information.mean(dim=0, keepdim=True)
-                exetract_small = time.time() - extract_time_small
-                time_detial.append({'exetract_small':exetract_small})
-                if len(speculative_real_output_text) ==0:
-                    break
+                                    )
+                    Completion_tokens = speculative_output['meta_info']['completion_tokens']
+                    pooling_hidden_information = pooling_hidden_information[-Completion_tokens:, :]
+                    pooling_hidden_information = pooling_hidden_information.mean(dim=0, keepdim=True)
 
-
-                target_tokenizer_input = target_tokenizer(speculative_real_output_text, return_tensors="pt")['input_ids']
-                target_tokenizer_input_len = target_tokenizer_input.shape[1]
-
-                if use_target:
-                    checking_target_text =  generated_text + speculative_real_output_text
-                else:
-                    checking_target_text =  target_text + target_tokenizer.decode(target_tokenizer(small_input+speculative_real_output_text,return_tensors="pt")['input_ids'][0,original_target_prompt_len:].tolist())
-
-
-                checking_start = time.time()
-                checking_outputs = llm_big.generate([checking_target_text],
-                    sampling_params = {"temperature": 0.1,"max_new_tokens": 1},
-                    return_hidden_states = True,
-           
-                )
-                checking_time = time.time()-checking_start
-                time_detial.append({'checking_time':checking_time,'Completion_tokens':Completion_tokens,'average_token_ckecing':checking_time/Completion_tokens})
-                checking_output = checking_outputs[0]
-                extract_time_big = time.time()
-                for i in range(len(checking_output["meta_info"]["hidden_states"])):
-                    checking_output["meta_info"]["hidden_states"][i] = torch.tensor(
-                        checking_output["meta_info"]["hidden_states"][i], dtype=torch.bfloat16
-                    )
-                hidden_states = torch.cat(
-                    [
-                        i.unsqueeze(0) if len(i.shape) == 1 else i
-                        for i in checking_output["meta_info"]["hidden_states"]
-                    ]
-                )
-
-                computing_prob_start = time.time()
-                target_pooling_hidden_information = hidden_states[-target_tokenizer_input_len-1:-1, :]
-                exetract_big = time.time()-extract_time_big
-                time_detial.append({'exetract_big':exetract_big})
-                # print('target_pooling_hidden_information shape', target_pooling_hidden_information.shape)
-                if target_pooling_hidden_information.shape[0] == 0:
-                    break
-                target_pooling_hidden_information = target_pooling_hidden_information.mean(dim=0, keepdim=True) # len *hidden
-                #print('target_tokenizer_input_len',target_tokenizer_input_len)
-
-
-                with torch.no_grad():
-                    prob_target = model_target_probe(target_pooling_hidden_information.float().to(f"cuda:{1}"))
-                    prob_spec = model_spec_probe(pooling_hidden_information.float().to(f"cuda:{1}"))
-
-                prob_target = prob_target.item()
-                prob_spec = prob_spec.item()
-                # print('prob_target',prob_target)
-                # print('prob_spec',prob_spec)
-                computing_prob_time = time.time()-computing_prob_start
-                time_detial.append({'computing_prob_time':computing_prob_time})
-                if speculative_accept(prob_target,prob_spec):
-                    detail.append({'spe_model':speculative_real_output_text})
-                    correct_spe_number +=1
-                    use_target = False
-                    generated_text =  small_input + speculative_output['text']
-                    if '</think>' in speculative_output['text']:
+                    small_input+= speculative_real_output_text
+                    if len(speculative_real_output_text) ==0:
+                        out_of_loop = True
+                        break
+                    if '</think>' in speculative_real_output_text:
                         sampling_params_end = {
-                            "temperature": 0.6,
-                            "top_p": 0.95,
-                            "max_new_tokens": 2000,
+                                "temperature": 0.6,
+                                "top_p": 0.95,
+                                "max_new_tokens": 2000,
 
-                        }
+                            }
 
                         speculative_outputs_ending_start = time.time()
                         speculative_outputs = llm_small.generate(
@@ -259,17 +184,108 @@ def speculative_decoding(llm_big,llm_small,target_tokenizer,speculative_tokenize
                         time_detial.append({'speculative_outputs_ending':speculative_outputs_ending})
                         detail.append({'spe_model': speculative_outputs[0]['text']})
                         generated_text = generated_text + speculative_outputs[0]['text']
-
-
+                        out_of_loop = True
+                        # print('in 189')
                         break
+                    target_tokenizer_input = target_tokenizer(speculative_real_output_text, return_tensors="pt")['input_ids']
+                    target_tokenizer_input_len = target_tokenizer_input.shape[1]
+                    # print('speculative_real_output_text\n',speculative_real_output_text)
+                    if use_target:
+                        previous = checking_target_text
+                        checking_target_text =  checking_target_text + speculative_real_output_text
+                    else:
+                        
+                        checking_target_text =  target_text + target_tokenizer.decode(target_tokenizer(small_input,return_tensors="pt")['input_ids'][0,original_target_prompt_len:].tolist())
+                        previous = checking_target_text.replace(speculative_real_output_text, '')
+                        
+                    # print('checking_target_text',checking_target_text)
+                    checking_start = time.time()
+                    checking_outputs = llm_big.generate([checking_target_text],
+                        sampling_params = {"temperature": 0.1,"max_new_tokens": 1},
+                        return_hidden_states = True,
+            
+                    )
+                    checking_time = time.time()-checking_start
+                    time_detial.append({'checking_time':checking_time,'Completion_tokens':Completion_tokens,'average_token_ckecing':checking_time/Completion_tokens})
+                    checking_output = checking_outputs[0]
+                    extract_time_big = time.time()
+                    for i in range(len(checking_output["meta_info"]["hidden_states"])):
+                        checking_output["meta_info"]["hidden_states"][i] = torch.tensor(
+                            checking_output["meta_info"]["hidden_states"][i], dtype=torch.bfloat16
+                        )
+                    hidden_states = torch.cat(
+                        [
+                            i.unsqueeze(0) if len(i.shape) == 1 else i
+                            for i in checking_output["meta_info"]["hidden_states"]
+                        ]
+                    )
+                    # print('target_tokenizer_input_len---->',target_tokenizer_input_len)
+                    # print("hidden_states-------->",hidden_states.shape)
+                    computing_prob_start = time.time()
+                    target_pooling_hidden_information = hidden_states[-target_tokenizer_input_len-1:-1, :]
+                    exetract_big = time.time()-extract_time_big
+                    time_detial.append({'exetract_big':exetract_big})
+                    if target_pooling_hidden_information.shape[0] == 0:
+                        # print("hidden_states",hidden_states.shape)
+                        # print('speculative_real_output_text\n',speculative_real_output_text)
+                        # print('checking_target_text',checking_target_text)
+                        # print('target_tokenizer_input_len',target_tokenizer_input_len)
+                        # print('use_target',use_target)
+                        # print('arget_pooling_hidden_information.shape[0]',target_pooling_hidden_information.shape[0])
+                        use_target = False
+                        keep_doing = True
+                        generated_text = small_input
+                      
+                    target_pooling_hidden_information = target_pooling_hidden_information.mean(dim=0, keepdim=True) # len *hidden
+                    checking_list.append({
+                        'speculative_real_output_text':speculative_real_output_text,
+                        'pooling_hidden_information':pooling_hidden_information,
+                        'target_pooling_hidden_information':target_pooling_hidden_information,
+                        "checking_target_text":previous
+                    }
+                    
+                    )
+            
+                if out_of_loop:
+                    break
+                if not keep_doing:                
+                    speculative_real_output_texts = [item['speculative_real_output_text'] for item in checking_list]
+                    pooling_list = [item['pooling_hidden_information'] for item in checking_list]
+                    target_pooling_list = [item['target_pooling_hidden_information'] for item in checking_list]
+                    checking_target_texts = [item['checking_target_text'] for item in checking_list]
+                    assert len(pooling_list) == 3 and all(isinstance(t, torch.Tensor) for t in pooling_list), "pooling_list 长度或类型错误"
+                    assert len(target_pooling_list) == 3 and all(isinstance(t, torch.Tensor) for t in target_pooling_list), "target_pooling_list 长度或类型错误"
+                    pooling_batch = torch.stack(pooling_list).float().to('cuda:3')  # shape: [3, hidden_dim]
+                    target_batch = torch.stack(target_pooling_list).float().to('cuda:3')  # 同上
+                    with torch.no_grad():
+                        prob_targets = model_target_probe(target_batch.float().to(f"cuda:{3}"))
+                        prob_specs = model_spec_probe(pooling_batch.float().to(f"cuda:{3}"))
+                    
+
+                    prob_specs_floats = [p.item() for p in prob_specs]
+                    prob_targets_floats = [p.item() for p in prob_targets]
+
+                    # print("len of checkinglist",len())
+                    
+                    for i in range(3):
+                        if speculative_accept(prob_targets_floats[i],prob_specs_floats[i]):
+                            check_small_input += speculative_real_output_texts[i]
+                            generated_text = check_small_input
+                            detail.append({'spe_model':speculative_real_output_texts[i]})
+                            correct_spe_number +=1
+                            use_target = False
+                        else:
+                            # print('i------------>',i)
+                            
+                            generated_text =  target_text + target_tokenizer.decode(target_tokenizer(check_small_input,return_tensors="pt")['input_ids'][0,original_target_prompt_len:].tolist())
+                            # if i == 1:
+                                # print('generated_text',generated_text)
+                            use_target = True
+                            break
+                    
                 else:
-                    generated_text = checking_target_text
-                    use_target = True
-
-
-
-            # Let the target model finish the generation.
-            # At the beginning of the generation, Let the target model generate the first part of completion.
+                    keep_doing = False
+               
             if use_target:
                 # record the usage of the target model;
                 begin = False
@@ -370,7 +386,6 @@ def process_file_to_json(
 
     generated_text, try_correct_num, correct_spe_number, detail, length_of_output,times,total_time,time_detial = result
     print("real_answer\n", generated_text)
-
     all_generations.append({
         "input_text": problem,
         "real_answer": generated_text,
@@ -408,12 +423,12 @@ def process_file_to_json(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", type=str,  help="dataset",default='aime')#math-500
+    parser.add_argument("--dataset", type=str,  help="dataset",default='math-500')#math-500
     parser.add_argument("--target_model", type=str,  help="target_model",default="deepseek-ai/DeepSeek-R1-Distill-Qwen-32B")
     parser.add_argument("--speculative_model", type=str,  help="speculative_model", default="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
-    parser.add_argument("--data_dir", type=str,  help="data_dir",default='../speculative/rrecord_timefull_size_DeepSeek-R1-Distill-32B_deepseek1.5seed_')
-    parser.add_argument("--start_dataset", type=int, help="the beginning of the dataset",default=0)
-    parser.add_argument("--end_dataset", type=int, help="the end of the dataset",default=30)
+    parser.add_argument("--data_dir", type=str,  help="data_dir",default='../speculative/improve_DeepSeek-R1-Distill-32B_deepseek1.5seed_')
+    parser.add_argument("--start_dataset", type=int, help="the beginning of the dataset",default=100)
+    parser.add_argument("--end_dataset", type=int, help="the end of the dataset",default=500)
     parser.add_argument("--target_probe", type=str, help="target_probe",default="/home/ximing/semantic/speculative/weight/s1_valid_h100_32r1b-200data_math_output_last_hidden_list_best_probe_mse")#aime_output_last_hidden_list_best_probe_mse
     parser.add_argument("--speculative_probe", type=str, help="speculative_probe",default="/home/ximing/semantic/speculative/weight/s1_valid_h100_r1.5b_math_output_last_hidden_list_best_probe_mse")
     parser.add_argument("--target_temperature", type=float, help="target_temperature",default=0.1)
@@ -421,21 +436,20 @@ if __name__ == "__main__":
     parser.add_argument("--max_new_tokens", type=int, help="max_new_tokens",default=14000)
     parser.add_argument("--top_p", type=float, help="top_p",default=0.9)
     parser.add_argument("--top_k", type=int, help="top_k",default=50)
-    parser.add_argument("--seed", type=int, help="seed", default=9870)
+    parser.add_argument("--seed", type=int, help="seed", default=3210)
     args = parser.parse_args()
     seed_everything(args.seed)
-    # from sglang.srt.server_args import ServerArgs
-    # print(ServerArgs.__init__.__annotations__)
-    os.environ["CUDA_VISIBLE_DEVICES"] = "1"  # 实际对应物理 GPU 1
+
+    os.environ["CUDA_VISIBLE_DEVICES"] = "3"  
     llm_small = sgl.Engine(
     model_path="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
     enable_return_hidden_states=True,
     mem_fraction_static=0.7,
-    tp_size=1   # 小模型只用一张卡
+    tp_size=1   
     
 )
 
-    os.environ["CUDA_VISIBLE_DEVICES"] = "0"  # 实际对应物理 GPU 0
+    os.environ["CUDA_VISIBLE_DEVICES"] = "2" 
     llm_big = sgl.Engine(
     model_path="deepseek-ai/DeepSeek-R1-Distill-Qwen-32B",
     enable_return_hidden_states=True,
@@ -445,13 +459,13 @@ if __name__ == "__main__":
 
     model_target_probe = SemanticEntropyProbTarget(5120, 2048)
     model_target_probe.load_state_dict(torch.load(f'{args.target_probe}.pt'))
-    model_target_probe = model_target_probe.to('cuda:1')
+    model_target_probe = model_target_probe.to('cuda:3')
     model_target_probe.eval()
 
 
     model_spec_probe = SemanticEntropyProbSpec(1536, 1024)
     model_spec_probe.load_state_dict(torch.load(f'{args.speculative_probe}.pt'))
-    model_spec_probe = model_spec_probe.to('cuda:1')
+    model_spec_probe = model_spec_probe.to('cuda:3')
     model_spec_probe.eval()
     
 
@@ -489,23 +503,23 @@ if __name__ == "__main__":
         problems_and_answers = [{"problem": item["question"], "answer": item["answer"]} for item in ds]
     else:
         problems_and_answers = [{"problem": item["problem"], "answer": item["answer"]} for item in ds]
+    # # if args.seed == 6540:
+    # #     wrong_list = [100, 101, 110, 118, 120, 126, 134, 136, 145, 147, 154, 163, 166, 168, 177, 198, 204, 205, 217, 219, 228, 232, 240, 242, 264, 284, 286, 295, 298, 303, 306, 308, 324, 333, 340, 352, 364, 379, 383, 392, 398, 400, 401, 403, 419, 422, 431, 444, 456, 468, 473, 478, 481, 486, 491]
+    # # elif args.seed == 3210:
+    # #     wrong_list = [100, 103, 104, 110, 126, 128, 136, 145, 154, 168, 198, 204, 205, 214, 217, 219, 232, 236, 239, 240, 242, 248, 264, 267, 282, 284, 286, 295, 296, 298, 301, 303, 306, 308, 320, 324, 340, 349, 351, 355, 381, 383, 392, 400, 403, 412, 419, 421, 422, 425, 444, 460, 466, 478, 481, 490, 497]
+    # # else:
+    # #     wrong_list = [101, 108, 109, 110, 119, 126, 138, 145, 150, 154, 158, 161, 166, 198, 204, 205, 213, 217, 219, 222, 240, 264, 284, 285, 286, 298, 303, 306, 308, 320, 324, 326, 340, 349, 369, 381, 383, 400, 412, 419, 421, 422, 423, 444, 456, 460, 461, 473, 490, 494, 497]
+    # if args.seed == 3210:
+    #     wrong_list =  [1, 4, 11, 13, 15, 16, 26, 27]
+    # if args.seed == 9870:
+    #     wrong_list = [ 13, 18,  20, 22]
     # if args.seed == 6540:
-    #     wrong_list = [100, 101, 110, 118, 120, 126, 134, 136, 145, 147, 154, 163, 166, 168, 177, 198, 204, 205, 217, 219, 228, 232, 240, 242, 264, 284, 286, 295, 298, 303, 306, 308, 324, 333, 340, 352, 364, 379, 383, 392, 398, 400, 401, 403, 419, 422, 431, 444, 456, 468, 473, 478, 481, 486, 491]
-    # elif args.seed == 3210:
-    #     wrong_list = [100, 103, 104, 110, 126, 128, 136, 145, 154, 168, 198, 204, 205, 214, 217, 219, 232, 236, 239, 240, 242, 248, 264, 267, 282, 284, 286, 295, 296, 298, 301, 303, 306, 308, 320, 324, 340, 349, 351, 355, 381, 383, 392, 400, 403, 412, 419, 421, 422, 425, 444, 460, 466, 478, 481, 490, 497]
-    # else:
-    #     wrong_list = [101, 108, 109, 110, 119, 126, 138, 145, 150, 154, 158, 161, 166, 198, 204, 205, 213, 217, 219, 222, 240, 264, 284, 285, 286, 298, 303, 306, 308, 320, 324, 326, 340, 349, 369, 381, 383, 400, 412, 419, 421, 422, 423, 444, 456, 460, 461, 473, 490, 494, 497]
-    if args.seed == 3210:
-        wrong_list =  [1, 4, 11, 13, 15, 16, 26, 27]
-    if args.seed == 9870:
-        wrong_list = [ 13, 18,  20, 22]
-    if args.seed == 6540:
-        wrong_list =   [1, 5, 6, 10, 13, 15, 17, 18, 19, 20, 21, 22, 25, 27]
+    #     wrong_list =   [1, 5, 6, 10, 13, 15, 17, 18, 19, 20, 21, 22, 25, 27]
     failed_total = []
-    for idx, number in enumerate(tqdm(wrong_list)):
+    for idx, number in enumerate(tqdm(range(args.start_dataset, args.end_dataset))):
         dirname = f'spec_{args.dataset}_{number}'
         dir_path = os.path.join(f"{args.dataset}{args.data_dir}{args.seed}", dirname)
-        problem = problems_and_answers[number]['problem']
-        answer = problems_and_answers[number]['answer']
+        problem = problems_and_answers[idx]['problem']
+        answer = problems_and_answers[idx]['answer']
         failed = process_file_to_json(dir_path,llm_big,llm_small, target_tokenizer, speculative_tokenizer,problem,answer,args.max_new_tokens,model_target_probe,model_spec_probe,number)
         failed_total.extend(failed)

@@ -13,11 +13,10 @@ def check_math_correctness(ref, generation):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--start', type=int, default=0)
-    parser.add_argument('--end', type=int, default=20)
+    parser.add_argument('--start', type=int, default=100)
+    parser.add_argument('--end', type=int, default=500)
     parser.add_argument('--dataset', type=str, default='math-500')
     parser.add_argument('--eval_path', type=str, default='/data/semantic/speculative/spec_result_math-500_seed_456')
-    #/home/cs/staff/shaowei/semantic
     parser.add_argument('--seed', type=int, default=123)
     args = parser.parse_args()
 
@@ -42,10 +41,10 @@ if __name__ == '__main__':
 
     for idx, number in enumerate(tqdm(range(args.start, args.end))):
 
-        if args.dataset == 'math-500':
-            dirname = f'spec_{args.dataset}_{number}'
-        elif args.dataset == 'aime':
-            dirname = f'spec_{args.dataset}_{number}'
+        # if args.dataset == 'math-500':
+        #     dirname = f'spec_{args.dataset}_{number}'
+        # elif args.dataset == 'aime':
+        dirname = f'spec_{args.dataset}_{number}'
         dir_path = os.path.join(args.eval_path, dirname)
         json_path = os.path.join(dir_path, "spec_generation.json")
         if not os.path.exists(json_path):
@@ -103,7 +102,7 @@ if __name__ == '__main__':
     print(f'average speed: {number_of_tokens / time}')
     print(f'average whole execution time: {time/number_of_tokens}')
     print(f'average whole execution time....: {whole_time/whole_length}')
-    print(f'average whole execution time each....: {whole_time/args.end-args.start}')
-    print(f'average whole execution time each....: {whole_length/args.end-args.start}')
+    print(f'average whole execution time each....: {whole_time/(args.end-args.start)}')
+    print(f'average whole execution time each....: {whole_length/(args.end-args.start)}')
 
 
