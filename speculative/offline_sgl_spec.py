@@ -30,8 +30,6 @@ def speculative_accept(qi, pi, threshold_min=0.7):
     threshold = min(1.0, ratio)
     r = random.uniform(0, 1)
     return r < threshold
-
-
 class SemanticEntropyProbTarget(nn.Module):
     def __init__(self, input_dim, hidden_dim, dropout=0.3):
         super().__init__()
@@ -111,7 +109,8 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
 
 
         def checking_is_finish(generated_ids, max_new_tokens, use_target):
-            return len(target_tokenizer.encode(generated_ids)) - original_target_prompt_len < max_new_tokens
+            encoded_len = len(target_tokenizer.encode(generated_ids)) - original_target_prompt_len
+            return encoded_len < max_new_tokens
 
         speculative_real_output_text = ''
         prob_target = 0

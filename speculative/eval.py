@@ -60,7 +60,7 @@ if __name__ == '__main__':
             length = generations[0].get('length_of_output')
             whole_length+=length
             details = generations[0]['detail']
-            whole_time+=float(generations[0].get('execution_time').rstrip('s'))
+            whole_time+=float(generations[0].get('total_time').rstrip('s'))
 
 
             result = check_math_correctness(standard, predict)
@@ -70,7 +70,7 @@ if __name__ == '__main__':
             if length is not None:
                 #number_of_tokens += length
                 if result:
-                    time += float(generations[0].get('execution_time').rstrip('s'))
+                    time += float(generations[0].get('total_time').rstrip('s'))
                     number_of_tokens += length
                     details = generations[0]['detail']
                     for detail in details:

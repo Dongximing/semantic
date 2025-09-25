@@ -417,9 +417,9 @@ if __name__ == "__main__":
     parser.add_argument("--dataset", type=str,  help="dataset",default='math-500')#math-500
     parser.add_argument("--target_model", type=str,  help="target_model",default="deepseek-ai/DeepSeek-R1-Distill-Qwen-32B")
     parser.add_argument("--speculative_model", type=str,  help="speculative_model", default="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
-    parser.add_argument("--data_dir", type=str,  help="data_dir",default='../test222221/new_token_sglang_full_size_DeepSeek-R1-Distill-32B_deepseek1.5seed_')
-    parser.add_argument("--start_dataset", type=int, help="the beginning of the dataset",default=444)
-    parser.add_argument("--end_dataset", type=int, help="the end of the dataset",default=445)
+    parser.add_argument("--data_dir", type=str,  help="data_dir",default='../speculative/redo_new_sglang_full_size_DeepSeek-R1-Distill-32B_deepseek1.5seed_')
+    parser.add_argument("--start_dataset", type=int, help="the beginning of the dataset",default=100)
+    parser.add_argument("--end_dataset", type=int, help="the end of the dataset",default=500)
     parser.add_argument("--target_probe", type=str, help="target_probe",default="/home/ximing/semantic/speculative/weight/s1_valid_h100_32r1b-200data_math_output_last_hidden_list_best_probe_mse")#aime_output_last_hidden_list_best_probe_mse
     parser.add_argument("--speculative_probe", type=str, help="speculative_probe",default="/home/ximing/semantic/speculative/weight/s1_valid_h100_r1.5b_math_output_last_hidden_list_best_probe_mse")
     parser.add_argument("--target_temperature", type=float, help="target_temperature",default=0.1)
@@ -477,10 +477,11 @@ if __name__ == "__main__":
 
 
     failed_total = []
-    for idx, number in enumerate(tqdm(range(args.start_dataset, args.end_dataset))):
+    wrong_list = [100, 101, 103, 110, 126, 128, 145, 154, 189, 198, 204, 205, 213, 217, 219, 240, 246, 248, 264, 284, 286, 292, 298, 303, 306, 308, 317, 324, 340, 349, 361, 369, 383, 392, 400, 419, 422, 425, 444, 456, 460, 481, 490]
+    for idx, number in enumerate(tqdm(wrong_list)):
         dirname = f'spec_{args.dataset}_{number}'
         dir_path = os.path.join(f"{args.dataset}{args.data_dir}{args.seed}", dirname)
-        problem = problems_and_answers[idx]['problem']
-        answer = problems_and_answers[idx]['answer']
+        problem = problems_and_answers[number-100]['problem']
+        answer = problems_and_answers[number-100]['answer']
         failed = process_file_to_json(dir_path, target_tokenizer, speculative_tokenizer,problem,answer,args.max_new_tokens,model_target_probe,model_spec_probe,number)
         failed_total.extend(failed)

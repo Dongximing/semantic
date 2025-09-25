@@ -25,8 +25,8 @@ import requests
 def speculative_accept(qi, pi, threshold_min=0.7):
 
     ratio = qi / pi if pi > 0 else 0
-    if ratio < threshold_min:
-        return False
+    # if ratio < threshold_min:
+    #     return False
     threshold = min(1.0, ratio)
     r = random.uniform(0, 1)
     return r < threshold
@@ -141,7 +141,7 @@ def speculative_decoding(llm_big,llm_small,target_tokenizer,speculative_tokenize
                     checking_target_text =  generated_text
                 else:
                     checking_target_text =  target_text
-                for i in range(3):    
+                for i in range(2):    
                     speculative_outputs_start = time.time()
                     speculative_outputs = llm_small.generate([small_input], sampling_params=sampling_params, return_hidden_states=True)
                     speculative_outputs_time = time.time()-speculative_outputs_start
@@ -253,8 +253,8 @@ def speculative_decoding(llm_big,llm_small,target_tokenizer,speculative_tokenize
                     pooling_list = [item['pooling_hidden_information'] for item in checking_list]
                     target_pooling_list = [item['target_pooling_hidden_information'] for item in checking_list]
                     checking_target_texts = [item['checking_target_text'] for item in checking_list]
-                    assert len(pooling_list) == 3 and all(isinstance(t, torch.Tensor) for t in pooling_list), "pooling_list 长度或类型错误"
-                    assert len(target_pooling_list) == 3 and all(isinstance(t, torch.Tensor) for t in target_pooling_list), "target_pooling_list 长度或类型错误"
+                    assert len(pooling_list) == 2 and all(isinstance(t, torch.Tensor) for t in pooling_list), "pooling_list 长度或类型错误"
+                    assert len(target_pooling_list) == 2 and all(isinstance(t, torch.Tensor) for t in target_pooling_list), "target_pooling_list 长度或类型错误"
                     pooling_batch = torch.stack(pooling_list).float().to('cuda:3')  # shape: [3, hidden_dim]
                     target_batch = torch.stack(target_pooling_list).float().to('cuda:3')  # 同上
                     with torch.no_grad():
@@ -267,7 +267,7 @@ def speculative_decoding(llm_big,llm_small,target_tokenizer,speculative_tokenize
 
                     # print("len of checkinglist",len())
                     
-                    for i in range(3):
+                    for i in range(2):
                         if speculative_accept(prob_targets_floats[i],prob_specs_floats[i]):
                             check_small_input += speculative_real_output_texts[i]
                             generated_text = check_small_input
@@ -426,7 +426,7 @@ if __name__ == "__main__":
     parser.add_argument("--dataset", type=str,  help="dataset",default='math-500')#math-500
     parser.add_argument("--target_model", type=str,  help="target_model",default="deepseek-ai/DeepSeek-R1-Distill-Qwen-32B")
     parser.add_argument("--speculative_model", type=str,  help="speculative_model", default="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
-    parser.add_argument("--data_dir", type=str,  help="data_dir",default='../speculative/improve_DeepSeek-R1-Distill-32B_deepseek1.5seed_')
+    parser.add_argument("--data_dir", type=str,  help="data_dir",default='../speculative/improve2_ok_DeepSeek-R1-Distill-32B_deepseek1.5seed_')
     parser.add_argument("--start_dataset", type=int, help="the beginning of the dataset",default=100)
     parser.add_argument("--end_dataset", type=int, help="the end of the dataset",default=500)
     parser.add_argument("--target_probe", type=str, help="target_probe",default="/home/ximing/semantic/speculative/weight/s1_valid_h100_32r1b-200data_math_output_last_hidden_list_best_probe_mse")#aime_output_last_hidden_list_best_probe_mse
@@ -436,7 +436,7 @@ if __name__ == "__main__":
     parser.add_argument("--max_new_tokens", type=int, help="max_new_tokens",default=14000)
     parser.add_argument("--top_p", type=float, help="top_p",default=0.9)
     parser.add_argument("--top_k", type=int, help="top_k",default=50)
-    parser.add_argument("--seed", type=int, help="seed", default=3210)
+    parser.add_argument("--seed", type=int, help="seed", default=6540)
     args = parser.parse_args()
     seed_everything(args.seed)
 

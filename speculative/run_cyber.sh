@@ -1,3 +1,5 @@
-python offline_sgl_spec3.py  --seed 3210   --dataset math-500 --start_dataset 100 --end_dataset 500
-python offline_sgl_spec3.py  --seed 6540   --dataset math-500 --start_dataset 100 --end_dataset 500
-python offline_sgl_spec3.py  --seed 9870   --dataset math-500 --start_dataset 100 --end_dataset 500
+
+python improve_off.py --seed 3210  
+python improve_off.py --seed 6540
+python improve_off.py --seed 9870  
+
