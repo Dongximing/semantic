@@ -109,6 +109,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
 
 
         def checking_is_finish(generated_ids, max_new_tokens, use_target):
+            
             encoded_len = len(target_tokenizer.encode(generated_ids)) - original_target_prompt_len
             return encoded_len < max_new_tokens
 

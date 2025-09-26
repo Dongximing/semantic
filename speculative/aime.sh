@@ -1,6 +1,8 @@
 
-python improve_off.py --seed 3210  
-python improve_off.py --seed 6540
-python improve_off.py --seed 9870  
+
+
+
+python off.py --seed 6540   --dataset math-500  --start_dataset 295 --end_dataset 500
+python off.py --seed 9870   --dataset math-500  --start_dataset 100 --end_dataset 500
 
 
