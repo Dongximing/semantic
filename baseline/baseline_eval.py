@@ -12,13 +12,11 @@ def check_math_correctness(ref, generation):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--start', type=int, default=0)
-    parser.add_argument('--end', type=int, default=28)
-    parser.add_argument('--dataset', type=str, default='math-500')
+    parser.add_argument('--start', type=int, default=100)
+    parser.add_argument('--end', type=int, default=500)
+    parser.add_argument('--dataset', type=str, default='math')
     parser.add_argument('--eval_path', type=str, default='/data/semantic/baseline/r1_1.5B_baseline_math_500_seed42')
-    #//data/semantic/baseline
-    #/home/cs/staff/shaowei/semantic/r1_1.5B_baseline_math_500_seed123
-    parser.add_argument('--seed', type=int, default=123)
+    parser.add_argument('--seed', type=int, default=3210)
     args = parser.parse_args()
 
     time = 0
@@ -29,45 +27,46 @@ if __name__ == '__main__':
     whole_number_of_tokens = 0 
     total_number = args.end - args.start
     wrong_list = []
-
+    no = 0
     for idx, number in enumerate(tqdm(range(args.start, args.end))):
 
-        if args.dataset == 'math-500':
-            dirname = f'seed_{args.seed}_baseline_{args.dataset}_{number}'
+        if args.dataset == 'math':
+            dirname = f'spec_{args.dataset}_{number}'
         elif args.dataset == 'aime':
-            dirname = f'seed_{args.seed}_baseline_{args.dataset}_{number}'
+            dirname = f'spec_{args.dataset}_{number}'
         elif args.dataset == 'amc23':
-            dirname = f'seed_{args.seed}_baseline_{args.dataset}_{number}'
+            dirname = f'spec_{args.dataset}_{number}'
         dir_path = os.path.join(args.eval_path, dirname)
-        json_path = os.path.join(dir_path, "generation.json")
+        json_path = os.path.join(dir_path, "result.json")
         if not os.path.exists(json_path):
             print(f"[Warning] {json_path} does not exist, skipping...")
+            no+=1
             continue
         with open(json_path, "r", encoding="utf-8") as f:
             generations = json.load(f)
-            predict = generations[0]['full_answer']
-            whole_time+=generations[0]['execution_time']
-            whole_number_of_tokens += generations[0]['tokens_full_answer']
-            standard = generations[0]['answer']
-            whole_length += generations[0]['tokens_full_answer']
+            predict = generations['reasoning']
+            whole_time+=generations['execution_time']
+            whole_number_of_tokens += generations['number_tokens']
+            standard = generations['answer']
+            whole_length += generations['number_tokens']
         result = check_math_correctness(standard,predict)
         if result:
-            number_of_tokens += generations[0]['tokens_full_answer']
-            time += generations[0]['execution_time']
+            number_of_tokens += generations['number_tokens']
+            time += generations['execution_time']
             number_correct += 1
         else:
             wrong_list.append(number)
+    total_number = total_number - no
     print(f'Accuracy: {number_correct / total_number} in {args.dataset}')
-    print("Number of tokens: ", number_of_tokens/number_correct)
+    
     print(f'whole length: {whole_number_of_tokens / total_number} in {args.dataset}')
     print(f'Number_correct: {number_correct}')
     print(f'Total: {total_number}')
-    print(f'average correct execution time: {time/number_correct}')
-    print(f'average correct speed: {number_of_tokens / time}')
     print(f'average whole execution time: {whole_time/total_number}')
-    print(f'average correct execution time per token : {time/number_of_tokens}')
+
     print(f'average whole execution time per token: {whole_time /whole_length }')
     print(f'wrong_list: {wrong_list}')
+    print('no', no)
     print('\n\n\n\n')
 
 

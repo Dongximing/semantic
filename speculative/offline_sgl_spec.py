@@ -89,8 +89,7 @@ def speculative_decoding(target_tokenizer,speculative_tokenizer,problem,max_new_
         sampling_params = {
             "temperature": 0.6,
             "top_p": 0.95,
-            "max_new_tokens": 500,
-            "min_new_tokens": 50,
+            "max_new_tokens": 512,
             "stop_token_ids": [4710, 382, 1447, 271, 692, 1939, 2533, 3593],
             "no_stop_trim": True
         }
