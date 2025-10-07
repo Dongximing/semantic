@@ -323,8 +323,8 @@ def speculative_decoding(llm_big,llm_small,target_tokenizer,speculative_tokenize
 
 
                 with torch.no_grad():
-                    prob_target = model_target_probe(target_pooling_hidden_information.float().to(f"cuda:{2}"))
-                    prob_spec = model_spec_probe(pooling_hidden_information.float().to(f"cuda:{2}"))
+                    prob_target = model_target_probe(target_pooling_hidden_information.float().to(f"cuda:{5}"))
+                    prob_spec = model_spec_probe(pooling_hidden_information.float().to(f"cuda:{5}"))
 
                 prob_target = prob_target.item()
                 prob_spec = prob_spec.item()
@@ -359,7 +359,7 @@ def speculative_decoding(llm_big,llm_small,target_tokenizer,speculative_tokenize
 
                         break
                 else:
-                    generated_text = checking_target_text
+                    
                     use_target = True
 
 
@@ -507,7 +507,7 @@ if __name__ == "__main__":
     parser.add_argument("--dataset", type=str,  help="dataset",default='aime')#math-500
     parser.add_argument("--target_model", type=str,  help="target_model",default="deepseek-ai/DeepSeek-R1-Distill-Qwen-32B")
     parser.add_argument("--speculative_model", type=str,  help="speculative_model", default="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
-    parser.add_argument("--data_dir", type=str,  help="data_dir",default='../speculative/imprvement')
+    parser.add_argument("--data_dir", type=str,  help="data_dir",default='../speculative/off')
     parser.add_argument("--start_dataset", type=int, help="the beginning of the dataset",default=0)
     parser.add_argument("--end_dataset", type=int, help="the end of the dataset",default=10)
     parser.add_argument("--target_probe", type=str, help="target_probe",default="/home/ximing/semantic/speculative/weight/s1_valid_h100_32r1b-200data_math_output_last_hidden_list_best_probe_mse")#aime_output_last_hidden_list_best_probe_mse
@@ -526,16 +526,16 @@ if __name__ == "__main__":
 
     model_target_probe = SemanticEntropyProbTarget(5120, 2048)
     model_target_probe.load_state_dict(torch.load(f'{args.target_probe}.pt'))
-    model_target_probe = model_target_probe.to('cuda:2')
+    model_target_probe = model_target_probe.to('cuda:5')
     model_target_probe.eval()
 
 
     model_spec_probe = SemanticEntropyProbSpec(1536, 1024)
     model_spec_probe.load_state_dict(torch.load(f'{args.speculative_probe}.pt'))
-    model_spec_probe = model_spec_probe.to('cuda:2')
+    model_spec_probe = model_spec_probe.to('cuda:5')
     model_spec_probe.eval()
 
-    os.environ["CUDA_VISIBLE_DEVICES"] = "2"  # 实际对应物理 GPU 1
+    os.environ["CUDA_VISIBLE_DEVICES"] = "4"  # 实际对应物理 GPU 1
     llm_small = sgl.Engine(
     model_path="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
     enable_return_hidden_states=True,
@@ -544,7 +544,7 @@ if __name__ == "__main__":
     
 )
 
-    os.environ["CUDA_VISIBLE_DEVICES"] = "3"  # 实际对应物理 GPU 0
+    os.environ["CUDA_VISIBLE_DEVICES"] = "5"  # 实际对应物理 GPU 0
     llm_big = sgl.Engine(
     model_path="deepseek-ai/DeepSeek-R1-Distill-Qwen-32B",
     enable_return_hidden_states=True,
