@@ -45,8 +45,8 @@ SAMPLING_PARAMS_CHECK = {
 
 def speculative_accept(qi, pi, threshold_min=0.7):
     ratio = qi / pi if pi > 0 else 0
-    # if ratio < threshold_min:
-    #     return False
+    if ratio < threshold_min:
+        return False
     threshold = min(1.0, ratio)
     r = random.uniform(0, 1)
     return r < threshold
@@ -466,12 +466,12 @@ if __name__ == "__main__":
     parser.add_argument("--max_new_tokens", type=int, help="max_new_tokens", default=14000)
     parser.add_argument("--top_p", type=float, help="top_p", default=0.9)
     parser.add_argument("--top_k", type=int, help="top_k", default=50)
-    parser.add_argument("--seed", type=int, help="seed", default=3210)
+    parser.add_argument("--seed", type=int, help="seed", default=9870)
     args = parser.parse_args()
     
     seed_everything(args.seed)
 
-    probe_device = 'cuda:4'
+    probe_device = 'cuda:0'
     
     model_target_probe = SemanticEntropyProbTarget(5120, 2048)
     model_target_probe.load_state_dict(torch.load(f'{args.target_probe}.pt'))
@@ -483,7 +483,7 @@ if __name__ == "__main__":
     model_spec_probe = model_spec_probe.to(probe_device)
     model_spec_probe.eval()
 
-    os.environ["CUDA_VISIBLE_DEVICES"] = "4"
+    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
     llm_small = sgl.Engine(
         model_path="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
         enable_return_hidden_states=True,
@@ -491,7 +491,7 @@ if __name__ == "__main__":
         tp_size=1
     )
 
-    os.environ["CUDA_VISIBLE_DEVICES"] = "5"
+    os.environ["CUDA_VISIBLE_DEVICES"] = "1"
     llm_big = sgl.Engine(
         model_path="deepseek-ai/DeepSeek-R1-Distill-Qwen-32B",
         enable_return_hidden_states=True,

@@ -456,7 +456,7 @@ if __name__ == "__main__":
     parser.add_argument("--dataset", type=str, help="dataset", default='math-500')
     parser.add_argument("--target_model", type=str, help="target_model", default="deepseek-ai/DeepSeek-R1-Distill-Qwen-32B")
     parser.add_argument("--speculative_model", type=str, help="speculative_model", default="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
-    parser.add_argument("--data_dir", type=str, help="data_dir", default='../speculative/offq')
+    parser.add_argument("--data_dir", type=str, help="data_dir", default='../speculative/off')
     parser.add_argument("--start_dataset", type=int, help="the beginning of the dataset", default=100)
     parser.add_argument("--end_dataset", type=int, help="the end of the dataset", default=500)
     parser.add_argument("--target_probe", type=str, help="target_probe", default="/home/ximing/semantic/speculative/weight/s1_valid_h100_32r1b-200data_math_output_last_hidden_list_best_probe_mse")
@@ -466,12 +466,12 @@ if __name__ == "__main__":
     parser.add_argument("--max_new_tokens", type=int, help="max_new_tokens", default=14000)
     parser.add_argument("--top_p", type=float, help="top_p", default=0.9)
     parser.add_argument("--top_k", type=int, help="top_k", default=50)
-    parser.add_argument("--seed", type=int, help="seed", default=3210)
+    parser.add_argument("--seed", type=int, help="seed", default=6540)
     args = parser.parse_args()
     
     seed_everything(args.seed)
 
-    probe_device = 'cuda:4'
+    probe_device = 'cuda:2'
     
     model_target_probe = SemanticEntropyProbTarget(5120, 2048)
     model_target_probe.load_state_dict(torch.load(f'{args.target_probe}.pt'))
@@ -483,7 +483,7 @@ if __name__ == "__main__":
     model_spec_probe = model_spec_probe.to(probe_device)
     model_spec_probe.eval()
 
-    os.environ["CUDA_VISIBLE_DEVICES"] = "4"
+    os.environ["CUDA_VISIBLE_DEVICES"] = "2"
     llm_small = sgl.Engine(
         model_path="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
         enable_return_hidden_states=True,
@@ -491,7 +491,7 @@ if __name__ == "__main__":
         tp_size=1
     )
 
-    os.environ["CUDA_VISIBLE_DEVICES"] = "5"
+    os.environ["CUDA_VISIBLE_DEVICES"] = "3"
     llm_big = sgl.Engine(
         model_path="deepseek-ai/DeepSeek-R1-Distill-Qwen-32B",
         enable_return_hidden_states=True,
@@ -534,11 +534,18 @@ if __name__ == "__main__":
 
     # 注意: 原代码中 wrong_list 未定义，这里需要您提供
     # 暂时使用 range 作为示例
-    for idx, number in enumerate(tqdm(range(args.start_dataset, args.end_dataset))):
+    if args.seed == 9870:
+        wrong_list = [100, 101, 103, 119, 126, 138, 150, 154, 156, 168, 178, 189,  217, 219, 236, 240, 242, 264, 282, 284, 286, 295, 298, 303, 306, 308, 324, 326, 338, 340, 349, 352, 381, 383, 392, 400, 403, 419, 422,  456, 460, 466, 470, 481, 486, 490, 494, 498, 499]
+    elif args.seed ==3210:
+        wrong_list = [100, 101, 103, 126, 128, 131, 138, 145, 154, 163, 168, 188,  217, 219, 228, 236, 240, 242, 246, 248, 264, 284, 286, 295, 298, 301, 302, 303, 306, 308, 324, 326, 340, 349, 352, 365, 369, 372, 383, 387, 392, 400, 413, 419, 422, 425, 438,  460, 466, 481, 485, 490, 498]
+    elif args.seed == 6540:
+        wrong_list = [101, 103, 113, 126, 138, 154, 168, 217, 219, 225, 228, 240, 246, 264, 284, 286, 298, 306, 308, 324, 340, 349, 352, 355, 359, 365, 369, 381, 383, 392, 400, 403, 419, 422, 456, 460, 470, 481, 485, 486, 490, 491, 497, 498]
+    for idx, number in enumerate(tqdm(wrong_list)):
         dirname = f'spec_{args.dataset}_{number}'
+        number = number-100
         dir_path = os.path.join(f"{args.dataset}{args.data_dir}{args.seed}", dirname)
-        problem = problems_and_answers[idx]['problem']
-        answer = problems_and_answers[idx]['answer']
+        problem = problems_and_answers[number]['problem']
+        answer = problems_and_answers[number]['answer']
         failed = process_file_to_json(
             dir_path, llm_big, llm_small, target_tokenizer, speculative_tokenizer,
             problem, answer, args.max_new_tokens, model_target_probe, model_spec_probe, number, probe_device

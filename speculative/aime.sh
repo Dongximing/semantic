@@ -13,6 +13,8 @@
 
 # python off.py --seed 321 --dataset math-500 --start_dataset 100 --end_dataset 500
 # python off.py --seed 654 --dataset math-500 --start_dataset 100 --end_dataset 500
-python off1.py --seed 321
-python off1.py --seed 654
-python off1.py --seed 987
+# python off2.py --seed 321
+#
+python off2.py --seed 3210
+python off2.py --seed 6540
+python off2.py --seed 9870
