@@ -45,8 +45,8 @@ SAMPLING_PARAMS_CHECK = {
 
 def speculative_accept(qi, pi, threshold_min=0.7):
     ratio = qi / pi if pi > 0 else 0
-    if ratio < threshold_min:
-        return False
+    # if ratio < threshold_min:
+    #     return False
     threshold = min(1.0, ratio)
     r = random.uniform(0, 1)
     return r < threshold
@@ -252,7 +252,7 @@ def speculative_decoding(llm_big, llm_small, target_tokenizer, speculative_token
 
             checking_target_text = generated_text + speculative_real_output_text
             valid_checking_target_text_len = len(target_tokenizer.encode(generated_text))
-            # print('checking_target_text',checking_target_text)
+            print('checking_target_text',checking_target_text)
             
             checking_start = time.time()
             checking_outputs = llm_big.generate(
@@ -273,7 +273,7 @@ def speculative_decoding(llm_big, llm_small, target_tokenizer, speculative_token
             result = all(small["id"] in potential_sets[i] for i, small in enumerate(prob_small_result))
             
             if result:
-                # print('all accpet!')
+                # print('all accpet!\U0001F600')
                 detail.append({'spe_model': speculative_real_output_text})
                 correct_spe_number += 1
                 use_target = False
@@ -336,6 +336,7 @@ def speculative_decoding(llm_big, llm_small, target_tokenizer, speculative_token
             time_detial.append({'computing_prob_time': computing_prob_time})
             
             if speculative_accept(prob_target, prob_spec):
+                # print('\U0001F600\U0001F600 ----')
                 detail.append({'spe_model': speculative_real_output_text})
                 correct_spe_number += 1
                 use_target = False
@@ -354,6 +355,10 @@ def speculative_decoding(llm_big, llm_small, target_tokenizer, speculative_token
                     generated_text = generated_text + speculative_outputs[0]['text']
                     break
             else:
+                # print('❌ ❌ ❌ ')
+                generated_text = target_text + speculative_tokenizer.decode(
+    speculative_tokenizer(small_input, return_tensors="pt")['input_ids'][0,original_speculative_text_len :].tolist()
+)
                 use_target = True
 
         if use_target:
@@ -454,24 +459,24 @@ def process_file_to_json(
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str, help="dataset", default='math-500')
-    parser.add_argument("--target_model", type=str, help="target_model", default="deepseek-ai/DeepSeek-R1-Distill-Qwen-32B")
-    parser.add_argument("--speculative_model", type=str, help="speculative_model", default="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
-    parser.add_argument("--data_dir", type=str, help="data_dir", default='../speculative/off')
+    parser.add_argument("--target_model", type=str, help="target_model", default="/home/original_models/QwQ-32B")
+    parser.add_argument("--speculative_model", type=str, help="speculative_model", default="/home/original_models/DeepSeek-R1-Distill-Qwen-1.5B")
+    parser.add_argument("--data_dir", type=str, help="data_dir", default='../speculative/qwq32-r1')
     parser.add_argument("--start_dataset", type=int, help="the beginning of the dataset", default=100)
     parser.add_argument("--end_dataset", type=int, help="the end of the dataset", default=500)
-    parser.add_argument("--target_probe", type=str, help="target_probe", default="/home/ximing/semantic/speculative/weight/s1_valid_h100_32r1b-200data_math_output_last_hidden_list_best_probe_mse")
-    parser.add_argument("--speculative_probe", type=str, help="speculative_probe", default="/home/ximing/semantic/speculative/weight/s1_valid_h100_r1.5b_math_output_last_hidden_list_best_probe_mse")
+    parser.add_argument("--target_probe", type=str, help="speculative_probe", default="/shared_workspace_mfs/ximing/weight/s1_valid_h100_qwq-32b_math_output_last_hidden_list_best_probe_mse")
+    parser.add_argument("--speculative_probe", type=str, help="target_probe", default="/shared_workspace_mfs/ximing/weight/s1_valid_h100_r1.5b_math_output_last_hidden_list_best_probe_mse")
     parser.add_argument("--target_temperature", type=float, help="target_temperature", default=0.1)
     parser.add_argument("--speculative_temperature", type=float, help="speculative_temperature", default=0.6)
     parser.add_argument("--max_new_tokens", type=int, help="max_new_tokens", default=14000)
     parser.add_argument("--top_p", type=float, help="top_p", default=0.9)
     parser.add_argument("--top_k", type=int, help="top_k", default=50)
-    parser.add_argument("--seed", type=int, help="seed", default=9870)
+    parser.add_argument("--seed", type=int, help="seed", default=3210)
     args = parser.parse_args()
     
     seed_everything(args.seed)
 
-    probe_device = 'cuda:0'
+    probe_device = 'cuda:6'
     
     model_target_probe = SemanticEntropyProbTarget(5120, 2048)
     model_target_probe.load_state_dict(torch.load(f'{args.target_probe}.pt'))
@@ -483,17 +488,17 @@ if __name__ == "__main__":
     model_spec_probe = model_spec_probe.to(probe_device)
     model_spec_probe.eval()
 
-    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+    os.environ["CUDA_VISIBLE_DEVICES"] = "6"
     llm_small = sgl.Engine(
-        model_path="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
+        model_path=args.speculative_model,
         enable_return_hidden_states=True,
         mem_fraction_static=0.7,
         tp_size=1
     )
 
-    os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+    os.environ["CUDA_VISIBLE_DEVICES"] = "7"
     llm_big = sgl.Engine(
-        model_path="deepseek-ai/DeepSeek-R1-Distill-Qwen-32B",
+        model_path=args.target_model,
         enable_return_hidden_states=True,
         mem_fraction_static=0.9,
         tp_size=1
@@ -534,16 +539,11 @@ if __name__ == "__main__":
 
     # 注意: 原代码中 wrong_list 未定义，这里需要您提供
     # 暂时使用 range 作为示例
-    if args.seed == 9870:
-        wrong_list = [100, 101, 103, 119, 126, 138, 150, 154, 156, 168, 178, 189,  217, 219, 236, 240, 242, 264, 282, 284, 286, 295, 298, 303, 306, 308, 324, 326, 338, 340, 349, 352, 381, 383, 392, 400, 403, 419, 422,  456, 460, 466, 470, 481, 486, 490, 494, 498, 499]
-    elif args.seed ==3210:
-        wrong_list = [100, 101, 103, 126, 128, 131, 138, 145, 154, 163, 168, 188,  217, 219, 228, 236, 240, 242, 246, 248, 264, 284, 286, 295, 298, 301, 302, 303, 306, 308, 324, 326, 340, 349, 352, 365, 369, 372, 383, 387, 392, 400, 413, 419, 422, 425, 438,  460, 466, 481, 485, 490, 498]
-    for idx, number in enumerate(tqdm(wrong_list)):
+    for idx, number in enumerate(tqdm(range(args.start_dataset, args.end_dataset))):
         dirname = f'spec_{args.dataset}_{number}'
-        number = number-100
         dir_path = os.path.join(f"{args.dataset}{args.data_dir}{args.seed}", dirname)
-        problem = problems_and_answers[number]['problem']
-        answer = problems_and_answers[number]['answer']
+        problem = problems_and_answers[idx]['problem']
+        answer = problems_and_answers[idx]['answer']
         failed = process_file_to_json(
             dir_path, llm_big, llm_small, target_tokenizer, speculative_tokenizer,
             problem, answer, args.max_new_tokens, model_target_probe, model_spec_probe, number, probe_device

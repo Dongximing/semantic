@@ -252,7 +252,7 @@ def speculative_decoding(llm_big, llm_small, target_tokenizer, speculative_token
 
             checking_target_text = generated_text + speculative_real_output_text
             valid_checking_target_text_len = len(target_tokenizer.encode(generated_text))
-            # print('checking_target_text',checking_target_text)
+            print('checking_target_text',checking_target_text)
             
             checking_start = time.time()
             checking_outputs = llm_big.generate(
@@ -273,7 +273,7 @@ def speculative_decoding(llm_big, llm_small, target_tokenizer, speculative_token
             result = all(small["id"] in potential_sets[i] for i, small in enumerate(prob_small_result))
             
             if result:
-                # print('all accpet!')
+                # print('all accpet!\U0001F600')
                 detail.append({'spe_model': speculative_real_output_text})
                 correct_spe_number += 1
                 use_target = False
@@ -336,6 +336,7 @@ def speculative_decoding(llm_big, llm_small, target_tokenizer, speculative_token
             time_detial.append({'computing_prob_time': computing_prob_time})
             
             if speculative_accept(prob_target, prob_spec):
+                # print('\U0001F600\U0001F600 ----')
                 detail.append({'spe_model': speculative_real_output_text})
                 correct_spe_number += 1
                 use_target = False
@@ -354,6 +355,10 @@ def speculative_decoding(llm_big, llm_small, target_tokenizer, speculative_token
                     generated_text = generated_text + speculative_outputs[0]['text']
                     break
             else:
+                # print('❌ ❌ ❌ ')
+                generated_text = target_text + speculative_tokenizer.decode(
+    speculative_tokenizer(small_input, return_tensors="pt")['input_ids'][0,original_speculative_text_len :].tolist()
+)
                 use_target = True
 
         if use_target:
@@ -453,14 +458,14 @@ def process_file_to_json(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", type=str, help="dataset", default='math-500')
-    parser.add_argument("--target_model", type=str, help="target_model", default="deepseek-ai/DeepSeek-R1-Distill-Qwen-32B")
-    parser.add_argument("--speculative_model", type=str, help="speculative_model", default="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
-    parser.add_argument("--data_dir", type=str, help="data_dir", default='../speculative/offq')
-    parser.add_argument("--start_dataset", type=int, help="the beginning of the dataset", default=100)
-    parser.add_argument("--end_dataset", type=int, help="the end of the dataset", default=500)
-    parser.add_argument("--target_probe", type=str, help="target_probe", default="/home/ximing/semantic/speculative/weight/s1_valid_h100_32r1b-200data_math_output_last_hidden_list_best_probe_mse")
-    parser.add_argument("--speculative_probe", type=str, help="speculative_probe", default="/home/ximing/semantic/speculative/weight/s1_valid_h100_r1.5b_math_output_last_hidden_list_best_probe_mse")
+    parser.add_argument("--dataset", type=str, help="dataset", default='aime')
+    parser.add_argument("--target_model", type=str, help="target_model", default="/home/original_models/QwQ-32B")
+    parser.add_argument("--speculative_model", type=str, help="speculative_model", default="/home/original_models/DeepSeek-R1-Distill-Qwen-1.5B")
+    parser.add_argument("--data_dir", type=str, help="data_dir", default='../speculative/qwq32-r1')
+    parser.add_argument("--start_dataset", type=int, help="the beginning of the dataset", default=0)
+    parser.add_argument("--end_dataset", type=int, help="the end of the dataset", default=30)
+    parser.add_argument("--target_probe", type=str, help="speculative_probe", default="/shared_workspace_mfs/ximing/weight/s1_valid_h100_qwq-32b_math_output_last_hidden_list_best_probe_mse")
+    parser.add_argument("--speculative_probe", type=str, help="target_probe", default="/shared_workspace_mfs/ximing/weight/s1_valid_h100_r1.5b_math_output_last_hidden_list_best_probe_mse")
     parser.add_argument("--target_temperature", type=float, help="target_temperature", default=0.1)
     parser.add_argument("--speculative_temperature", type=float, help="speculative_temperature", default=0.6)
     parser.add_argument("--max_new_tokens", type=int, help="max_new_tokens", default=14000)
@@ -485,7 +490,7 @@ if __name__ == "__main__":
 
     os.environ["CUDA_VISIBLE_DEVICES"] = "4"
     llm_small = sgl.Engine(
-        model_path="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
+        model_path=args.speculative_model,
         enable_return_hidden_states=True,
         mem_fraction_static=0.7,
         tp_size=1
@@ -493,7 +498,7 @@ if __name__ == "__main__":
 
     os.environ["CUDA_VISIBLE_DEVICES"] = "5"
     llm_big = sgl.Engine(
-        model_path="deepseek-ai/DeepSeek-R1-Distill-Qwen-32B",
+        model_path=args.target_model,
         enable_return_hidden_states=True,
         mem_fraction_static=0.9,
         tp_size=1
