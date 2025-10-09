@@ -12,9 +12,9 @@ def check_math_correctness(ref, generation):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--start', type=int, default=100)
-    parser.add_argument('--end', type=int, default=500)
-    parser.add_argument('--dataset', type=str, default='math')
+    parser.add_argument('--start', type=int, default=0)
+    parser.add_argument('--end', type=int, default=198)
+    parser.add_argument('--dataset', type=str, default='gpqa')
     parser.add_argument('--eval_path', type=str, default='/data/semantic/baseline/r1_1.5B_baseline_math_500_seed42')
     parser.add_argument('--seed', type=int, default=3210)
     args = parser.parse_args()
@@ -30,28 +30,29 @@ if __name__ == '__main__':
     no = 0
     for idx, number in enumerate(tqdm(range(args.start, args.end))):
 
-        if args.dataset == 'math':
-            dirname = f'spec_{args.dataset}_{number}'
-        elif args.dataset == 'aime':
-            dirname = f'spec_{args.dataset}_{number}'
-        elif args.dataset == 'amc23':
-            dirname = f'spec_{args.dataset}_{number}'
+        # if args.dataset == 'math':
+        #     dirname = f'spec_{args.dataset}_{number}'
+        # elif args.dataset == 'aime':
+        #     dirname = f'spec_{args.dataset}_{number}'
+        # elif args.dataset == 'amc23':
+        dirname = f'seed_{args.seed}_baseline_{args.dataset}_{number}'
         dir_path = os.path.join(args.eval_path, dirname)
-        json_path = os.path.join(dir_path, "result.json")
+        json_path = os.path.join(dir_path, "generation.json")
         if not os.path.exists(json_path):
             print(f"[Warning] {json_path} does not exist, skipping...")
             no+=1
             continue
         with open(json_path, "r", encoding="utf-8") as f:
             generations = json.load(f)
-            predict = generations['reasoning']
+            generations = generations[0]
+            predict = generations['real_answer']
             whole_time+=generations['execution_time']
-            whole_number_of_tokens += generations['number_tokens']
+            whole_number_of_tokens += generations['tokens_full_answer']
             standard = generations['answer']
-            whole_length += generations['number_tokens']
+            whole_length += generations['tokens_full_answer']
         result = check_math_correctness(standard,predict)
         if result:
-            number_of_tokens += generations['number_tokens']
+            number_of_tokens += generations['tokens_full_answer']
             time += generations['execution_time']
             number_correct += 1
         else:

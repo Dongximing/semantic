@@ -157,7 +157,7 @@ if __name__ == "__main__":
         model_name = "DeepSeek-R1-Distill-1.5b"
 
     Tokenizer = AutoTokenizer.from_pretrained('deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B')
-    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+    os.environ["CUDA_VISIBLE_DEVICES"] = "1"
     if args.model == "Qwen/QwQ-32B":
         llm = sgl.Engine(  model_path="/home/original_models/QwQ-32B",
             mem_fraction_static=0.9,
