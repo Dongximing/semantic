@@ -483,24 +483,24 @@ if __name__ == "__main__":
     model_spec_probe = model_spec_probe.to(probe_device)
     model_spec_probe.eval()
 
-    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+    os.environ["CUDA_VISIBLE_DEVICES"] = "6"
     llm_small = sgl.Engine(
-        model_path="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
+        model_path=args.speculative_model,
         enable_return_hidden_states=True,
-        mem_fraction_static=0.7,
+        mem_fraction_static=0.3,
         tp_size=1
     )
 
-    os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+    os.environ["CUDA_VISIBLE_DEVICES"] = "7"
     llm_big = sgl.Engine(
-        model_path="deepseek-ai/DeepSeek-R1-Distill-Qwen-32B",
+        model_path=args.target_model,
         enable_return_hidden_states=True,
         mem_fraction_static=0.9,
         tp_size=1
     )
 
     target_tokenizer = transformers.AutoTokenizer.from_pretrained(
-        args.target_model,
+        args.speculative_model,
         trust_remote_code=True
     )
 
@@ -531,20 +531,13 @@ if __name__ == "__main__":
         problems_and_answers = [{"problem": item["question"], "answer": item["answer"]} for item in ds]
     else:
         problems_and_answers = [{"problem": item["problem"], "answer": item["answer"]} for item in ds]
-
-    # 注意: 原代码中 wrong_list 未定义，这里需要您提供
-    # 暂时使用 range 作为示例
-    if args.seed ==3210:
-        wrong_list = [6, 27, 37]
-    elif args.seed == 6540:
-        wrong_list = [0,32]
-    else:
-        wrong_list = [13, 35]
-    for idx, number in enumerate(wrong_list):
+   
+    
+    for idx, number in enumerate(tqdm(range(args.start_dataset,args.end_dataset))):
         dirname = f'spec_{args.dataset}_{number}'
         dir_path = os.path.join(f"{args.dataset}{args.data_dir}{args.seed}", dirname)
-        problem = problems_and_answers[number]['problem']
-        answer = problems_and_answers[number]['answer']
+        problem = problems_and_answers[idx]['problem']
+        answer = problems_and_answers[idx]['answer']
         failed = process_file_to_json(
             dir_path, llm_big, llm_small, target_tokenizer, speculative_tokenizer,
             problem, answer, args.max_new_tokens, model_target_probe, model_spec_probe, number, probe_device

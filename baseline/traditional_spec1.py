@@ -11,6 +11,7 @@ import time
 import requests
 import json
 import math
+from utils import *
 MATH_PROMPT = "\nPlease reason step by step, and put your final answer within \\boxed{}."
 def seed_everything(seed):
     torch.manual_seed(seed)
@@ -23,7 +24,6 @@ def seed_everything(seed):
         torch.backends.cudnn.benchmark = False
 
 def speculative_accept(qi, pi, threshold_min=0.7):
-
     ratio = qi / pi if pi > 0 else 0
     threshold = min(1.0, ratio)
     r = random.uniform(0, 1)
@@ -89,7 +89,7 @@ def extract_potential_ids(input_top_logprobs, input_token_logprobs, draft_len_ou
 def speculative_decoding(llm_big,llm_small,target_tokenizer,speculative_tokenizer,problem,answer,max_new_tokens):
     start_time = time.time()
     messages = [
-            {"role": "user", "content": problem + MATH_PROMPT}
+            {"role": "user", "content": problem}
         ]
     # apply the pattern for speculative model and target model
     target_text = target_tokenizer.apply_chat_template(  # big
@@ -107,7 +107,7 @@ def speculative_decoding(llm_big,llm_small,target_tokenizer,speculative_tokenize
     sampling_params = {
         "temperature": 0.6,
         "top_p": 0.95,
-        "max_new_tokens": 20,
+        "max_new_tokens": 30,
 
     }
     break_flag = False
@@ -135,7 +135,7 @@ def speculative_decoding(llm_big,llm_small,target_tokenizer,speculative_tokenize
         # print('unvalid_speculative_real_output_text',unvalid_speculative_real_output_text)
         unvalid_id = speculative_tokenizer(valid_draft_text+unvalid_speculative_real_output_text)["input_ids"][-draft_len_output:]
         # print('draft_len_output',draft_len_output)
-        print('unvalid_id',unvalid_id)
+        # print('unvalid_id',unvalid_id)
         prob_small_result = [
                 {"id": unvalid_id[index], "prob": math.exp(lp)}
                 for index, (lp, _, _) in enumerate(speculative_output[0]['meta_info']['output_token_logprobs'])
@@ -161,7 +161,7 @@ def speculative_decoding(llm_big,llm_small,target_tokenizer,speculative_tokenize
                         logprob_start_len=valid_checking_target_text_len-2,top_logprobs_num=2
             
                     )
-        print('checking_outputs',checking_outputs)
+        # print('checking_outputs',checking_outputs)
         potential_ids = extract_potential_ids(checking_outputs[0]['meta_info']['input_top_logprobs'],checking_outputs[0]['meta_info']['input_token_logprobs'], draft_len_output)
         input_top_logprobs = checking_outputs[0]['meta_info']['input_top_logprobs']
 
@@ -182,8 +182,8 @@ def speculative_decoding(llm_big,llm_small,target_tokenizer,speculative_tokenize
             {"id": tid, "prob": math.exp(lp) if lp is not None else 0.0}
             for lp, tid, _ in checking_outputs[0]['meta_info']['input_token_logprobs'][-draft_len_output:]
         ]
-        print('prob_big_result', len(prob_big_result))
-        print('prob_small_result', len(prob_small_result))
+        # print('prob_big_result', len(prob_big_result))
+        # print('prob_small_result', len(prob_small_result))
         if len(prob_small_result) != len(prob_big_result):
             raise ValueError("结果列表长度不一致，无法逐项比较")
         i = 0
@@ -194,6 +194,9 @@ def speculative_decoding(llm_big,llm_small,target_tokenizer,speculative_tokenize
 
 
             # 只要 small 的 id 和 big / big1 的 id 有一个对得上就接受
+            if small["id"]  == 151649:
+                continue
+
             if small["id"] in potential_ids[index]:
                 # print(f'small id in big model top2 {small["id"]} in {potential_ids[index]}')
                 continue
@@ -302,12 +305,35 @@ def inference_model_pickle(task_name: str,  base_dir,target_tokenizer,
         ds = load_dataset("HuggingFaceH4/aime_2024", split="train")
     elif args.dataset == "amc23":
         ds = load_dataset("zwhe99/amc23", split="test")
+    elif args.dataset == "gpqa":
+        # if os.getenv("HF_HUB_OFFLINE", "0") == "1":
+        loaded =load_dataset("/home/ximing/semantic/baseline/gpqa", "gpqa_diamond")
+        subset = loaded["train"].select(range(start, end))
+        train_data = subset.to_pandas()
+        ds = [row.to_dict() for _, row in train_data.iterrows()]
+        for problem in ds:
+            multiple_choice_string, correct_answer_letter = (
+                get_GPQA_multiple_choice_answers(problem)
+            )
+
+            problem["problem"] = (
+                "Return your final response within \\boxed{{}} and only include the letter choice (A, B, C, or D) as your final response. "
+                + problem["Question"]
+                + "\n"
+                + multiple_choice_string
+            )
+            problem["answer"] = correct_answer_letter
+        
     else:
         raise ValueError(f"Unknown task: {task_name}")
 
-    ds = ds.select(range(start, end))
+    
     if args.dataset == "amc23":
+    
         problems_and_answers = [{"problem": item["question"], "answer": item["answer"]} for item in ds]
+    elif args.dataset == "gpqa":
+        print('------')
+        problems_and_answers = [{"problem": item["problem"], "answer": item["answer"]} for item in ds]
     else:
         problems_and_answers = [{"problem": item["problem"], "answer": item["answer"]} for item in ds]
 
@@ -322,11 +348,11 @@ def inference_model_pickle(task_name: str,  base_dir,target_tokenizer,
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", type=str, help="dataset", default='amc23')  # math-500
-    parser.add_argument("--seed", type=int, help="seed", default=3210)
+    parser.add_argument("--dataset", type=str, help="dataset", default='gpqa')  # math-500
+    parser.add_argument("--seed", type=int, help="seed", default=9870)
     parser.add_argument("--model", type=str, help="model", default="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B")
-    parser.add_argument("--start", type=int, help="start", default=20)
-    parser.add_argument("--end", type=int, help="end", default=21)
+    parser.add_argument("--start", type=int, help="start", default=0)
+    parser.add_argument("--end", type=int, help="end", default=198)
     args = parser.parse_args()
     seed_everything(args.seed)
     if args.model == "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B":
@@ -341,17 +367,17 @@ if __name__ == "__main__":
         model_name = "DeepSeek-R1-Distill-1.5b"
 
     Tokenizer = AutoTokenizer.from_pretrained('deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B')
-    os.environ["CUDA_VISIBLE_DEVICES"] = "2"  
+    os.environ["CUDA_VISIBLE_DEVICES"] = "6"  
     llm_small = sgl.Engine(
-    model_path="deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
+    model_path="/home/original_models/DeepSeek-R1-Distill-Qwen-1.5B",
     mem_fraction_static=0.3,
     tp_size=1   
     
 )
 
-    os.environ["CUDA_VISIBLE_DEVICES"] = "3" 
+    os.environ["CUDA_VISIBLE_DEVICES"] = "7" 
     llm_big = sgl.Engine(
-    model_path="deepseek-ai/DeepSeek-R1-Distill-Qwen-32B",
+    model_path="/home/original_models/DeepSeek-R1-Distill-Qwen-32B",
     mem_fraction_static=0.9,
    tp_size=1 
 )   
@@ -368,7 +394,7 @@ if __name__ == "__main__":
 
 
 
-    base_dir = f'../baseline/testsglang_spec_{model_name}_{args.dataset}_seed{args.seed}/'
+    base_dir = f'../baseline/testsglang_spec_32br1_{model_name}_{args.dataset}_seed{args.seed}/'
     inference_model_pickle(
         task_name=args.dataset,
         base_dir=base_dir,

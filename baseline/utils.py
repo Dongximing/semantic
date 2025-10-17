@@ -86,3 +86,5 @@ def get_GPQA_multiple_choice_answers(data):
     )
 
     return multiple_choice_string, correct_answer_letter
+
+

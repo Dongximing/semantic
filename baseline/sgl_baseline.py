@@ -170,7 +170,7 @@ if __name__ == "__main__":
 
 
 
-    base_dir = f'../h100_{model_name}_{args.dataset}_seed{args.seed}/'
+    base_dir = f'../h100_qwq_{model_name}_{args.dataset}_seed{args.seed}/'
     inference_model_pickle(
         task_name=args.dataset,
         base_dir=base_dir,

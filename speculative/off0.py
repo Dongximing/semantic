@@ -492,7 +492,7 @@ if __name__ == "__main__":
     llm_small = sgl.Engine(
         model_path=args.speculative_model,
         enable_return_hidden_states=True,
-        mem_fraction_static=0.7,
+        mem_fraction_static=0.3,
         tp_size=1
     )
 

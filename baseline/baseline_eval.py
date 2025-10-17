@@ -16,7 +16,7 @@ if __name__ == '__main__':
     parser.add_argument('--end', type=int, default=198)
     parser.add_argument('--dataset', type=str, default='gpqa')
     parser.add_argument('--eval_path', type=str, default='/data/semantic/baseline/r1_1.5B_baseline_math_500_seed42')
-    parser.add_argument('--seed', type=int, default=3210)
+    parser.add_argument('--seed', type=int, default=9870)
     args = parser.parse_args()
 
     time = 0
