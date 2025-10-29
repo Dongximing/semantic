@@ -60,7 +60,7 @@ def getting_training_examples(pkl_path,method):
         for g in group[1:]:
             if g['probability_of_deberta'] is not None:
                 if method == "last_hidden_state":
-                    x.append(g['last_hidden_state'])
+                    x.append(g['last_hidden_state'].unsqueeze(0))
                 elif method == "last_second_token":
                     x.append(g['sec_last_hidden_state'])
                 elif method == "last_input_token":
@@ -185,7 +185,7 @@ def create_Xs_and_ys(datasets, scores, val_test_splits=[0.2, 0.1], random_state=
 def main(dataset,method,data_dir,model_name):
 
     start = 0
-    end = 175
+    end = 200
     X, Y = [], []
     #skip_numbers = [1, 9, 10, 17, 18, 19, 21, 26, 30, 32, 36, 41, 43, 62, 64, 71, 80, 82, 88, 94, 96, 97]
     #skip_numbers = [1, 9, 11, 17, 18, 19, 21, 25, 26, 41, 43, 50, 51, 63, 64, 66, 71, 80, 82, 88, 94, 96, 97]
@@ -211,13 +211,13 @@ def main(dataset,method,data_dir,model_name):
     train_set = ProbeDataset(X_train, y_train)
     val_set = ProbeDataset(X_val, y_val)
     test_set = ProbeDataset(X_test, y_test)
-    train_loader = DataLoader(train_set, batch_size=64, shuffle=True)
-    val_loader = DataLoader(val_set, batch_size=256)
-    test_loader = DataLoader(test_set, batch_size=256)
+    train_loader = DataLoader(train_set, batch_size=128, shuffle=True)
+    val_loader = DataLoader(val_set, batch_size=128)
+    test_loader = DataLoader(test_set, batch_size=128)
 
     # 模型与训练
     INPUT_DIM = X_train.shape[1]
-    HIDDEN_DIM = 1024
+    HIDDEN_DIM = 2048
     model = SemanticEntropyModel(INPUT_DIM, HIDDEN_DIM)
     history = train_probe_regression(
         model, train_loader, val_loader, epochs=100, lr=1e-3,
@@ -261,9 +261,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     # "last_hidden_state", "last_second_token", "last_input_token", "output_last_hidden_list"
     parser.add_argument("--dataset", type=str,  help="dataset",default="math")
-    parser.add_argument("--model", type=str,  help="model",default="r1.5b")
-    parser.add_argument("--method", type=str,  help="method for X",default='output_last_hidden_list')
-    parser.add_argument("--data_dir", type=str,  help="method for X")
+    parser.add_argument("--model", type=str,  help="model",default="32bqwq")
+    parser.add_argument("--method", type=str,  help="method for X",default='last_hidden_state')
+    parser.add_argument("--data_dir", type=str,  help="method for X",default='/shared_workspace_mfs/ximing/data_s1_200_math_qwq')
     args = parser.parse_args()
     main(args.dataset,args.method,args.data_dir,args.model)
 
