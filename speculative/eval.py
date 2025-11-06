@@ -14,8 +14,8 @@ def check_math_correctness(ref, generation):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--start', type=int, default=0)
-    parser.add_argument('--end', type=int, default=30)
-    parser.add_argument('--dataset', type=str, default='aime')
+    parser.add_argument('--end', type=int, default=40)
+    parser.add_argument('--dataset', type=str, default='amc23')
     parser.add_argument('--eval_path', type=str, default='/data/semantic/speculative/spec_result_math-500_seed_456')
     parser.add_argument('--seed', type=int, default=123)
     args = parser.parse_args()

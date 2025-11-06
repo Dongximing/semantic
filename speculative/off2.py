@@ -45,7 +45,7 @@ SAMPLING_PARAMS_CHECK = {
 
 def speculative_accept(qi, pi, threshold_min=0.5):
     ratio = qi / pi if pi > 0 else 0
-    # threshold_min = random.choice([0.6])
+    # threshold_min = random.choice([0.5,0.7])
     # if ratio < threshold_min:
     #     return False
     threshold = min(1.0, ratio)
@@ -147,7 +147,7 @@ def convert_hidden_states_to_tensor(hidden_states):
 def speculative_decoding(llm_big, llm_small, target_tokenizer, speculative_tokenizer, 
                          problem, max_new_tokens, model_target_probe, model_spec_probe, probe_device):
     time_detial = []
-    messages = [{"role": "user", "content": problem + MATH_PROMPT}]
+    messages = [{"role": "user", "content": problem }]
     
     target_text = target_tokenizer.apply_chat_template(
         messages, tokenize=False, add_generation_prompt=True
@@ -357,9 +357,9 @@ def speculative_decoding(llm_big, llm_small, target_tokenizer, speculative_token
                     break
             else:
                 # print('❌ ❌ ❌ ')
-                generated_text = target_text + speculative_tokenizer.decode(
-    speculative_tokenizer(small_input, return_tensors="pt")['input_ids'][0,original_speculative_text_len :].tolist()
-)
+#                 generated_text = target_text + speculative_tokenizer.decode(
+#     speculative_tokenizer(small_input, return_tensors="pt")['input_ids'][0,original_speculative_text_len :].tolist()
+# )
                 use_target = True
 
         if use_target:
@@ -460,24 +460,24 @@ def process_file_to_json(
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str, help="dataset", default='gpqa')
-    parser.add_argument("--target_model", type=str, help="target_model", default="/home/original_models/QwQ-32B")
+    parser.add_argument("--target_model", type=str, help="target_model", default="/home/original_models/DeepSeek-R1-Distill-Qwen-32B")
     parser.add_argument("--speculative_model", type=str, help="speculative_model", default="/home/original_models/DeepSeek-R1-Distill-Qwen-1.5B")
-    parser.add_argument("--data_dir", type=str, help="data_dir", default='../speculative/qwq32-r1combine_0507')
+    parser.add_argument("--data_dir", type=str, help="data_dir", default='../speculative/r132-r1cross_domain')
     parser.add_argument("--start_dataset", type=int, help="the beginning of the dataset", default=0)
     parser.add_argument("--end_dataset", type=int, help="the end of the dataset", default=198)
-    parser.add_argument("--target_probe", type=str, help="speculative_probe", default="/home/ximing/semantic/training_limo_s1/s1_valid_h100_r1_mathqwq_output_last_hidden_list_best_probe_mse")
+    parser.add_argument("--target_probe", type=str, help="speculative_probe", default="/home/ximing/semantic/speculative/weight/s1_valid_h100_32r1b-200data_math_output_last_hidden_list_best_probe_mse")
     parser.add_argument("--speculative_probe", type=str, help="target_probe", default="/home/ximing/semantic/speculative/weight/s1_valid_h100_r1.5b_math_output_last_hidden_list_best_probe_mse")
     parser.add_argument("--target_temperature", type=float, help="target_temperature", default=0.1)
     parser.add_argument("--speculative_temperature", type=float, help="speculative_temperature", default=0.6)
     parser.add_argument("--max_new_tokens", type=int, help="max_new_tokens", default=14000)
     parser.add_argument("--top_p", type=float, help="top_p", default=0.9)
     parser.add_argument("--top_k", type=int, help="top_k", default=50)
-    parser.add_argument("--seed", type=int, help="seed", default=6540)
+    parser.add_argument("--seed", type=int, help="seed", default=9870)
     args = parser.parse_args()
     
     seed_everything(args.seed)
 
-    probe_device = 'cuda:6'
+    probe_device = 'cuda:4'
     
     model_target_probe = SemanticEntropyProbTarget(5120, 2048)
     model_target_probe.load_state_dict(torch.load(f'{args.target_probe}.pt'))
@@ -489,7 +489,7 @@ if __name__ == "__main__":
     model_spec_probe = model_spec_probe.to(probe_device)
     model_spec_probe.eval()
 
-    os.environ["CUDA_VISIBLE_DEVICES"] = "6"
+    os.environ["CUDA_VISIBLE_DEVICES"] = "4"
     llm_small = sgl.Engine(
         model_path=args.speculative_model,
         enable_return_hidden_states=True,
@@ -497,7 +497,7 @@ if __name__ == "__main__":
         tp_size=1
     )
 
-    os.environ["CUDA_VISIBLE_DEVICES"] = "7"
+    os.environ["CUDA_VISIBLE_DEVICES"] = "5"
     llm_big = sgl.Engine(
         model_path=args.target_model,
         enable_return_hidden_states=True,
@@ -557,13 +557,12 @@ if __name__ == "__main__":
 
     # 注意: 原代码中 wrong_list 未定义，这里需要您提供
     # 暂时使用 range 作为示例
-   # wrong_list = [100, 103, 108, 110, 119, 128, 136, 138, 150, 154, 164, 166, 176, 198, 204, 205, 210, 214, 217, 219, 240, 246, 264, 284, 286, 298, 306, 308, 324, 327, 340, 349, 352, 369, 372, 377, 383, 392, 400, 419, 422, 444, 454, 456, 460, 481, 487]
-    if args.seed == 9870:
-        wrong_list = [1, 3, 10, 15, 17, 18, 20, 21, 22, 23, 24, 25, 27, 28, 29, 30, 32, 33, 35, 36, 39, 42, 45, 46, 47, 48, 50, 52, 54, 55, 56, 57, 60, 61, 62, 63, 69, 71, 75, 76, 78, 79, 80, 81, 85, 87, 89, 91, 92, 93, 94, 97, 98, 99, 102, 104, 105, 106, 108, 113, 115, 116, 117, 118, 119, 121, 125, 126, 127, 129, 130, 131, 136, 137, 138, 139, 140, 142, 144, 145, 146, 147, 155, 157, 158, 160, 162, 163, 164, 165, 166, 167, 168, 170, 173, 174, 175, 176, 178, 179, 180, 182, 183, 185, 186, 187, 189, 190, 191, 192, 196, 197]
-    elif args.seed == 3210:
-        wrong_list = [1, 3, 6, 8, 9, 13, 15, 17, 18, 20, 21, 22, 24, 27, 28, 29, 30, 31, 36, 39, 42, 43, 47, 48, 50, 51, 52, 54, 56, 61, 62, 63, 67, 68, 71, 76, 78, 79, 80, 82, 84, 85, 89, 90, 91, 93, 94, 95, 98, 100, 101, 102, 105, 106, 109, 110, 113, 115, 117, 118, 120, 121, 124, 125, 126, 127, 128, 129, 130, 133, 137, 138, 139, 140, 142, 143, 144, 145, 147, 155, 160, 162, 163, 164, 165, 166, 167, 168, 170, 172, 173, 174, 176, 178, 179, 180, 182, 185, 186, 187, 189, 192, 196, 197]
+    if args.seed == 3210:
+        wrong_list = [1, 3, 7, 8, 9, 10, 12, 13, 15, 21, 23, 24, 25, 27, 29, 30, 31, 35, 36, 39, 42, 43, 45, 46, 47, 48, 52, 54, 55, 56, 61, 63, 68, 69, 74, 76, 77, 78, 79, 80, 84, 85, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 100, 102, 105, 106, 110, 112, 113, 115, 116, 117, 118, 120, 121, 122, 123, 125, 126, 127, 130, 131, 132, 135, 136, 137, 139, 140, 142, 143, 144, 147, 153, 155, 157, 160, 162, 163, 164, 165, 166, 167, 168, 170, 173, 174, 178, 180, 183, 185, 186, 187, 190, 192, 194, 196]
+    elif args.seed == 6540:
+        wrong_list =  [1, 3, 7, 9, 12, 13, 20, 21, 22, 23, 24, 26, 28, 29, 30, 31, 32, 33, 35, 36, 42, 43, 45, 47, 50, 52, 53, 56, 59, 61, 62, 63, 69, 71, 75, 76, 77, 78, 79, 80, 81, 83, 84, 85, 87, 89, 90, 91, 92, 93, 94, 96, 97, 98, 101, 102, 105, 106, 109, 110, 112, 113, 116, 117, 118, 119, 121, 125, 127, 129, 130, 131, 135, 136, 137, 138, 139, 140, 142, 143, 144, 145, 149, 152, 156, 158, 159, 160, 162, 163, 164, 165, 167, 168, 170, 173, 174, 175, 177, 178, 179, 180, 182, 183, 185, 186, 187, 189, 192, 194, 196]
     else:
-        wrong_list = [1, 3, 9, 10, 12, 13, 15, 17, 18, 20, 21, 22, 23, 24, 25, 28, 29, 30, 32, 33, 35, 36, 39, 42, 44, 45, 47, 48, 50, 52, 53, 54, 56, 62, 63, 69, 71, 74, 76, 78, 79, 81, 84, 85, 87, 88, 89, 90, 91, 92, 93, 94, 97, 98, 99, 100, 104, 105, 106, 108, 110, 112, 113, 115, 116, 117, 118, 120, 121, 125, 127, 128, 129, 130, 131, 133, 135, 136, 138, 139, 142, 144, 146, 147, 149, 152, 153, 155, 158, 159, 160, 162, 164, 166, 167, 168, 170, 173, 174, 176, 177, 178, 179, 180, 182, 183, 185, 187, 189, 190, 191, 192]
+        wrong_list = [4, 5, 8, 9, 10, 15, 17, 18, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 32, 33, 35, 36, 37, 39, 42, 43, 44, 45, 46, 47, 48, 52, 53, 55, 56, 57, 59, 62, 67, 69, 74, 75, 76, 79, 80, 83, 85, 89, 90, 91, 92, 93, 94, 95, 97, 99, 101, 105, 106, 110, 113, 115, 116, 117, 118, 120, 121, 125, 126, 127, 128, 129, 130, 135, 136, 138, 139, 140, 142, 143, 144, 145, 146, 149, 152, 155, 156, 157, 159, 160, 162, 163, 164, 165, 166, 167, 168, 173, 174, 176, 179, 180, 183, 185, 186, 187, 189, 192, 194, 196, 197]
     for idx, number in enumerate(tqdm(wrong_list)):
         dirname = f'spec_{args.dataset}_{number}'
         dir_path = os.path.join(f"{args.dataset}{args.data_dir}{args.seed}", dirname)

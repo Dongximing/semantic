@@ -45,7 +45,7 @@ SAMPLING_PARAMS_CHECK = {
 
 def speculative_accept(qi, pi, threshold_min=0.5):
     ratio = qi / pi if pi > 0 else 0
-    threshold_min = random.choice([0.6])
+    threshold_min = random.choice([0.7])
     if ratio < threshold_min:
         return False
     threshold = min(1.0, ratio)
@@ -225,7 +225,7 @@ def speculative_decoding(llm_big, llm_small, target_tokenizer, speculative_token
             
             if '</think>' in speculative_real_output_text:
                 speculative_outputs_ending_start = time.time()
-                speculative_outputs = llm_big.generate(
+                speculative_outputs = llm_small.generate(
                     [generated_text],
                     sampling_params=SAMPLING_PARAMS_END,
                     return_hidden_states=False,     
@@ -262,7 +262,7 @@ def speculative_decoding(llm_big, llm_small, target_tokenizer, speculative_token
                 return_hidden_states=True,
                 return_logprob=True,
                 logprob_start_len=valid_checking_target_text_len - 2,
-                top_logprobs_num=2
+                top_logprobs_num=1
             )
 
             potential_ids = extract_potential_ids(
@@ -282,7 +282,7 @@ def speculative_decoding(llm_big, llm_small, target_tokenizer, speculative_token
                 
                 if '</think>' in speculative_output['text']:
                     speculative_outputs_ending_start = time.time()
-                    speculative_outputs = llm_big.generate(
+                    speculative_outputs = llm_small.generate(
                         [generated_text],
                         sampling_params=SAMPLING_PARAMS_END,
                         return_hidden_states=False,     
@@ -345,7 +345,7 @@ def speculative_decoding(llm_big, llm_small, target_tokenizer, speculative_token
                 
                 if '</think>' in speculative_output['text']:
                     speculative_outputs_ending_start = time.time()
-                    speculative_outputs = llm_big.generate(
+                    speculative_outputs = llm_small.generate(
                         [generated_text],
                         sampling_params=SAMPLING_PARAMS_END,
                         return_hidden_states=False,     
@@ -357,9 +357,9 @@ def speculative_decoding(llm_big, llm_small, target_tokenizer, speculative_token
                     break
             else:
                 # print('❌ ❌ ❌ ')
-                generated_text = target_text + speculative_tokenizer.decode(
-    speculative_tokenizer(small_input, return_tensors="pt")['input_ids'][0,original_speculative_text_len :].tolist()
-)
+#                 generated_text = target_text + speculative_tokenizer.decode(
+#     speculative_tokenizer(small_input, return_tensors="pt")['input_ids'][0,original_speculative_text_len :].tolist()
+# )
                 use_target = True
 
         if use_target:
@@ -390,7 +390,7 @@ def speculative_decoding(llm_big, llm_small, target_tokenizer, speculative_token
                 detail.append({'target_model': target_real_output})
          
                 traget_ending_start = time.time()
-                speculative_outputs = llm_big.generate(
+                speculative_outputs = llm_small.generate(
                     [small_input + target_real_output],
                     sampling_params=SAMPLING_PARAMS_END,
                     return_hidden_states=False,
@@ -459,20 +459,20 @@ def process_file_to_json(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", type=str, help="dataset", default='gpqa')
-    parser.add_argument("--target_model", type=str, help="target_model", default="/home/original_models/QwQ-32B")
+    parser.add_argument("--dataset", type=str, help="dataset", default='math-500')
+    parser.add_argument("--target_model", type=str, help="target_model", default="/home/original_models/DeepSeek-R1-Distill-Qwen-32B")
     parser.add_argument("--speculative_model", type=str, help="speculative_model", default="/home/original_models/DeepSeek-R1-Distill-Qwen-1.5B")
-    parser.add_argument("--data_dir", type=str, help="data_dir", default='../speculative/qwq32-r1combine_0507')
-    parser.add_argument("--start_dataset", type=int, help="the beginning of the dataset", default=0)
-    parser.add_argument("--end_dataset", type=int, help="the end of the dataset", default=198)
-    parser.add_argument("--target_probe", type=str, help="speculative_probe", default="/home/ximing/semantic/training_limo_s1/s1_valid_h100_r1_mathqwq_output_last_hidden_list_best_probe_mse")
-    parser.add_argument("--speculative_probe", type=str, help="target_probe", default="/home/ximing/semantic/speculative/weight/s1_valid_h100_r1.5b_math_output_last_hidden_list_best_probe_mse")
+    parser.add_argument("--data_dir", type=str, help="data_dir", default='../speculative/r132-r1cross_domain')
+    parser.add_argument("--start_dataset", type=int, help="the beginning of the dataset", default=100)
+    parser.add_argument("--end_dataset", type=int, help="the end of the dataset", default=500)
+    parser.add_argument("--target_probe", type=str, help="speculative_probe", default="/home/ximing/semantic/speculative/weight/s1_valid_h100_32b_gpqa_output_last_hidden_list_best_probe_mse")
+    parser.add_argument("--speculative_probe", type=str, help="target_probe", default="/home/ximing/semantic/speculative/weight/s1_valid_h100_r1.5b_gpqa_output_last_hidden_list_best_probe_mse")
     parser.add_argument("--target_temperature", type=float, help="target_temperature", default=0.1)
     parser.add_argument("--speculative_temperature", type=float, help="speculative_temperature", default=0.6)
     parser.add_argument("--max_new_tokens", type=int, help="max_new_tokens", default=14000)
     parser.add_argument("--top_p", type=float, help="top_p", default=0.9)
     parser.add_argument("--top_k", type=int, help="top_k", default=50)
-    parser.add_argument("--seed", type=int, help="seed", default=6540)
+    parser.add_argument("--seed", type=int, help="seed", default=9870)
     args = parser.parse_args()
     
     seed_everything(args.seed)
@@ -557,12 +557,34 @@ if __name__ == "__main__":
 
     # 注意: 原代码中 wrong_list 未定义，这里需要您提供
     # 暂时使用 range 作为示例
-   # wrong_list = [100, 103, 108, 110, 119, 128, 136, 138, 150, 154, 164, 166, 176, 198, 204, 205, 210, 214, 217, 219, 240, 246, 264, 284, 286, 298, 306, 308, 324, 327, 340, 349, 352, 369, 372, 377, 383, 392, 400, 419, 422, 444, 454, 456, 460, 481, 487]
-    for idx, number in enumerate(tqdm(range(args.start_dataset, args.end_dataset))):
+    if args.dataset == "math-500":
+        if args.seed == 3210:
+            wrong_list =  [100, 103, 104, 119, 137, 138, 154, 166, 168, 184,  210, 214, 217, 219, 222, 223, 236, 239, 240, 242, 246, 264, 268, 284, 286, 298, 299, 303, 306, 308, 324, 326, 332, 340, 358, 381, 383, 385, 387, 392, 400, 412, 416, 419, 422,449, 456, 460, 481, 490, 491]
+        elif args.seed == 6540:
+            wrong_list = [100, 103, 119, 120, 123, 126, 128, 135, 138, 154, 164, 166, 168, 188,  210, 213, 214, 217, 219, 239, 240, 264, 284, 286, 291, 295, 298, 301, 303, 306, 308, 309, 324, 340, 351, 381, 383, 387, 392, 400, 406, 409, 419, 421, 422,  456, 458, 460, 481, 486, 490, 491, 497]
+        else:
+            wrong_list =  [100, 103, 104,  119, 126, 154, 158, 168,  210, 214, 217, 219, 222, 232, 236, 239, 240, 264, 284, 286, 295, 298, 306, 308, 311, 324, 327, 340, 351, 352, 381, 383, 392, 400, 419, 422, 432, 449, 456, 460, 461, 473, 478, 481, 490, 491, 497]
+    if args.dataset == "aime":
+        if args.seed == 3210:
+           wrong_list =  [ 4, 5, 7,  13, 15, 16, 25, 27]
+        elif args.seed == 6540:
+            wrong_list = [1,  4, 5,    13,  17,  23, 25, 27]
+        else:
+            wrong_list =  [1, 5,  8, 13, 15, 17,  25, 27]
+    if args.dataset == "amc23":
+        if args.seed == 3210:
+            wrong_list =   [7, 12, 15,  35, 36, 39]
+        elif args.seed == 6540:
+            wrong_list = [4, 7, 11, 27, 32]
+        else:
+            wrong_list =  [13, 32, 35, 36]
+    for idx, number in enumerate(tqdm(wrong_list)):
         dirname = f'spec_{args.dataset}_{number}'
+        if args.dataset == "math-500":
+            number = number - 100
         dir_path = os.path.join(f"{args.dataset}{args.data_dir}{args.seed}", dirname)
-        problem = problems_and_answers[idx]['problem']
-        answer = problems_and_answers[idx]['answer']
+        problem = problems_and_answers[number]['problem']
+        answer = problems_and_answers[number]['answer']
         failed = process_file_to_json(
             dir_path, llm_big, llm_small, target_tokenizer, speculative_tokenizer,
             problem, answer, args.max_new_tokens, model_target_probe, model_spec_probe, number, probe_device
