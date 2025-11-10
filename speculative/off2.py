@@ -28,7 +28,7 @@ SAMPLING_PARAMS_BASE = {
     "temperature": 0.6,
     "top_p": 0.95,
     "max_new_tokens": 500,
-    "stop_token_ids": [4710, 382, 1447, 271, 692, 1939, 2533, 3593],
+    "stop_token_ids": [11,13],
     "no_stop_trim": True
 }
 
@@ -45,9 +45,9 @@ SAMPLING_PARAMS_CHECK = {
 
 def speculative_accept(qi, pi, threshold_min=0.5):
     ratio = qi / pi if pi > 0 else 0
-    # threshold_min = random.choice([0.5,0.7])
-    # if ratio < threshold_min:
-    #     return False
+    threshold_min = random.choice([0.7])
+    if ratio < threshold_min:
+        return False
     threshold = min(1.0, ratio)
     r = random.uniform(0, 1)
     return r < threshold
@@ -357,9 +357,9 @@ def speculative_decoding(llm_big, llm_small, target_tokenizer, speculative_token
                     break
             else:
                 # print('❌ ❌ ❌ ')
-#                 generated_text = target_text + speculative_tokenizer.decode(
-#     speculative_tokenizer(small_input, return_tensors="pt")['input_ids'][0,original_speculative_text_len :].tolist()
-# )
+                generated_text = target_text + speculative_tokenizer.decode(
+    speculative_tokenizer(small_input, return_tensors="pt")['input_ids'][0,original_speculative_text_len :].tolist()
+)
                 use_target = True
 
         if use_target:
@@ -459,13 +459,13 @@ def process_file_to_json(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", type=str, help="dataset", default='gpqa')
-    parser.add_argument("--target_model", type=str, help="target_model", default="/home/original_models/DeepSeek-R1-Distill-Qwen-32B")
+    parser.add_argument("--dataset", type=str, help="dataset", default='amc23')
+    parser.add_argument("--target_model", type=str, help="target_model", default="/home/original_models/QwQ-32B")
     parser.add_argument("--speculative_model", type=str, help="speculative_model", default="/home/original_models/DeepSeek-R1-Distill-Qwen-1.5B")
-    parser.add_argument("--data_dir", type=str, help="data_dir", default='../speculative/r132-r1cross_domain')
+    parser.add_argument("--data_dir", type=str, help="data_dir", default='../speculative/qwq-r1')
     parser.add_argument("--start_dataset", type=int, help="the beginning of the dataset", default=0)
-    parser.add_argument("--end_dataset", type=int, help="the end of the dataset", default=198)
-    parser.add_argument("--target_probe", type=str, help="speculative_probe", default="/home/ximing/semantic/speculative/weight/s1_valid_h100_32r1b-200data_math_output_last_hidden_list_best_probe_mse")
+    parser.add_argument("--end_dataset", type=int, help="the end of the dataset", default=40)
+    parser.add_argument("--target_probe", type=str, help="speculative_probe", default="/shared_workspace_mfs/ximing/weight/s1_valid_h100_qwq-32b_math_output_last_hidden_list_best_probe_mse")
     parser.add_argument("--speculative_probe", type=str, help="target_probe", default="/home/ximing/semantic/speculative/weight/s1_valid_h100_r1.5b_math_output_last_hidden_list_best_probe_mse")
     parser.add_argument("--target_temperature", type=float, help="target_temperature", default=0.1)
     parser.add_argument("--speculative_temperature", type=float, help="speculative_temperature", default=0.6)
@@ -557,12 +557,14 @@ if __name__ == "__main__":
 
     # 注意: 原代码中 wrong_list 未定义，这里需要您提供
     # 暂时使用 range 作为示例
-    if args.seed == 3210:
-        wrong_list = [1, 3, 7, 8, 9, 10, 12, 13, 15, 21, 23, 24, 25, 27, 29, 30, 31, 35, 36, 39, 42, 43, 45, 46, 47, 48, 52, 54, 55, 56, 61, 63, 68, 69, 74, 76, 77, 78, 79, 80, 84, 85, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 100, 102, 105, 106, 110, 112, 113, 115, 116, 117, 118, 120, 121, 122, 123, 125, 126, 127, 130, 131, 132, 135, 136, 137, 139, 140, 142, 143, 144, 147, 153, 155, 157, 160, 162, 163, 164, 165, 166, 167, 168, 170, 173, 174, 178, 180, 183, 185, 186, 187, 190, 192, 194, 196]
-    elif args.seed == 6540:
-        wrong_list =  [1, 3, 7, 9, 12, 13, 20, 21, 22, 23, 24, 26, 28, 29, 30, 31, 32, 33, 35, 36, 42, 43, 45, 47, 50, 52, 53, 56, 59, 61, 62, 63, 69, 71, 75, 76, 77, 78, 79, 80, 81, 83, 84, 85, 87, 89, 90, 91, 92, 93, 94, 96, 97, 98, 101, 102, 105, 106, 109, 110, 112, 113, 116, 117, 118, 119, 121, 125, 127, 129, 130, 131, 135, 136, 137, 138, 139, 140, 142, 143, 144, 145, 149, 152, 156, 158, 159, 160, 162, 163, 164, 165, 167, 168, 170, 173, 174, 175, 177, 178, 179, 180, 182, 183, 185, 186, 187, 189, 192, 194, 196]
+    if args.seed == 9870:
+        wrong_list = [111]
+    elif args.seed ==6540:
+        wrong_list  = [6,36]
     else:
-        wrong_list = [4, 5, 8, 9, 10, 15, 17, 18, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 32, 33, 35, 36, 37, 39, 42, 43, 44, 45, 46, 47, 48, 52, 53, 55, 56, 57, 59, 62, 67, 69, 74, 75, 76, 79, 80, 83, 85, 89, 90, 91, 92, 93, 94, 95, 97, 99, 101, 105, 106, 110, 113, 115, 116, 117, 118, 120, 121, 125, 126, 127, 128, 129, 130, 135, 136, 138, 139, 140, 142, 143, 144, 145, 146, 149, 152, 155, 156, 157, 159, 160, 162, 163, 164, 165, 166, 167, 168, 173, 174, 176, 179, 180, 183, 185, 186, 187, 189, 192, 194, 196, 197]
+        # wrong_list  = [1, 13, 14, 15,  17, 18, 25, 27]
+        wrong_list  = [6, 12]
+
     for idx, number in enumerate(tqdm(wrong_list)):
         dirname = f'spec_{args.dataset}_{number}'
         dir_path = os.path.join(f"{args.dataset}{args.data_dir}{args.seed}", dirname)

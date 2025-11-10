@@ -28,7 +28,7 @@ SAMPLING_PARAMS_BASE = {
     "temperature": 0.6,
     "top_p": 0.95,
     "max_new_tokens": 500,
-    "stop_token_ids": [11,13],
+    "stop_token_ids": [0,11,13],
     "no_stop_trim": True
 }
 
@@ -43,11 +43,11 @@ SAMPLING_PARAMS_CHECK = {
     "max_new_tokens": 1
 }
 
-def speculative_accept(qi, pi, threshold_min=0.7):
+def speculative_accept(qi, pi, threshold_min=0.6):
     ratio = qi / pi if pi > 0 else 0
-    threshold_min = random.choice([0.5,0.7])
-    if ratio < threshold_min:
-        return False
+    # threshold_min = random.choice([0.6])
+    # if ratio < threshold_min:
+    #     return False
     threshold = min(1.0, ratio)
     r = random.uniform(0, 1)
     return r < threshold
@@ -459,12 +459,12 @@ def process_file_to_json(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", type=str, help="dataset", default='amc23')
+    parser.add_argument("--dataset", type=str, help="dataset", default='aime')
     parser.add_argument("--target_model", type=str, help="target_model", default="/home/original_models/DeepSeek-R1-Distill-Qwen-32B")
     parser.add_argument("--speculative_model", type=str, help="speculative_model", default="/home/original_models/DeepSeek-R1-Distill-Qwen-1.5B")
     parser.add_argument("--data_dir", type=str, help="data_dir", default='../speculative/r132-r1')
     parser.add_argument("--start_dataset", type=int, help="the beginning of the dataset", default=0)
-    parser.add_argument("--end_dataset", type=int, help="the end of the dataset", default=40)
+    parser.add_argument("--end_dataset", type=int, help="the end of the dataset", default=30)
     parser.add_argument("--target_probe", type=str, help="speculative_probe", default="/home/ximing/semantic/speculative/weight/s1_valid_h100_32r1b-200data_math_output_last_hidden_list_best_probe_mse")
     parser.add_argument("--speculative_probe", type=str, help="target_probe", default="/home/ximing/semantic/speculative/weight/s1_valid_h100_r1.5b_math_output_last_hidden_list_best_probe_mse")
     parser.add_argument("--target_temperature", type=float, help="target_temperature", default=0.1)
@@ -477,7 +477,7 @@ if __name__ == "__main__":
     
     seed_everything(args.seed)
 
-    probe_device = 'cuda:6'
+    probe_device = 'cuda:2'
     
     model_target_probe = SemanticEntropyProbTarget(5120, 2048)
     model_target_probe.load_state_dict(torch.load(f'{args.target_probe}.pt'))
@@ -489,7 +489,7 @@ if __name__ == "__main__":
     model_spec_probe = model_spec_probe.to(probe_device)
     model_spec_probe.eval()
 
-    os.environ["CUDA_VISIBLE_DEVICES"] = "6"
+    os.environ["CUDA_VISIBLE_DEVICES"] = "2"
     llm_small = sgl.Engine(
         model_path=args.speculative_model,
         enable_return_hidden_states=True,
@@ -497,7 +497,7 @@ if __name__ == "__main__":
         tp_size=1
     )
 
-    os.environ["CUDA_VISIBLE_DEVICES"] = "7"
+    os.environ["CUDA_VISIBLE_DEVICES"] = "3"
     llm_big = sgl.Engine(
         model_path=args.target_model,
         enable_return_hidden_states=True,
@@ -557,18 +557,19 @@ if __name__ == "__main__":
 
     # 注意: 原代码中 wrong_list 未定义，这里需要您提供
     # 暂时使用 range 作为示例
-    if args.seed == 9870:
-        wrong_list = [6]
-    elif args.seed ==6540:
-        wrong_list  = [7]
-    else:
-        wrong_list  = [6,27]
+    # if args.dataset == "amc23":
+    #     if args.seed == 9870:
+    #         wrong_list = [6, 11, 13, 15, 27, 28, 35]
+    #     elif args.seed ==6540:
+    #         wrong_list  = [7, 11, 12,27, 28, 36, 39]
+    #     else:
+    #         wrong_list  =  [4, 6, 8, 27,  32]
 
-    for idx, number in enumerate(tqdm(wrong_list)):
+    for idx, number in enumerate(tqdm(range(args.start_dataset, args.end_dataset))):
         dirname = f'spec_{args.dataset}_{number}'
         dir_path = os.path.join(f"{args.dataset}{args.data_dir}{args.seed}", dirname)
-        problem = problems_and_answers[number]['problem']
-        answer = problems_and_answers[number]['answer']
+        problem = problems_and_answers[idx]['problem']
+        answer = problems_and_answers[idx]['answer']
         failed = process_file_to_json(
             dir_path, llm_big, llm_small, target_tokenizer, speculative_tokenizer,
             problem, answer, args.max_new_tokens, model_target_probe, model_spec_probe, number, probe_device
