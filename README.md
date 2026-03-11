@@ -1,4 +1,4 @@
-# Semantic Repository Map
+# Beyond Tokens: Semantic-Aware Speculative Decoding for Efficient Inference by Probing Internal States
 
 This repository contains data generation, baseline inference, speculative decoding, and probe-training code for semantic uncertainty experiments.
 
