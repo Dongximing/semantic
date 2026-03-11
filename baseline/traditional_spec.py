@@ -33,50 +33,42 @@ def speculative_accept(qi, pi, threshold_min=0.7):
 NUMBER = 0
 def extract_potential_ids(input_top_logprobs, input_token_logprobs, draft_len_output):
     """
-    返回形如 [[top1_id, top2_id], ...] 的列表，长度为 draft_len_output。
-    回退规则：
-      - 若 top 为 None/空：用对应的 token 元组里的 id（若也拿不到则 0），并复制两次 [id, id]
-      - 若 top 有候选但缺少第二个候选：第二个用第一个顶上（复制）
-      - 若某个候选的结构不完整（不是 tuple/list 或长度不足）：跳过并回退到 token 的 id
+    Return a list like [[top1_id, top2_id], ...] for the final draft tokens.
+    Fallback behavior:
+      - if top is empty, use the token tuple id and duplicate it
+      - if the second candidate is missing, duplicate the first
+      - if candidate structure is incomplete, fall back to the token id
     """
-    # 取最后 draft_len_output 个，逐位置对齐
     last_top  = input_top_logprobs[-draft_len_output:]
     last_tok  = input_token_logprobs[-draft_len_output:]
     potential_ids = []
 
     def get_token_id_from_tuple(t):
-        # 期望 t 形如 (logprob, token_id, ...)
         return t[1] if isinstance(t, (list, tuple)) and len(t) > 1 else None
 
     for top, tok in zip(last_top, last_tok):
-        # 先尝试从 top（top-k 列表）里拿前两个候选的 id
         top1_id = top2_id = None
 
         if top and isinstance(top, (list, tuple)) and len(top) > 0:
-            # 第一个候选
             head1 = top[0]
             if isinstance(head1, (list, tuple)) and len(head1) > 1:
                 top1_id = head1[1]
 
-            # 第二个候选（可能没有）
             if len(top) > 1:
                 head2 = top[1]
                 if isinstance(head2, (list, tuple)) and len(head2) > 1:
                     top2_id = head2[1]
 
-        # 若 top1 为空，回退到 token 的 id
         if top1_id is None:
             top1_id = get_token_id_from_tuple(tok)
 
-        # 若 top2 为空，优先复制 top1；再不行回退到 token 的 id；再不行用 0
         if top2_id is None:
             top2_id = top1_id if top1_id is not None else get_token_id_from_tuple(tok)
 
-        # 最后兜底
         if top1_id is None:
             top1_id = 0
         if top2_id is None:
-            top2_id = top1_id  # 复制
+            top2_id = top1_id
 
         potential_ids.append([top1_id, top2_id])
 
@@ -116,7 +108,7 @@ def speculative_decoding(llm_big,llm_small,target_tokenizer,speculative_tokenize
         return len(speculative_tokenizer.encode(generated_ids))  < max_new_tokens
     checking_sampling_params = {"temperature": 0.1,"max_new_tokens": 1}
     # print('\n')
-    prev_valid_draft_text = None # 用于存储上一次的 valid_draft_text
+    prev_valid_draft_text = None
     lens = []
     while checking_is_finish(max_new_tokens=14000, generated_ids=valid_draft_text):
         lens.append(len(speculative_tokenizer.encode(valid_draft_text)))
@@ -171,7 +163,6 @@ def speculative_decoding(llm_big,llm_small,target_tokenizer,speculative_tokenize
         prob_big_result_big1 = []
         for top, (lp_tok, tid_tok, _) in zip(last_top_logprobs, checking_outputs[0]['meta_info']['input_token_logprobs'][-draft_len_output:]):
             if not top or top[0] is None:
-            # top 是 None，用 token_logprobs 的 tid，prob=0.0
                 prob_big_result_big1.append({"id": tid_tok, "prob": 0.0})
             else:
                 lp, tid = top[0][0], top[0][1]
@@ -185,7 +176,7 @@ def speculative_decoding(llm_big,llm_small,target_tokenizer,speculative_tokenize
         # print('prob_big_result', len(prob_big_result))
         # print('prob_small_result', len(prob_small_result))
         if len(prob_small_result) != len(prob_big_result):
-            raise ValueError("结果列表长度不一致，无法逐项比较")
+            raise ValueError("Mismatched result lengths; cannot compare token-by-token.")
         i = 0
         valid_id = []
         for index, small in enumerate(prob_small_result):
@@ -193,7 +184,6 @@ def speculative_decoding(llm_big,llm_small,target_tokenizer,speculative_tokenize
             big1 = prob_big_result_big1[index]
 
 
-            # 只要 small 的 id 和 big / big1 的 id 有一个对得上就接受
             if small["id"]  == 151649:
                 continue
 
@@ -203,12 +193,13 @@ def speculative_decoding(llm_big,llm_small,target_tokenizer,speculative_tokenize
             elif small["id"] == big["id"]:
                 big_prob = big["prob"]
             else:
-                raise ValueError(f"第 {index} 项 id 不匹配：small_id={small['id']} ≠ big_id={big['id']} ≠ big1_id={big1['id']}")
+                raise ValueError(
+                    f"Token id mismatch at index {index}: "
+                    f"small_id={small['id']} != big_id={big['id']} != big1_id={big1['id']}"
+                )
 
-            # 判断是否接受该 token
             if not speculative_accept(big_prob, small["prob"]):
-                #print(f"Token not accepted at index {index}: small_id={small['id']}, small_prob={small['prob']}, big_id={big['id']}, big_prob={big_prob}, big1_id={big1['id']}, big1_prob={big1['prob']}")
-                valid_id = unvalid_id[:index]  # 截断
+                valid_id = unvalid_id[:index]
                 i = index
                 break
         else:
@@ -308,7 +299,7 @@ def inference_model_pickle(task_name: str,  base_dir,target_tokenizer,
     elif args.dataset == "gpqa":
         # if os.getenv("HF_HUB_OFFLINE", "0") == "1"
 
-        loaded =load_dataset("/home/ximing/semantic/baseline/gpqa", "gpqa_diamond")
+        loaded =load_dataset("/home/semantic/baseline/gpqa", "gpqa_diamond")
         subset = loaded["train"].select(range(start, end))
         train_data = subset.to_pandas()
         ds = [row.to_dict() for _, row in train_data.iterrows()]

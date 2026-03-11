@@ -33,7 +33,7 @@ class SemanticEntropyModel(nn.Module):
         self.dropout1 = nn.Dropout(dropout)
         self.fc2 = nn.Linear(hidden_dim, 512)
         self.dropout2 = nn.Dropout(dropout)
-        self.fc3 = nn.Linear(512, 256)   # 新增的一层
+        self.fc3 = nn.Linear(512, 256)
         self.fc4 = nn.Linear(256, 1)
 
     def forward(self, x):
@@ -99,7 +99,7 @@ def train_probe_regression(
     best_preds = None
 
     for epoch in range(1, epochs+1):
-        # 训练
+        # Train.
         model.train()
         train_loss = 0.0
         for x_batch, y_batch in tqdm(train_loader, desc=f"Train Epoch {epoch}"):
@@ -113,7 +113,7 @@ def train_probe_regression(
             train_loss += loss.item() * len(x_batch)
         train_loss /= len(train_loader.dataset)
 
-        # 验证
+        # Validate.
         model.eval()
         val_loss = 0.0
         preds, targets = [], []
@@ -129,12 +129,12 @@ def train_probe_regression(
         val_loss /= len(val_loader.dataset)
         preds = np.concatenate(preds)
         targets = np.concatenate(targets)
-        # 评估多指标
+        # Evaluate multiple metrics.
         val_mae = mean_absolute_error(targets, preds)
         val_r2 = r2_score(targets, preds)
         print(f"Epoch {epoch}: Train loss {train_loss:.4f}, Val MSE {val_loss:.4f}, Val MAE {val_mae:.4f}, Val R2 {val_r2:.4f}")
 
-        # Early stopping机制
+        # Early stopping.
         if val_loss < best_val_loss:
             best_val_loss = val_loss
             best_epoch = epoch
@@ -155,7 +155,7 @@ def train_probe_regression(
             'val_r2': val_r2
         })
     print(f"Best epoch: {best_epoch}, Best val MSE: {best_val_loss:.4f}")
-    # 保存验证集预测
+    # Save validation predictions.
     if save_pred_path is not None:
         np.savez(save_pred_path, pred=best_preds, target=targets)
     return history
@@ -215,7 +215,7 @@ def main(dataset,method,data_dir,model_name):
     val_loader = DataLoader(val_set, batch_size=128)
     test_loader = DataLoader(test_set, batch_size=128)
 
-    # 模型与训练
+    # Model setup and training.
     INPUT_DIM = X_train.shape[1]
     HIDDEN_DIM = 2048
     model = SemanticEntropyModel(INPUT_DIM, HIDDEN_DIM)
@@ -256,15 +256,13 @@ def main(dataset,method,data_dir,model_name):
     plt.title(f's1_valid_new_{model_name}_{dataset}_{method}_Validation Loss Curve')
     plt.savefig(f's1_valid_new_{model_name}_{dataset}_{method}_validation_loss_curve.png',dpi=200,bbox_inches='tight')
     plt.show()
-#/data/ximing/aime
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     # "last_hidden_state", "last_second_token", "last_input_token", "output_last_hidden_list"
     parser.add_argument("--dataset", type=str,  help="dataset",default="math")
     parser.add_argument("--model", type=str,  help="model",default="32bqwq")
     parser.add_argument("--method", type=str,  help="method for X",default='last_hidden_state')
-    parser.add_argument("--data_dir", type=str,  help="method for X",default='/shared_workspace_mfs/ximing/data_s1_200_math_qwq')
+    parser.add_argument("--data_dir", type=str,  help="method for X",default='/shared_workspace_mfs/data_s1_200_math_qwq')
     args = parser.parse_args()
     main(args.dataset,args.method,args.data_dir,args.model)
-
 

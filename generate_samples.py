@@ -241,11 +241,8 @@ def process_file_to_pickle(json_path, out_pkl_path, tokenizer, model, num_genera
 
 
 
-# wail /home/cs/staff/shaowei/hf/math-result_left
-#quail /data/ximing/math-result_left
 def inference_model_pickle(task_name: str, model, tokenizer, base_dir,
                            start=31, end=50, num_generations=20):
-    #numbers = [4, 5, 2, 6, 11, 12, 13, 18, 20, 21, 25, 26, 29, 30, 33, 35, 38, 44, 46, 47, 49, 50, 51, 56, 57, 59]
 
     for number in tqdm(range(start, end)):
         # if number in numbers:
@@ -292,8 +289,5 @@ if __name__ == "__main__":
         device_map="auto",
     )
     tokenizer.pad_token_id = tokenizer.eos_token_id
-    #/home/cs/staff/shaowei/semantic/aime
-    #/data/ximing/aime
-    #/home/cs/staff/shaowei/semantic/deepseek-32b_r1_awq_math
     inference_model_pickle(task_name=args.task, model=model,base_dir=args.base_dir, tokenizer=tokenizer,start=args.start, end=args.end)
     print("done")

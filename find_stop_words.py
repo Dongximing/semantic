@@ -52,8 +52,7 @@ def main():
         type=str,
         default="unsloth/DeepSeek-R1-Distill-Qwen-32B-bnb-4bit",
     )
-    # Qwen/QwQ-32B-AWQ
-    #/home/ximing/QwQ-32B-AWQ/
+
     parser.add_argument(
         "--task",
         type=str,
@@ -61,8 +60,8 @@ def main():
     )
     args = parser.parse_args()
     tokenizer = AutoTokenizer.from_pretrained(args.main_model_path,trust_remote_code=True)
-    #/home/cs/staff/shaowei/semantic/aime
-    inference_model(base_dir = '/home/cs/staff/shaowei/semantic/aime',task = args.task,tokenizer=tokenizer)
+  
+    inference_model(base_dir = '/home/cs/semantic/aime',task = args.task,tokenizer=tokenizer)
 
 if __name__ == "__main__":
     main()

@@ -56,7 +56,7 @@ def process_file_to_pickle(json_path, out_pkl_path, small_json_path, small_out_p
         "./deberta-v2-xlarge-mnli").to(f"cuda:{gpu}")
     group_size = 21
 
-    # 加载大模型和小模型文件
+    # Load large-model and small-model files.
     large_generations = []
     small_generations = []
     if os.path.exists(json_path):
@@ -66,7 +66,7 @@ def process_file_to_pickle(json_path, out_pkl_path, small_json_path, small_out_p
         with open(small_json_path, "rb") as f:
             small_generations = pickle.load(f)
 
-    # 检查输入一致性
+    # Check input consistency.
     large_valid = checking(large_generations) if large_generations else False
     small_valid = checking(small_generations) if small_generations else False
     if not (large_valid and small_valid):
@@ -76,15 +76,15 @@ def process_file_to_pickle(json_path, out_pkl_path, small_json_path, small_out_p
     large_output = []
     small_output = []
     for i in range(0, max(len(large_generations), len(small_generations)), group_size):
-        # 获取大模型和小模型的组
+        # Collect one group from each model.
         large_group = large_generations[i:i + group_size] if i < len(large_generations) else []
         small_group = small_generations[i:i + group_size] if i < len(small_generations) else []
 
-        # 提取答案，带索引跟踪来源
+        # Extract answers and keep source indices.
         large_answers = [g.get('real_answer') for g in large_group[1:]] if large_group else []
         small_answers = [g.get('real_answer') for g in small_group[1:]] if small_group else []
         
-        # 合并答案，记录来源
+        # Merge answers and record their sources.
         valid_answers = []
         answer_sources = []
         for idx, ans in enumerate(large_answers):
@@ -96,17 +96,17 @@ def process_file_to_pickle(json_path, out_pkl_path, small_json_path, small_out_p
                 valid_answers.append(ans)
                 answer_sources.append(('small', idx))
         
-        # 验证句子数量
+        # Validate answer counts.
         expected_count = min(len(large_answers), 20) + min(len(small_answers), 20)
         if len(valid_answers) > expected_count:
             print(f"Group {i // group_size}: Expected up to {expected_count} valid answers, got {len(valid_answers)}")
-        if len(valid_answers) < expected_count // 2:  # 警告如果句子数远少于预期
+        if len(valid_answers) < expected_count // 2:
             print(f"Group {i // group_size}: Expected ~{expected_count} valid answers, got only {len(valid_answers)}")
         
-        # 获取prefix
+        # Build the shared prefix.
         prefix = large_group[0]['most_input_text'] if large_group else small_group[0]['most_input_text'] if small_group else ""
 
-        # 对合并的句子进行语义聚类
+        # Cluster the merged answers semantically.
         if valid_answers:
             print("valid_answers",valid_answers)
             
@@ -117,10 +117,10 @@ def process_file_to_pickle(json_path, out_pkl_path, small_json_path, small_out_p
             print(f"Group {i // group_size}: No valid answers")
             cluster_ids = []
 
-        # 合并labels用于统一的概率计算
+        # Merge labels for unified probability calculation.
         merged_labels = []
 
-        # 为大模型分配cluster_ids
+        # Assign cluster ids to the large-model outputs.
         if large_group:
             large_cluster_gpt = [None] * len(large_answers)
             for source, idx in answer_sources:
@@ -138,7 +138,7 @@ def process_file_to_pickle(json_path, out_pkl_path, small_json_path, small_out_p
         else:
             print(f"Group {i // group_size} large model: empty")
 
-        # 为小模型分配cluster_ids
+        # Assign cluster ids to the small-model outputs.
         if small_group:
             small_cluster_gpt = [None] * len(small_answers)
             for source, idx in answer_sources:
@@ -156,24 +156,24 @@ def process_file_to_pickle(json_path, out_pkl_path, small_json_path, small_out_p
         else:
             print(f"Group {i // group_size} small model: empty")
 
-        # 计算统一的label_counts
+        # Compute unified label counts.
         label_counts = Counter(merged_labels)
         total = len(merged_labels)
         print(f"Group {i // group_size} merged label_counts: {label_counts}")
 
-        # 为大模型设置概率（基于合并的label_counts）
+        # Set probabilities for the large-model outputs.
         if large_group:
             for g in large_group[1:]:
                 label = g['clustering-gpt-prompty_deberta']
                 g['probability_of_deberta'] = label_counts[label] / total if label is not None and total > 0 else None
 
-        # 为小模型设置概率（基于合并的label_counts）
+        # Set probabilities for the small-model outputs.
         if small_group:
             for g in small_group[1:]:
                 label = g['clustering-gpt-prompty_deberta']
                 g['probability_of_deberta'] = label_counts[label] / total if label is not None and total > 0 else None
 
-    # 保存输出
+    # Save the outputs.
     if large_output:
         with open(out_pkl_path, "wb") as f:
             pickle.dump(large_output, f)
@@ -184,38 +184,29 @@ def process_file_to_pickle(json_path, out_pkl_path, small_json_path, small_out_p
             print(f"Saved small model output to {small_out_pkl_path}")
 
 def inference_model_pickle(
-    base_dir='/home/cs/staff/shaowei/semantic/training_limo_s1/data_s1_100',
+    base_dir='/home/cs/staff/semantic/training_limo_s1/data_s1_100',
     base_dir_small=None,
     start=0,
     end=877,
     gpu=None
 ):
-    """
-    批量处理大模型和小型闭源模型的pickle文件，调用process_file_to_pickle。
     
-    Args:
-        base_dir (str): 大模型数据目录
-        base_dir_small (str): 小模型数据目录
-        start (int): 文件编号起始
-        end (int): 文件编号结束
-        gpu (str/int): GPU设备
-    """
     if base_dir_small is None:
         print("base_dir_small is None, only processing base_dir.")
 
     for number in tqdm(range(start, end)):
-        # 大模型路径
+       
         dirname = f'data-877_{number}'
         dir_path = os.path.join(base_dir, dirname)
         json_path = os.path.join(dir_path, f'new_generations_{number}.pkl')
         out_pkl_path = os.path.join(dir_path, f'combine_new_generations_with_entropy_prob{number}.pkl')
 
-        # 小模型路径
+
         small_dir_path = os.path.join(base_dir_small, dirname) if base_dir_small else None
         small_json_path = os.path.join(small_dir_path, f'new_generations_{number}.pkl') if base_dir_small else None
         small_out_pkl_path = os.path.join(small_dir_path, f'combine_new_generations_with_entropy_prob{number}.pkl') if base_dir_small else None
 
-        # 检查大模型文件
+       
         if not os.path.exists(json_path):
             print(f"{json_path} does not exist, skipping (base_dir).")
             continue
@@ -223,7 +214,7 @@ def inference_model_pickle(
             print(f"{out_pkl_path} already exists, skipping (base_dir).")
             continue
 
-        # 检查小模型文件
+        # Check the small-model files.
         if base_dir_small and not os.path.exists(small_json_path):
             print(f"{small_json_path} does not exist, skipping (base_dir_small).")
             continue
@@ -231,7 +222,7 @@ def inference_model_pickle(
             print(f"{small_out_pkl_path} already exists, skipping (base_dir_small).")
             continue
 
-        # 处理文件
+        # Process the files.
         try:
             process_file_to_pickle(json_path, out_pkl_path, small_json_path, small_out_pkl_path, gpu)
             print(f"{number}: {json_path} and {small_json_path}")
@@ -241,14 +232,14 @@ def inference_model_pickle(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Process pickle files for large and small models")
-    parser.add_argument('--base_dir_big', type=str, default='/shared_workspace_mfs/ximing/data_s1_200_segments_math')
-    parser.add_argument('--base_dir_small', type=str, default='/shared_workspace_mfs/ximing/data_s1_200_segments_math_small')
+    parser.add_argument('--base_dir_big', type=str, default='/shared_workspace_mfs/data_s1_200_segments_math')
+    parser.add_argument('--base_dir_small', type=str, default='/shared_workspace_mfs/data_s1_200_segments_math_small')
     parser.add_argument('--start', type=int, default=0)
     parser.add_argument('--end', type=int, default=25)
     parser.add_argument('--gpu', type=int, default=0)
     args = parser.parse_args()
     inference_model_pickle(
-        base_dir=args.base_dir_big,  # 修复：base_dir_big -> base_dir
+        base_dir=args.base_dir_big,
         base_dir_small=args.base_dir_small,
         start=args.start,
         end=args.end,

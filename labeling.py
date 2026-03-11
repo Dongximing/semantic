@@ -245,7 +245,7 @@ def process_file_to_pickle(json_path, out_pkl_path):
 
 
 def inference_model_pickle(
-                          base_dir='/home/cs/staff/shaowei/semantic/training_limo_s1/data_s1_100',
+                          base_dir='/home/cs/staff/semantic/training_limo_s1/data_s1_100',
                           start=0, end=107):
 
     #wrong = [4, 5, 2, 6, 11, 12, 13, 18, 20, 21, 25, 26, 29, 30, 33, 35, 38, 44, 46, 47, 49, 50, 51, 56, 57, 59]
@@ -274,7 +274,7 @@ def inference_model_pickle(
 
 if __name__ == "__main__":
     argparse = argparse.ArgumentParser()
-    argparse.add_argument('--base_dir', type=str, default='/shared_workspace_mfs/ximing/data_s1_200_segments_science_qwq')
+    argparse.add_argument('--base_dir', type=str, default='/shared_workspace_mfs/data_s1_200_segments_science_qwq')
     argparse.add_argument('--start', type=int, default=50)
     argparse.add_argument('--end', type=int, default=107)
     args = argparse.parse_args()

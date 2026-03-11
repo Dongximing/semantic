@@ -23,7 +23,7 @@ SPEC_model = 1
 TARGET_probe = 2
 SPEC_probe = 3
 
-# 优化1: 预定义常量，避免循环中重复创建字典
+# Shared sampling presets.
 SAMPLING_PARAMS_BASE = {
     "temperature": 0.6,
     "top_p": 0.95,
@@ -52,9 +52,7 @@ def speculative_accept(qi, pi, threshold_min=0.7):
     return r < threshold
 
 def extract_potential_ids(input_top_logprobs, input_token_logprobs, draft_len_output):
-    """
-    返回形如 [[top1_id, top2_id], ...] 的列表，长度为 draft_len_output。
-    """
+    """Return a list like [[top1_id, top2_id], ...] for the final draft tokens."""
     last_top = input_top_logprobs[-draft_len_output:]
     last_tok = input_token_logprobs[-draft_len_output:]
     potential_ids = []
@@ -130,9 +128,8 @@ class SemanticEntropyProbSpec(nn.Module):
         return out.squeeze(-1)
 
 
-# 优化2: 提取隐藏状态转换为单独函数，减少重复代码
 def convert_hidden_states_to_tensor(hidden_states):
-    """批量转换隐藏状态为tensor并拼接"""
+    """Convert hidden states to tensors and concatenate them."""
     for i in range(len(hidden_states)):
         if not isinstance(hidden_states[i], torch.Tensor):
             hidden_states[i] = torch.tensor(hidden_states[i], dtype=torch.bfloat16)
@@ -209,7 +206,6 @@ def speculative_decoding(llm_big, llm_small, target_tokenizer, speculative_token
                 return_logprob=True
             )
             
-            # 优化3: 使用列表推导式替代enumerate
             prob_small_result = [
                 {"id": unvalid_id, "prob": math.exp(lp)}
                 for lp, unvalid_id, _ in speculative_outputs[0]['meta_info']['output_token_logprobs']
@@ -236,7 +232,6 @@ def speculative_decoding(llm_big, llm_small, target_tokenizer, speculative_token
                 break
 
             extract_time_small = time.time()
-            # 优化4: 使用提取的函数转换tensor
             pooling_hidden_information = convert_hidden_states_to_tensor(
                 speculative_output["meta_info"]["hidden_states"]
             )
@@ -305,7 +300,6 @@ def speculative_decoding(llm_big, llm_small, target_tokenizer, speculative_token
             checking_output = checking_outputs[0]
             extract_time_big = time.time()
             
-            # 使用提取的函数转换tensor（保持原始完整的hidden_states）
             for i in range(len(checking_output["meta_info"]["hidden_states"])):
                 checking_output["meta_info"]["hidden_states"][i] = torch.tensor(
                     checking_output["meta_info"]["hidden_states"][i], dtype=torch.bfloat16
@@ -411,7 +405,6 @@ def speculative_decoding(llm_big, llm_small, target_tokenizer, speculative_token
     end_time = time.time()
     length_of_output = speculative_tokenizer.encode(generated_text[original_speculative_text_len:])
 
-    # 优化6: 简化时间统计
     total_time = sum(
         t.get(key, 0) for t in time_detial 
         for key in ['target_outputs_time', 'checking_time', 'computing_prob_time',
@@ -466,8 +459,6 @@ if __name__ == "__main__":
     parser.add_argument("--data_dir", type=str, help="data_dir", default='../speculative/qwq32-r1-random')
     parser.add_argument("--start_dataset", type=int, help="the beginning of the dataset", default=0)
     parser.add_argument("--end_dataset", type=int, help="the end of the dataset", default=198)
-    # parser.add_argument("--target_probe", type=str, help="speculative_probe", default="/shared_workspace_mfs/ximing/weight/s1_valid_h100_qwq-32b_math_output_last_hidden_list_best_probe_mse")
-    # parser.add_argument("--speculative_probe", type=str, help="target_probe", default="/shared_workspace_mfs/ximing/weight/s1_valid_h100_r1.5b_math_output_last_hidden_list_best_probe_mse")
     parser.add_argument("--target_temperature", type=float, help="target_temperature", default=0.1)
     parser.add_argument("--speculative_temperature", type=float, help="speculative_temperature", default=0.6)
     parser.add_argument("--max_new_tokens", type=int, help="max_new_tokens", default=14000)
@@ -526,7 +517,7 @@ if __name__ == "__main__":
     elif args.dataset == "amc23":
         ds = load_dataset("zwhe99/amc23", split="test")
     elif args.dataset == "gpqa":
-        loaded =load_dataset("/home/ximing/semantic/baseline/gpqa", "gpqa_diamond")
+        loaded =load_dataset("/home/semantic/baseline/gpqa", "gpqa_diamond")
         subset = loaded["train"].select(range(args.start_dataset, args.end_dataset))
         train_data = subset.to_pandas()
         ds = [row.to_dict() for _, row in train_data.iterrows()]
@@ -552,8 +543,6 @@ if __name__ == "__main__":
     else:
         problems_and_answers = [{"problem": item["problem"], "answer": item["answer"]} for item in ds]
 
-    # 注意: 原代码中 wrong_list 未定义，这里需要您提供
-    # 暂时使用 range 作为示例
     for idx, number in enumerate(tqdm(range(args.start_dataset, args.end_dataset))):
         dirname = f'spec_{args.dataset}_{number}'
         dir_path = os.path.join(f"{args.dataset}{args.data_dir}{args.seed}", dirname)

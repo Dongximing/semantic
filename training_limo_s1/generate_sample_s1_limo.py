@@ -28,7 +28,7 @@ def collect_stop_segments(token_ids, stop_ids):
 
 
 def inference_model():
-    # 加载并筛选数据
+    # Load and filter the source dataset.
     dataset = load_dataset("simplescaling/s1K-1.1")["train"]
     filtered_dataset = dataset.filter(lambda x: x['cot_type'] == 'science')
     filtered_dataset = filtered_dataset.map(
@@ -37,7 +37,7 @@ def inference_model():
 
     tokenizer = AutoTokenizer.from_pretrained("deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B", skip_special_tokens=True)
 
-    # 新建存放子文件的文件夹
+    # Create the output directory.
     out_dir = './data_s1_science_qwq/'
     os.makedirs(out_dir, exist_ok=True)
 
@@ -57,7 +57,7 @@ def inference_model():
         segments = collect_stop_segments(answer_token_id[1:], AIME_STOP_TOKENS_ID)
         for seg_ids, stop_token_id, stop_idx in segments:
             stop_token_text = tokenizer.decode([stop_token_id])
-            # seg_ids 和 stop_token_id 都有可能是tensor
+            # seg_ids and stop_token_id may both be tensors.
             seg_ids_list = seg_ids.tolist() if isinstance(seg_ids, torch.Tensor) else list(seg_ids)
             stop_token_id_int = stop_token_id.item() if isinstance(stop_token_id, torch.Tensor) else int(stop_token_id)
             stop_token_idx_int = stop_idx.item() if isinstance(stop_idx, torch.Tensor) else int(stop_idx)
@@ -70,7 +70,7 @@ def inference_model():
                 "stop_token_idx": stop_token_idx_int
             })
 
-        # 每个样本一个子目录
+        # Store each sample in its own subdirectory.
         sample_dir = os.path.join(out_dir, f"data-877_{idx}")
         os.makedirs(sample_dir, exist_ok=True)
         out_json_path = os.path.join(sample_dir, "generation.json")
@@ -90,7 +90,6 @@ def inference_model():
 if __name__ == "__main__":
 
     inference_model()
-
 
 
 

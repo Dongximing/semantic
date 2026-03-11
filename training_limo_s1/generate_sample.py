@@ -184,10 +184,6 @@ def process_file_to_pickle(json_path, out_pkl_path,  num_generations,model):
         pickle.dump(all_generations, f)
     print(f"Saved {out_pkl_path} with {len(all_generations)} generations.")
 
-
-
-# wail /home/cs/staff/shaowei/hf/math-result_left
-# quail /data/ximing/math-result_left
 def inference_model_pickle(task_name: str, base_dir,
                            start=9, end=50, num_generations=20,model="DeepSeek-R1-Distill-Qwen-32B"):
     for number in tqdm(range(start, end)):
@@ -216,11 +212,9 @@ if __name__ == "__main__":
     parser.add_argument("--start", type=int, help="dataset", default=100)
     parser.add_argument("--end", type=int, help="dataset", default=200)  #
     parser.add_argument("--base_dir", type=str, help="dataset",
-                        default='/shared_workspace_mfs/ximing/data_s1_200_segments_math')  # /home/cs/staff/shaowei/semantic/aime
+                        default='/shared_workspace_mfs/data_s1_200_segments_math')  
     args = parser.parse_args()
-    # /home/cs/staff/shaowei/semantic/aime
-    # /data/ximing/aime
-    # /home/cs/staff/shaowei/semantic/deepseek-32b_r1_awq_math
+
     inference_model_pickle(task_name='math', base_dir=args.base_dir,
                            start=args.start, end=args.end,model=args.model)
     print("done")

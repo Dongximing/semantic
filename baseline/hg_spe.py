@@ -165,7 +165,7 @@ if __name__ == "__main__":
         max_memory={7: "9GB"}
     )
 
-    base_dir = f'/home/ximing/spec_hf{model_name}_{args.dataset}_seed{args.seed}/'
+    base_dir = f'/home/spec_hf{model_name}_{args.dataset}_seed{args.seed}/'
     inference_model_pickle(
         task_name=args.dataset,
         model=model,

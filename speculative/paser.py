@@ -147,7 +147,7 @@ def strip_answer_string(string):
 
     # remove percentage
     string = string.replace("\\%", "")
-    string = string.replace("\%", "")
+    string = string.replace(r"\%", "")
     string = string.replace("%", "")
 
     # " 0." equivalent to " ." and "{0." equivalent to "{." Alternatively, add "0" if "." is the start of the string
@@ -265,12 +265,9 @@ def extract_answer(pred_str, use_last_number=True):
         pred = pred_str.split("he answer is")[-1].strip()
     elif "final answer is" in pred_str:
         pred = pred_str.split("final answer is")[-1].strip()
-    elif "答案是" in pred_str:
-        # Handle Chinese few-shot multiple choice problem answer extraction
-        pred = pred_str.split("答案是")[1].strip().split("\n\n")[0].strip()
     else:  # use the last number
         if use_last_number:
-            pattern = "-?\d*\.?\d+"
+            pattern = r"-?\d*\.?\d+"
             pred = re.findall(pattern, pred_str.replace(",", ""))
             if len(pred) >= 1:
                 pred = pred[-1]

@@ -7,7 +7,7 @@ src_dir = './data_s1_science_qwq'
 dst_dir = './data_s1_200_segments_science_qwq'
 os.makedirs(dst_dir, exist_ok=True)
 
-# 遍历所有子文件夹
+# Iterate through all subdirectories.
 for subdir in tqdm(sorted(os.listdir(src_dir))):
     src_subdir = os.path.join(src_dir, subdir)
     if not os.path.isdir(src_subdir):
@@ -18,9 +18,9 @@ for subdir in tqdm(sorted(os.listdir(src_dir))):
     try:
         with open(json_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
-        # 筛选 segment 数量小于 100
+        # Keep subdirectories with fewer than 200 segments.
         if len(data) < 200:
-            # 拷贝整个子文件夹
+            # Copy the whole subdirectory.
             dst_subdir = os.path.join(dst_dir, subdir)
             if os.path.exists(dst_subdir):
                 shutil.rmtree(dst_subdir)
@@ -28,4 +28,4 @@ for subdir in tqdm(sorted(os.listdir(src_dir))):
     except Exception as e:
         print(f"Error reading {json_path}: {e}")
 
-print("筛选与拷贝完成！")
+print("Filtering and copying completed.")

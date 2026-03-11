@@ -8,10 +8,6 @@ import datetime
 from collections import Counter
 
 
-# STOP_TOKENS = [' \n\n','.\n\n', ':\n\n','\n\n', ' Wait', 'Alternatively','Wait',' But', ')\n\n'
-#                '?\n\n', ']\n\n',').\n\n'] #' Maybe' 'Hmm'' Hmm'
-# STOP_TOKENS_ID = [4710,382,1447,271,13824,92014,14190,1988,692,1939,2533,3593] #10696 80022 88190
-
 AIME_STOP_TOKENS = [
     ' \n\n', '.\n\n', ':\n\n', '\n\n',
     ')\n\n', '?\n\n', ']\n\n', ').\n\n',' Wait','Wait'
@@ -51,7 +47,6 @@ def process_file(json_path, out_json_path, tokenizer):
 
 def inference_model(task_name: str, model, tokenizer):
     base_dir = '/data/semantic/qwq32b_math'
-    # base_dir = '/home/shaowei/hf/math-result_left'
     for dirname in os.listdir(base_dir):
         if dirname.startswith('data'):
             number = dirname.split('_')[-1]

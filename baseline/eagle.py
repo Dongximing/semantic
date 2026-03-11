@@ -47,7 +47,7 @@ def predict(tokenizer, input_data, model,task_name):
         tokenize=False,
         add_generation_prompt=True
     )
-    openai.api_key = "EMPTY"  # vLLM 默认不需要 key
+    openai.api_key = "EMPTY"
     openai.base_url = "http://0.0.0.0:8000/v1/"
     models = openai.models.list()
     model = models.data[0].id 
@@ -60,7 +60,6 @@ def predict(tokenizer, input_data, model,task_name):
         max_tokens=14000,
     )
 
-    # 解析结果
     speculative_real_output_text = response.choices[0].message.content
    
     len_output = response.usage.completion_tokens
@@ -111,7 +110,7 @@ def inference_model_pickle(task_name: str, tokenizer, base_dir,model,
         ds = load_dataset("zwhe99/amc23", split="test")
         ds = ds.select(range(start, end))
     elif args.dataset == "gpqa":
-        loaded =load_dataset("/home/ximing/semantic/baseline/gpqa", "gpqa_diamond")
+        loaded =load_dataset("/home/semantic/baseline/gpqa", "gpqa_diamond")
         train_data = loaded["train"].to_pandas()
         ds = [row.to_dict() for _, row in train_data.iterrows()]
         for problem in ds:

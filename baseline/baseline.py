@@ -1,18 +1,30 @@
-import datetime
-import torch
+import argparse
 import json
 import os
-import traceback
-from tqdm import tqdm
-from datasets import load_dataset
-from transformers import AutoModelForCausalLM, AutoTokenizer
-import argparse
-import numpy as np
 import random
-import torch
 import time
+import traceback
+
+import numpy as np
+import torch
+from datasets import load_dataset
+from tqdm import tqdm
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+from utils import get_GPQA_multiple_choice_answers
 
 MATH_PROMPT = "\nPlease reason step by step, and put your final answer within \\boxed{}."
+DATASET_CHOICES = ["math-500", "aime", "amc23", "gpqa"]
+LOCAL_GPQA_PATH = "/home/semantic/baseline/gpqa"
+MODEL_ALIASES = {
+    "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B": "DeepSeek-R1-Distill-Qwen-32B",
+    "unsloth/DeepSeek-R1-Distill-Qwen-32B-bnb-4bit": "DeepSeek-R1-Distill-Qwen-32B-bnb-4bit",
+    "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B": "DeepSeek-R1-Distill-Qwen-1.5B",
+    "Qwen/QwQ-32B-AWQ": "QwQ-32B-AWQ",
+    "Qwen/QwQ-32B": "QwQ-32B",
+}
+
+
 def seed_everything(seed):
     torch.manual_seed(seed)
     np.random.seed(seed)
@@ -24,22 +36,38 @@ def seed_everything(seed):
         torch.backends.cudnn.benchmark = False
 
 
-NUMBER = 0
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--dataset", type=str, default="math-500", choices=DATASET_CHOICES)
+    parser.add_argument("--seed", type=int, default=123)
+    parser.add_argument("--model", type=str, default="deepseek-ai/DeepSeek-R1-Distill-Qwen-32B")
+    parser.add_argument("--start", type=int, default=0)
+    parser.add_argument("--end", type=int, default=50)
+    parser.add_argument("--temperature", type=float, default=0.6)
+    parser.add_argument("--max_new_tokens", type=int, default=14000)
+    parser.add_argument("--device", type=str, default="cuda:5")
+    parser.add_argument("--max_memory_gpu", type=str, default="79GB")
+    parser.add_argument("--output_dir", type=str, default="")
+    return parser.parse_args()
 
-def predict(tokenizer, model, input_data, temperature):
-    max_new_tokens = 14000
-    messages = [
-        {"role": "user", "content": input_data + MATH_PROMPT}
-    ]
-    # apply the pattern for speculative model and target model
-    target_text = tokenizer.apply_chat_template(  # big
+
+def build_prompt(problem, dataset_name):
+    if dataset_name == "gpqa":
+        return problem
+    return problem + MATH_PROMPT
+
+
+def predict(tokenizer, model, problem, dataset_name, temperature, max_new_tokens, device):
+    messages = [{"role": "user", "content": build_prompt(problem, dataset_name)}]
+    prompt_text = tokenizer.apply_chat_template(
         messages,
         tokenize=False,
-        add_generation_prompt=True
+        add_generation_prompt=True,
     )
-    inputs = tokenizer(target_text, return_tensors="pt").to(f"cuda:{5}")
-    initial_length = len(inputs['input_ids'][0])
-    start_time  = time.time()
+    inputs = tokenizer(prompt_text, return_tensors="pt").to(device)
+    prompt_length = inputs["input_ids"].shape[1]
+
+    start_time = time.time()
     with torch.no_grad():
         outputs = model.generate(
             **inputs,
@@ -50,101 +78,119 @@ def predict(tokenizer, model, input_data, temperature):
     execution_time = time.time() - start_time
 
     full_answer = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    full_answer_len = outputs.shape[1]
-    real_answer = tokenizer.decode(outputs[0][initial_length:], skip_special_tokens=True)
-    return real_answer, full_answer, input_data,full_answer_len,execution_time
+    real_answer = tokenizer.decode(outputs[0][prompt_length:], skip_special_tokens=True)
+    return {
+        "real_answer": real_answer,
+        "full_answer": full_answer,
+        "tokens_full_answer": int(outputs.shape[1]),
+        "execution_time": execution_time,
+    }
 
-def process_file_to_json(save_path, tokenizer, model, problem, answer):
-    all_generations = []
-    try:
-        real_answer, full_answer, input_data,full_answer_len,execution_time = predict(tokenizer, model, problem, temperature=0.6)
-        all_generations.append({
-            "input_text": input_data,
-            "real_answer": real_answer,
-            "full_answer": full_answer,
-            "tokens_full_answer":full_answer_len,
-            "answer": answer,
-            "execution_time":execution_time
-        })
-    except Exception as e:
-        print('ggggg')
-        all_generations.append({
-            "input_text": problem,
-            "real_answer": None,
-            "full_answer": None,
-            "answer": answer,
-            "tokens_full_answer":None,
-            "error": traceback.format_exc()
-        })
 
+def write_generation(save_path, payload):
     os.makedirs(save_path, exist_ok=True)
     out_path = os.path.join(save_path, "generation.json")
-    with open(out_path, "w", encoding="utf-8") as f:
-        json.dump(all_generations, f, ensure_ascii=False, indent=2)
+    with open(out_path, "w", encoding="utf-8") as handle:
+        json.dump([payload], handle, ensure_ascii=False, indent=2)
 
-def inference_model_pickle(task_name: str, model, tokenizer, base_dir,
-                           start=0, end=10,seed=42):
-    if task_name == "math-500":
-        ds = load_dataset("HuggingFaceH4/MATH-500")['test']
-    elif task_name == "aime":
-        ds = load_dataset("HuggingFaceH4/aime_2024", split="train")
-    elif args.dataset == "amc23":
-        ds = load_dataset("zwhe99/amc23", split="test")
+
+def load_dataset_slice(dataset_name, start, end):
+    if dataset_name == "math-500":
+        dataset = load_dataset("HuggingFaceH4/MATH-500")["test"]
+        dataset = dataset.select(range(start, end))
+        return [{"index": start + i, "problem": item["problem"], "answer": item["answer"]} for i, item in enumerate(dataset)]
+
+    if dataset_name == "aime":
+        dataset = load_dataset("HuggingFaceH4/aime_2024", split="train")
+        dataset = dataset.select(range(start, end))
+        return [{"index": start + i, "problem": item["problem"], "answer": item["answer"]} for i, item in enumerate(dataset)]
+
+    if dataset_name == "amc23":
+        dataset = load_dataset("zwhe99/amc23", split="test")
+        dataset = dataset.select(range(start, end))
+        return [{"index": start + i, "problem": item["question"], "answer": item["answer"]} for i, item in enumerate(dataset)]
+
+    if os.path.exists(LOCAL_GPQA_PATH):
+        loaded = load_dataset(LOCAL_GPQA_PATH, "gpqa_diamond")
     else:
-        raise ValueError(f"Unknown task: {task_name}")
+        loaded = load_dataset("Idavidrein/gpqa", "gpqa_diamond")
+    dataset = loaded["train"].select(range(start, end))
+    rows = dataset.to_pandas().to_dict("records")
+    problems = []
+    for offset, row in enumerate(rows):
+        options, correct_answer = get_GPQA_multiple_choice_answers(row)
+        problems.append(
+            {
+                "index": start + offset,
+                "problem": (
+                    "Return your final response within \\boxed{{}} and only include the letter choice "
+                    "(A, B, C, or D) as your final response. "
+                    f"{row['Question']}\n{options}"
+                ),
+                "answer": correct_answer,
+            }
+        )
+    return problems
 
-    ds = ds.select(range(start, end))
-    if args.dataset == "amc23":
-        problems_and_answers = [{"problem": item["question"], "answer": item["answer"]} for item in ds]
-    else:
-        problems_and_answers = [{"problem": item["problem"], "answer": item["answer"]} for item in ds]
 
-    for idx, number in enumerate(tqdm(range(start, end))):
-        dirname = f'seed_{seed}_baseline_{task_name}_{number}'
-        dir_path = os.path.join(base_dir, dirname)
-        problem = problems_and_answers[idx]['problem']
-        answer = problems_and_answers[idx]['answer']
-        process_file_to_json(dir_path, tokenizer, model, problem, answer)
-
-    print("[Info] Processing completed.")
+def get_model_name(model_name):
+    return MODEL_ALIASES.get(model_name, model_name.split("/")[-1])
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", type=str, help="dataset", default='math-500')  # math-500
-    parser.add_argument("--seed", type=int, help="seed", default=123)
-    parser.add_argument("--model", type=str, help="model", default="deepseek-ai/DeepSeek-R1-Distill-Qwen-32B")
-    parser.add_argument("--start", type=int, help="start", default=0)
-    parser.add_argument("--end", type=int, help="end", default=50)
-    args = parser.parse_args()
+def get_output_dir(args):
+    if args.output_dir:
+        return args.output_dir
+    model_name = get_model_name(args.model)
+    return f"/home/{model_name}_{args.dataset}_seed{args.seed}"
+
+
+def main():
+    args = parse_args()
     seed_everything(args.seed)
-    if args.model == "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B":
-        model_name = "DeepSeek-R1-Distill-Qwen-32B"
-    if args.model == "unsloth/DeepSeek-R1-Distill-Qwen-32B-bnb-4bit":
-        model_name = "DeepSeek-R1-Distill-Qwen-32B-bnb-4bit"
-    elif args.model == "Qwen/QwQ-32B-AWQ":
-        model_name = "QwQ-32B-AWQ"
-    elif args.model == "Qwen/QwQ-32B":
-        model_name = "QwQ-32B"
-    tokenizer = AutoTokenizer.from_pretrained(
-        pretrained_model_name_or_path=args.model,
-        trust_remote_code=True
-    )
+
+    tokenizer = AutoTokenizer.from_pretrained(args.model, trust_remote_code=True)
     model = AutoModelForCausalLM.from_pretrained(
         pretrained_model_name_or_path=args.model,
         torch_dtype=torch.float16,
         device_map="auto",
-        max_memory={5:"79GB"}
+        max_memory={int(args.device.split(":")[-1]): args.max_memory_gpu},
     )
 
-    base_dir = f'/home/ximing/{model_name}_{args.dataset}_seed{args.seed}/'
-    inference_model_pickle(
-        task_name=args.dataset,
-        model=model,
-        tokenizer=tokenizer,
-        base_dir=base_dir,
-        start=args.start,
-        end=args.end,
-        seed=args.seed
-    )
-    print("done")
+    output_dir = get_output_dir(args)
+    problems = load_dataset_slice(args.dataset, args.start, args.end)
+
+    for item in tqdm(problems):
+        dirname = f"seed_{args.seed}_baseline_{args.dataset}_{item['index']}"
+        save_path = os.path.join(output_dir, dirname)
+        try:
+            result = predict(
+                tokenizer=tokenizer,
+                model=model,
+                problem=item["problem"],
+                dataset_name=args.dataset,
+                temperature=args.temperature,
+                max_new_tokens=args.max_new_tokens,
+                device=args.device,
+            )
+            payload = {
+                "input_text": item["problem"],
+                "real_answer": result["real_answer"],
+                "full_answer": result["full_answer"],
+                "tokens_full_answer": result["tokens_full_answer"],
+                "answer": item["answer"],
+                "execution_time": result["execution_time"],
+            }
+        except Exception:
+            payload = {
+                "input_text": item["problem"],
+                "real_answer": None,
+                "full_answer": None,
+                "tokens_full_answer": None,
+                "answer": item["answer"],
+                "error": traceback.format_exc(),
+            }
+        write_generation(save_path, payload)
+
+
+if __name__ == "__main__":
+    main()

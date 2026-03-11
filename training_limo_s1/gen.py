@@ -182,8 +182,8 @@ def process_file_to_pickle(json_path, out_pkl_path,  num_generations,model):
 
 
 
-# wail /home/cs/staff/shaowei/hf/math-result_left
-# quail /data/ximing/math-result_left
+
+
 def inference_model_pickle(task_name: str, base_dir,
                            start,end, model, num_generations=20):
     for number in tqdm(range(start, end)):
@@ -212,11 +212,8 @@ if __name__ == "__main__":
     parser.add_argument("--start", type=int, help="dataset", default=0)
     parser.add_argument("--end", type=int, help="dataset", default=57)  #
     parser.add_argument("--base_dir", type=str, help="dataset",
-                        default='/shared_workspace_mfs/ximing/data_s1_200_segments_science_qwq')  # /home/cs/staff/shaowei/semantic/aime
+                        default='/data_s1_200_segments_science_qwq')  
     args = parser.parse_args()
-    # /home/cs/staff/shaowei/semantic/aime
-    # /data/ximing/aime
-    # /home/cs/staff/shaowei/semantic/deepseek-32b_r1_awq_math
     os.environ["CUDA_VISIBLE_DEVICES"] = "0"
     if args.model == "Qwen/QwQ-32B":
         llm = sgl.Engine(  model_path="/home/original_models/QwQ-32B",

@@ -487,8 +487,8 @@ if __name__ == "__main__":
     parser.add_argument("--data_dir", type=str,  help="data_dir",default='../hf_opt/min_50_new_token_sglang_full_size_DeepSeek-R1-Distill-32B_deepseek1.5seed_')
     parser.add_argument("--start_dataset", type=int, help="the beginning of the dataset",default=5)
     parser.add_argument("--end_dataset", type=int, help="the end of the dataset",default=40)
-    parser.add_argument("--target_probe", type=str, help="target_probe",default="/home/ximing/semantic/speculative/weight/s1_valid_h100_32r1b-200data_math_output_last_hidden_list_best_probe_mse")#aime_output_last_hidden_list_best_probe_mse
-    parser.add_argument("--speculative_probe", type=str, help="speculative_probe",default="/home/ximing/semantic/speculative/weight/s1_valid_h100_r1.5b_math_output_last_hidden_list_best_probe_mse")
+    parser.add_argument("--target_probe", type=str, help="target_probe",default="/home/semantic/speculative/weight/s1_valid_h100_32r1b-200data_math_output_last_hidden_list_best_probe_mse")#aime_output_last_hidden_list_best_probe_mse
+    parser.add_argument("--speculative_probe", type=str, help="speculative_probe",default="/home/semantic/speculative/weight/s1_valid_h100_r1.5b_math_output_last_hidden_list_best_probe_mse")
     parser.add_argument("--target_temperature", type=float, help="target_temperature",default=0.1)
     parser.add_argument("--speculative_temperature", type=float, help="speculative_temperature",default=0.6)
     parser.add_argument("--max_new_tokens", type=int, help="max_new_tokens",default=14000)
