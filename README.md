@@ -119,12 +119,15 @@ python training_limo_s1/generate_data.py
 ```bash
 python training_limo_s1/labeling.py
 ```
+### note 
+All labels are stored in the `probability_of_deberta` attribute.
 ### Step 3: training probe 
 ```bash
 training_limo_s1/train_probe.py
 ```
 ### note 
-You can directly use the dataset available on Hugging Face and control the probe information through the `--method` argument.
+The dataset is available on Hugging Face. 
+Different probe information can be selected via the `--method` argument, e.g., `output_last_hidden_list` (average pooling) or `last_hidden_state` (final hidden state only).
 
 
 
