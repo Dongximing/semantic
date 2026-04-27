@@ -2,6 +2,34 @@
 
 This repository contains code for the paper, including data generation, speculative decoding, and probe training.
 
+## Installation
+
+Create environment and install dependencies:
+
+
+```bash
+torch==2.9.1
+transformers==4.57.1
+datasets==3.6.0
+accelerate==1.11.0
+numpy==2.2.6
+scikit-learn==1.8.0
+scipy==1.17.0
+pandas==2.3.3
+tqdm==4.67.3
+sentencepiece==0.2.1
+safetensors==0.7.0
+tokenizers==0.22.2
+sglang==0.5.9
+vllm==0.16.0
+evalscope==1.4.2
+jsonlines==4.0.0
+pyyaml==6.0.3
+
+
+pip install -r requirements.txt
+```
+
 ## Overview
 
 The codebase is organized around two main workflows:
@@ -81,9 +109,23 @@ python speculative/eval.py \
 - `--seed` controls reproducibility
 - `--start_dataset` and `--end_dataset` define the evaluation range
 
-## Installation
-
-Create environment and install dependencies:
-
+## Dataset
+- Dataset: https://huggingface.co/datasets/spdataset/sp_data
+### Step 1: generate data 
 ```bash
-pip install -r requirements.txt
+python training_limo_s1/generate_data.py
+```
+### Step 2: labeling 
+```bash
+python training_limo_s1/labeling.py
+```
+### Step 3: training probe 
+```bash
+training_limo_s1/train_probe.py
+```
+### note 
+You can directly use the dataset available on Hugging Face and control the probe information through the `--method` argument.
+
+
+
+
