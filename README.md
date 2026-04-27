@@ -123,7 +123,7 @@ python training_limo_s1/labeling.py
 All labels are stored in the `probability_of_deberta` attribute.
 ### Step 3: training probe 
 ```bash
-training_limo_s1/train_probe.py
+python training_limo_s1/train_probe.py
 ```
 ### note 
 The dataset is available on Hugging Face. 
